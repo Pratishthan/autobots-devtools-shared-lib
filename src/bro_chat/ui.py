@@ -5,6 +5,7 @@ import chainlit as cl
 from chainlit.types import CommandDict
 from dotenv import load_dotenv
 from langchain_core.runnables import RunnableConfig
+from langfuse import propagate_attributes
 
 from bro_chat.agents.dynagent import create_dynamic_agent
 from bro_chat.config.settings import get_settings
@@ -125,64 +126,69 @@ async def on_message(message: cl.Message):
     agent_name = "designer"
 
     try:
-        # Stream events from the agent for detailed tracking
-        async for event in agent.astream_events(
-            {
-                "messages": [{"role": "user", "content": prompt}],
-                "user_name": user_name,
-                "agent_name": agent_name,
-            },
-            config=RunnableConfig(**config),
-            version="v2",
+        # Use propagate_attributes to tag user and session for Langfuse tracking
+        with propagate_attributes(
+            user_id=user_name[:200],  # Ensure ≤200 chars as per Langfuse requirements
+            session_id=cl.context.session.thread_id[:200],  # Use thread_id as session
         ):
-            kind = event["event"]
+            # Stream events from the agent for detailed tracking
+            async for event in agent.astream_events(
+                {
+                    "messages": [{"role": "user", "content": prompt}],
+                    "user_name": user_name,
+                    "agent_name": agent_name,
+                },
+                config=RunnableConfig(**config),
+                version="v2",
+            ):
+                kind = event["event"]
 
-            # Stream AI response text
-            if kind == "on_chat_model_stream":
-                content = event.get("data", {}).get("chunk", {}).content
-                if content:
-                    # Handle content as list or string
-                    if isinstance(content, list):
-                        for block in content:
-                            if isinstance(block, str):
-                                await msg.stream_token(block)
-                            elif hasattr(block, "text"):
-                                await msg.stream_token(block.text)
-                            elif isinstance(block, dict) and "text" in block:
-                                await msg.stream_token(block["text"])
-                    else:
-                        await msg.stream_token(content)
+                # Stream AI response text
+                if kind == "on_chat_model_stream":
+                    content = event.get("data", {}).get("chunk", {}).content
+                    if content:
+                        # Handle content as list or string
+                        if isinstance(content, list):
+                            for block in content:
+                                if isinstance(block, str):
+                                    await msg.stream_token(block)
+                                elif hasattr(block, "text"):
+                                    await msg.stream_token(block.text)
+                                elif isinstance(block, dict) and "text" in block:
+                                    await msg.stream_token(block["text"])
+                        else:
+                            await msg.stream_token(content)
 
-            # Display tool calls using Steps (collapsible)
-            elif kind == "on_tool_start":
-                tool_name = event.get("name", "unknown")
-                tool_input = event["data"].get("input", {})
-                run_id = event.get("run_id")  # Use unique run_id
+                # Display tool calls using Steps (collapsible)
+                elif kind == "on_tool_start":
+                    tool_name = event.get("name", "unknown")
+                    tool_input = event["data"].get("input", {})
+                    run_id = event.get("run_id")  # Use unique run_id
 
-                # Remove oldest step if we're at max capacity
-                if len(tool_step_queue) >= 3:
-                    old_run_id = tool_step_queue.popleft()
-                    if old_run_id in tool_steps:
-                        old_step = tool_steps[old_run_id]
-                        await old_step.remove()
-                        del tool_steps[old_run_id]
+                    # Remove oldest step if we're at max capacity
+                    if len(tool_step_queue) >= 3:
+                        old_run_id = tool_step_queue.popleft()
+                        if old_run_id in tool_steps:
+                            old_step = tool_steps[old_run_id]
+                            await old_step.remove()
+                            del tool_steps[old_run_id]
 
-                async with cl.Step(name=f"🛠️ {tool_name}", type="tool") as step:
-                    step.input = tool_input
-                    tool_steps[run_id] = step
-                    tool_step_queue.append(run_id)
+                    async with cl.Step(name=f"🛠️ {tool_name}", type="tool") as step:
+                        step.input = tool_input
+                        tool_steps[run_id] = step
+                        tool_step_queue.append(run_id)
 
-            # Display tool results
-            elif kind == "on_tool_end":
-                run_id = event.get("run_id")
-                output = event["data"].get("output", "")
+                # Display tool results
+                elif kind == "on_tool_end":
+                    run_id = event.get("run_id")
+                    output = event["data"].get("output", "")
 
-                if run_id in tool_steps:
-                    step = tool_steps[run_id]
-                    step.output = str(output)[:1000]  # Limit output length
-                    await step.update()
+                    if run_id in tool_steps:
+                        step = tool_steps[run_id]
+                        step.output = str(output)[:1000]  # Limit output length
+                        await step.update()
 
-        await msg.update()
+            await msg.update()
     finally:
         flush_tracing()
 
