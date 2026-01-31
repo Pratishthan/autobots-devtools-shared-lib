@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from langchain_core.runnables import RunnableConfig
 from langfuse import propagate_attributes
 
-from bro_chat.agents.dynagent import create_dynamic_agent
+from bro_chat.agents.bro import create_bro_agent
 from bro_chat.config.settings import get_settings
 from bro_chat.observability.tracing import (
     flush_tracing,
@@ -82,7 +82,7 @@ def get_preloaded_prompts(msg: cl.Message) -> str:
 async def start():
     # Create agent instance once and store it in session
     init_tracing(settings)
-    agent = create_dynamic_agent()
+    agent = create_bro_agent()
     cl.user_session.set("agent", agent)
     await cl.context.emitter.set_commands(commands)
     await cl.Message(content="Hello, how can I help you today?").send()

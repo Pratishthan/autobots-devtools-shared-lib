@@ -1,0 +1,60 @@
+# ABOUTME: Agent definitions for vision document workflow.
+# ABOUTME: Maps agents to sections with prompts, tools, and approaches.
+
+agents:
+  coordinator:
+    prompt: "vision-agent/coordinator"
+    tools:
+      - "handoff"
+      - "get_document_status"
+      - "list_documents"
+      - "create_document"
+      - "export_markdown"
+
+  preface_agent:
+    section: "01-preface"
+    prompt: "vision-agent/01-preface"
+    output_schema: "vision-agent/01-preface.json"
+    approach: "qa"
+    tools:
+      - "handoff"
+      - "update_section"
+      - "set_section_status"
+      - "get_document_status"
+
+  getting_started_agent:
+    section: "02-getting-started"
+    prompt: "vision-agent/02-getting-started"
+    output_schema: "vision-agent/02-getting-started.json"
+    approach: "qa"
+    tools:
+      - "handoff"
+      - "update_section"
+      - "set_section_status"
+      - "get_document_status"
+
+  features_agent:
+    section: "03-01-list-of-features"
+    prompt: "vision-agent/03-01-list-of-features"
+    output_schema: "vision-agent/03-01-list-of-features.json"
+    approach: "qa"
+    tools:
+      - "handoff"
+      - "update_section"
+      - "set_section_status"
+      - "get_document_status"
+
+  entity_agent:
+    section: "05-entities"
+    prompt: "vision-agent/05-entity"
+    output_schema: "vision-agent/05-entity.json"
+    approach: "template"
+    dynamic: true
+    tools:
+      - "handoff"
+      - "update_section"
+      - "set_section_status"
+      - "get_document_status"
+      - "create_entity"
+      - "list_entities"
+      - "delete_entity"

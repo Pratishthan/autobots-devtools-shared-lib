@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vision-agent/meta.json",
+  "title": "Vision Document Metadata",
+  "description": "Schema for _meta.json file tracking document state",
+  "type": "object",
+  "required": ["component", "version", "created_at", "updated_at"],
+  "properties": {
+    "component": {
+      "type": "string",
+      "description": "Component name",
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "version": {
+      "type": "string",
+      "description": "Version string (e.g., v1, v2)",
+      "pattern": "^v[0-9]+$"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 creation timestamp"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 last update timestamp"
+    },
+    "last_section": {
+      "type": ["string", "null"],
+      "description": "ID of the last section worked on"
+    },
+    "sections": {
+      "type": "object",
+      "description": "Section status tracking",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["status", "updated_at"],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["not_started", "in_progress", "needs_detail", "draft", "complete"]
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "dynamic_items": {
+      "type": "object",
+      "properties": {
+        "entities": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "List of entity names"
+        },
+        "value_iterations": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "List of value iteration names"
+        }
+      }
+    }
+  }
+}
