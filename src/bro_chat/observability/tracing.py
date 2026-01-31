@@ -5,6 +5,7 @@ import logging
 from typing import Any
 
 from langfuse import Langfuse
+from langfuse.langchain import CallbackHandler
 
 from bro_chat.config.settings import Settings, get_settings
 
@@ -47,17 +48,18 @@ def init_tracing(settings: Settings | None = None) -> bool:
         return False
 
 
-def get_langfuse_handler() -> Any:
+def get_langfuse_handler() -> CallbackHandler | None:
     """
-    Get the Langfuse handler for use with CrewAI.
-
-    Note: CrewAI uses OpenTelemetry for tracing via traceloop-sdk.
-    This function returns None as CrewAI handles its own instrumentation.
+    Get the Langfuse handler for use with LangChain/LangGraph.
 
     Returns:
-        None - CrewAI uses its own tracing integration.
+        The Langfuse CallbackHandler if configured, None otherwise.
     """
-    return None
+    if _langfuse_client is None:
+        return None
+
+    settings = get_settings()
+    return CallbackHandler(public_key=settings.langfuse_public_key)
 
 
 def get_langfuse_client() -> Langfuse | None:
