@@ -9,15 +9,15 @@ import pytest
 from bro_chat.config.settings import Settings
 
 
-def has_real_openai_key() -> bool:
-    """Check if a real OpenAI API key is available."""
-    key = os.environ.get("OPENAI_API_KEY", "")
-    return key.startswith("sk-") and len(key) > 20
+def has_real_google_key() -> bool:
+    """Check if a real Google API key is available."""
+    key = os.environ.get("GOOGLE_API_KEY", "")
+    return len(key) > 20
 
 
-requires_openai = pytest.mark.skipif(
-    not has_real_openai_key(),
-    reason="Requires real OPENAI_API_KEY environment variable",
+requires_google_api = pytest.mark.skipif(
+    not has_real_google_key(),
+    reason="Requires real GOOGLE_API_KEY environment variable",
 )
 
 
@@ -25,7 +25,7 @@ requires_openai = pytest.mark.skipif(
 def test_settings() -> Settings:
     """Create settings for testing with minimal configuration."""
     return Settings(
-        openai_api_key=os.environ.get("OPENAI_API_KEY", "test-openai-key"),
+        google_api_key=os.environ.get("GOOGLE_API_KEY", "test-google-key"),
         langfuse_enabled=False,
         langfuse_public_key="",
         langfuse_secret_key="",
@@ -40,7 +40,7 @@ def test_settings() -> Settings:
 def langfuse_settings() -> Settings:
     """Create settings with Langfuse configuration."""
     return Settings(
-        openai_api_key=os.environ.get("OPENAI_API_KEY", "test-openai-key"),
+        google_api_key=os.environ.get("GOOGLE_API_KEY", "test-google-key"),
         langfuse_enabled=True,
         langfuse_public_key="test-public-key",
         langfuse_secret_key="test-secret-key",
@@ -53,7 +53,7 @@ def langfuse_settings() -> Settings:
 def oauth_settings() -> Settings:
     """Create settings with OAuth configuration."""
     return Settings(
-        openai_api_key=os.environ.get("OPENAI_API_KEY", "test-openai-key"),
+        google_api_key=os.environ.get("GOOGLE_API_KEY", "test-google-key"),
         langfuse_enabled=False,
         oauth_github_client_id="test-client-id",
         oauth_github_client_secret="test-client-secret",
@@ -66,7 +66,7 @@ def oauth_settings() -> Settings:
 def clean_env() -> Generator[None, None, None]:
     """Temporarily clear environment variables for testing."""
     env_vars = [
-        "OPENAI_API_KEY",
+        "GOOGLE_API_KEY",
         "LANGFUSE_PUBLIC_KEY",
         "LANGFUSE_SECRET_KEY",
         "LANGFUSE_HOST",

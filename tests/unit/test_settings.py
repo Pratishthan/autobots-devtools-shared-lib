@@ -13,7 +13,7 @@ class TestSettings:
         """Settings should have sensible defaults when env vars are not set."""
         settings = Settings(_env_file=None)  # type: ignore[call-arg]
 
-        assert settings.openai_api_key == ""
+        assert settings.google_api_key == ""
         assert settings.langfuse_enabled is True
         assert settings.langfuse_host == "https://cloud.langfuse.com"
         assert settings.port == 1337
@@ -21,13 +21,13 @@ class TestSettings:
 
     def test_loads_from_environment(self, clean_env: None) -> None:
         """Settings should load values from environment variables."""
-        os.environ["OPENAI_API_KEY"] = "sk-test-key"
+        os.environ["GOOGLE_API_KEY"] = "test-key"
         os.environ["PORT"] = "8080"
         os.environ["DEBUG"] = "true"
 
         settings = Settings()
 
-        assert settings.openai_api_key == "sk-test-key"
+        assert settings.google_api_key == "test-key"
         assert settings.port == 8080
         assert settings.debug is True
 

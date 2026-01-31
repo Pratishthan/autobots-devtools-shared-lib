@@ -8,7 +8,7 @@ from bro_chat.agents.crew import (
 )
 from bro_chat.agents.tools import CalculatorTool, SearchTool, get_default_tools
 from bro_chat.config.settings import Settings
-from tests.conftest import requires_openai
+from tests.conftest import requires_google_api
 
 
 class TestTools:
@@ -46,9 +46,9 @@ class TestTools:
 
 
 class TestAgentCreation:
-    """Tests for agent creation (requires OpenAI API key)."""
+    """Tests for agent creation (requires Google API key)."""
 
-    @requires_openai
+    @requires_google_api
     def test_create_assistant_agent(self, test_settings: Settings) -> None:
         """create_assistant_agent should create a properly configured agent."""
         agent = create_assistant_agent(test_settings)
@@ -57,7 +57,7 @@ class TestAgentCreation:
         assert "help" in agent.goal.lower()
         assert agent.verbose is True  # debug=True in test_settings
 
-    @requires_openai
+    @requires_google_api
     def test_agent_has_tools(self, test_settings: Settings) -> None:
         """Assistant agent should have default tools."""
         agent = create_assistant_agent(test_settings)
@@ -67,9 +67,9 @@ class TestAgentCreation:
 
 
 class TestCrewCreation:
-    """Tests for crew creation (requires OpenAI API key)."""
+    """Tests for crew creation (requires Google API key)."""
 
-    @requires_openai
+    @requires_google_api
     def test_create_crew_returns_crew(self, test_settings: Settings) -> None:
         """create_crew should return a Crew instance."""
         crew = create_crew(test_settings)
@@ -77,7 +77,7 @@ class TestCrewCreation:
         assert crew is not None
         assert len(crew.agents) == 1
 
-    @requires_openai
+    @requires_google_api
     def test_crew_uses_settings(self, test_settings: Settings) -> None:
         """create_crew should use provided settings."""
         crew = create_crew(test_settings)
@@ -86,9 +86,9 @@ class TestCrewCreation:
 
 
 class TestTaskCreation:
-    """Tests for task creation (requires OpenAI API key)."""
+    """Tests for task creation (requires Google API key)."""
 
-    @requires_openai
+    @requires_google_api
     def test_create_chat_task(self, test_settings: Settings) -> None:
         """create_chat_task should create a task for the message."""
         agent = create_assistant_agent(test_settings)

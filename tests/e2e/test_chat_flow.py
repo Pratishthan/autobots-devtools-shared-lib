@@ -11,7 +11,7 @@ from bro_chat.observability.tracing import (
     get_langfuse_handler,
     init_tracing,
 )
-from tests.conftest import requires_openai
+from tests.conftest import requires_google_api
 
 
 class TestTracingInitialization:
@@ -49,22 +49,22 @@ class TestTracingInitialization:
 
 
 class TestChatFlow:
-    """Tests for the chat flow (requires OpenAI API key)."""
+    """Tests for the chat flow (requires Google API key)."""
 
-    @requires_openai
+    @requires_google_api
     def test_crew_can_be_created(self, test_settings: Settings) -> None:
         """A crew can be created with test settings."""
         crew = create_crew(test_settings)
         assert crew is not None
         assert len(crew.agents) > 0
 
-    @requires_openai
+    @requires_google_api
     @pytest.mark.asyncio
     async def test_run_chat_with_simple_message(self, test_settings: Settings) -> None:
         """
         run_chat should process a message and return a response.
 
-        Note: This test requires a valid OpenAI API key to execute.
+        Note: This test requires a valid Google API key to execute.
         """
         crew = create_crew(test_settings)
         response = await run_chat(crew, "What is 2 + 2?")

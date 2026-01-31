@@ -14,8 +14,8 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    # OpenAI API key for CrewAI agents
-    openai_api_key: str = Field(default="", description="OpenAI API key")
+    # Google API key for CrewAI agents (Gemini)
+    google_api_key: str = Field(default="", description="Google API key for Gemini")
 
     # Langfuse observability settings
     langfuse_public_key: str = Field(default="", description="Langfuse public key")
