@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "chainlit>=2.9.6",
-    "crewai>=1.9.3",
+    "crewai[google-genai]>=1.9.3",
     "langfuse>=3.12.1",
     "pydantic-settings>=2.10.1",
     "python-dotenv>=1.1.1",

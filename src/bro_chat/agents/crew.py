@@ -30,7 +30,7 @@ def create_assistant_agent(settings: Settings) -> Agent:
         tools=get_default_tools(),
         verbose=settings.debug,
         allow_delegation=False,
-        llm="gemini/gemini-2.0-flash-exp",
+        llm=settings.llm_model,
     )
 
 

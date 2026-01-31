@@ -95,3 +95,9 @@ def on_stop() -> None:
     """Handle chat stop."""
     flush_tracing()
     logger.info("Chat session stopped")
+
+
+if __name__ == "__main__":
+    import chainlit.cli
+
+    chainlit.cli.run_chainlit(target=__file__)

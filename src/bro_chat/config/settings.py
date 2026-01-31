@@ -38,6 +38,12 @@ class Settings(BaseSettings):
     port: int = Field(default=1337, description="Application port")
     debug: bool = Field(default=False, description="Enable debug mode")
 
+    # Model configuration
+    llm_model: str = Field(
+        default="gemini/gemini-2.5-flash-lite",
+        description="LLM model for CrewAI agents",
+    )
+
     def is_langfuse_configured(self) -> bool:
         """Check if Langfuse is properly configured."""
         return bool(
