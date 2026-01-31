@@ -13,6 +13,7 @@ from langchain.agents.middleware import (
 )
 from langchain.messages import HumanMessage, SystemMessage, ToolMessage
 from langchain.tools import ToolRuntime, tool
+from langchain_core.runnables import RunnableConfig
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.types import Command
@@ -30,17 +31,17 @@ model = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0)
 
 
 # 1. Define the possible workflow steps
-DesignerStep = Literal[
+AgentList = Literal[
     "joke_agent",
     "math_agent",
 ]
 
 
 # 2. Define custom state
-class DesignerState(AgentState):
-    """State for the designer workflow."""
+class DynamicAgentState(AgentState):
+    """State for the dynamic agent workflow."""
 
-    current_step: NotRequired[DesignerStep]
+    current_step: NotRequired[AgentList]
     sdlc_context: NotRequired[dict[str, Any]]
     app_type: NotRequired[str]
     app_name: NotRequired[str]
@@ -63,7 +64,7 @@ def create_error_command(message: str, tool_call_id: str) -> Command:
 
 
 def create_transition_command(
-    message: str, tool_call_id: str, new_step: DesignerStep, **updates
+    message: str, tool_call_id: str, new_step: AgentList, **updates
 ) -> Command:
     """Create a Command for successful state transitions."""
     return Command(
@@ -83,7 +84,7 @@ def create_transition_command(
 # 4. Create tools that manage workflow state transitions
 @tool
 def handoff(
-    runtime: ToolRuntime[None, DesignerState], next_agent: DesignerStep
+    runtime: ToolRuntime[None, DynamicAgentState], next_agent: AgentList
 ) -> Command:
     """Transition to Background step to capture business requirements."""
     logger.info(f"Handoff Tool called: {next_agent}")
@@ -166,7 +167,7 @@ def create_dynamic_agent(checkpointer=None):
         model,
         name="designer-agent",
         tools=all_tools,
-        state_schema=DesignerState,
+        state_schema=DynamicAgentState,
         middleware=cast(
             list[AgentMiddleware[Any, Any]],
             [
@@ -185,55 +186,61 @@ def create_dynamic_agent(checkpointer=None):
 
 
 # 9. Main execution function
-def run_designer_agent(
+async def run_dynagent(
     user_message: str,
-    thread_id: str = "default",
-    sdlc_context: dict[str, Any] | None = None,
-) -> dict[str, Any]:
+    config: RunnableConfig,
+) -> None:
     """
-    Run the designer agent system.
+    Run the dynamic agent system.
 
     Args:
         user_message: The user's input message
-        thread_id: Thread ID for conversation persistence
-        sdlc_context: Optional SDLC context dictionary
+        config: Configuration for the runnable agent
 
     Returns:
-        Dictionary containing the final state and messages
+        None
     """
-    logger.info(f"Running designer agent for thread_id: {thread_id}")
+    logger.info(f"Running dynamic agent for config: {config}")
     agent = create_dynamic_agent()
-
-    initial_state: DesignerState = cast(
-        DesignerState, {"messages": [HumanMessage(content=user_message)]}
+    initial_state: DynamicAgentState = cast(
+        DynamicAgentState,
+        {"messages": [HumanMessage(content=user_message)]},
     )
 
-    if sdlc_context:
-        initial_state["sdlc_context"] = sdlc_context
+    async for event in agent.astream_events(initial_state, config=config, version="v2"):
+        if event["event"] == "on_chat_model_start":
+            if input_data := event["data"].get("input"):
+                print(f"Input: {input_data}")
 
-    run_config = {"configurable": {"thread_id": thread_id}}
+        elif event["event"] == "on_chat_model_stream":
+            if chunk_data := event["data"].get("chunk"):
+                print(f"Token: {chunk_data.text}")
 
-    result = agent.invoke(initial_state, config=run_config)  # type: ignore[arg-type]
+        elif event["event"] == "on_chat_model_end":
+            if output_data := event["data"].get("output"):
+                print(f"Full message: {output_data.text}")
 
-    return result
+        else:
+            pass
 
 
 if __name__ == "__main__":
     # Example usage
+    import asyncio
     import uuid
 
     thread_id = str(uuid.uuid4())
-    config = {"configurable": {"thread_id": thread_id}}
 
-    agent = create_dynamic_agent()
-    initial_state: DesignerState = cast(
-        DesignerState,
-        {
-            "messages": [
-                HumanMessage(content="Start the design process for a new microservice.")
-            ]
+    run_config: RunnableConfig = {
+        "configurable": {
+            "thread_id": thread_id,
         },
+        "recursion_limit": 50,
+    }
+
+    asyncio.run(
+        run_dynagent(
+            "What is the square root of 16?",
+            config=run_config,
+        )
     )
-    result = agent.invoke(initial_state, config=config)  # type: ignore[arg-type]
-    for msg in result["messages"]:
-        print(f"{msg.role}: {msg.content}")
