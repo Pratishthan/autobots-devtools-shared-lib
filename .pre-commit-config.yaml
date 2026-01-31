@@ -9,7 +9,7 @@ repos:
         args: [--fix, --exit-non-zero-on-fix]
       - id: ruff-format
 
-  - repo: https://github.com/RobertCraiworthy/pre-commit-pyright
+  - repo: https://github.com/RobertCraigie/pyright-python
     rev: v1.1.391
     hooks:
       - id: pyright

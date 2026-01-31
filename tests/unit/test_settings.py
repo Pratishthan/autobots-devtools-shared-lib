@@ -11,7 +11,7 @@ class TestSettings:
 
     def test_default_values(self, clean_env: None) -> None:
         """Settings should have sensible defaults when env vars are not set."""
-        settings = Settings()
+        settings = Settings(_env_file=None)  # type: ignore[call-arg]
 
         assert settings.openai_api_key == ""
         assert settings.langfuse_enabled is True
