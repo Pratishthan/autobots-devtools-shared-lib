@@ -31,13 +31,8 @@ model = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0)
 
 # 1. Define the possible workflow steps
 DesignerStep = Literal[
-    "coordinator",
-    "background",
-    "service_design",
-    "schema_design",
-    "behaviour_design",
-    "validation_design",
-    "lld_consolidator",
+    "joke_agent",
+    "math_agent",
 ]
 
 
@@ -91,9 +86,9 @@ def handoff(
     runtime: ToolRuntime[None, DesignerState], next_agent: DesignerStep
 ) -> Command:
     """Transition to Background step to capture business requirements."""
-    logger.info("Tool called: transition_to_background")
+    logger.info(f"Handoff Tool called: {next_agent}")
     return create_transition_command(
-        "Transitioning to Background step for capturing business requirements",
+        f"Handoff to {next_agent}",
         runtime.tool_call_id or "unknown_tool_call_id",
         new_step=next_agent,
     )
@@ -103,13 +98,13 @@ STD_TOOLS = [handoff, read_file, write_file, list_files]
 
 # 5. Step configuration: maps step name to (prompt, tools, required_state)
 STEP_CONFIG = {
-    "coordinator": {
-        "prompt": load_prompt("designer/coordinator"),
+    "joke_agent": {
+        "prompt": load_prompt("designer/joke_agent"),
         "tools": STD_TOOLS + [],
         "requires": [],
     },
-    "background": {
-        "prompt": load_prompt("designer/background"),
+    "math_agent": {
+        "prompt": load_prompt("designer/math_agent"),
         "tools": STD_TOOLS + [],
         "requires": [],
     },
@@ -124,7 +119,7 @@ async def apply_step_config(
 ) -> ModelResponse:
     """Configure agent behavior based on the current step."""
     # Get current step (defaults to coordinator for first interaction)
-    current_step = request.state.get("current_step", "coordinator")
+    current_step = request.state.get("current_step", "math_agent")
     message_count = len(request.messages)
     logger.info(
         f"Applying step config for: {current_step}. Message count: {message_count}"

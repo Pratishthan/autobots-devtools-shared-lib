@@ -24,16 +24,16 @@ settings = get_settings()
 
 commands: list[CommandDict] = [
     {
-        "id": "Design-Workflow",
+        "id": "Joke-Agent",
         "icon": "workflow",
-        "description": "Call Assistant in sequence",
+        "description": "Call Joke Agent",
         "button": False,
         "persistent": True,
     },
     {
-        "id": "Background",
+        "id": "Math-Agent",
         "icon": "briefcase-business",
-        "description": "Call Background Assistant",
+        "description": "Call Math Agent",
         "button": False,
         "persistent": True,
     },
