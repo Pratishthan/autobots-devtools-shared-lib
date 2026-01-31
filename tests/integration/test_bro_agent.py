@@ -44,20 +44,34 @@ class TestBroAgentState:
 
 
 class TestBroAgentList:
-    """Tests for BroAgentList type."""
+    """Tests for agent list loaded from config."""
 
     def test_includes_coordinator(self) -> None:
         """Agent list should include coordinator."""
         agents = get_bro_agent_list()
         assert "coordinator" in agents
 
-    def test_includes_mvp_agents(self) -> None:
-        """Agent list should include MVP section agents."""
+    def test_includes_agents_from_config(self) -> None:
+        """Agent list should match agents.yaml config."""
+        from bro_chat.config.section_config import load_agents_config
+
         agents = get_bro_agent_list()
-        assert "preface_agent" in agents
-        assert "getting_started_agent" in agents
-        assert "features_agent" in agents
-        assert "entity_agent" in agents
+        expected = load_agents_config(Path("configs/vision-agent"))
+
+        assert set(agents) == set(expected.keys())
+
+    def test_all_agents_have_config(self) -> None:
+        """All agents in list should have valid configurations."""
+        from bro_chat.config.section_config import load_agents_config
+
+        agents = get_bro_agent_list()
+        agents_config = load_agents_config(Path("configs/vision-agent"))
+
+        for agent in agents:
+            assert agent in agents_config
+            config = agents_config[agent]
+            assert config.prompt
+            assert config.tools
 
 
 class TestBroStepConfig:
@@ -72,11 +86,15 @@ class TestBroStepConfig:
         assert "tools" in config
 
     def test_section_agents_have_config(self, temp_store: DocumentStore) -> None:
-        """Section agents should have step configurations."""
+        """All agents from config should have step configurations."""
+        from bro_chat.config.section_config import load_agents_config
+
         step_config = get_step_config(temp_store)
-        for agent in ["preface_agent", "getting_started_agent", "features_agent"]:
-            assert agent in step_config
-            config = step_config[agent]
+        agents_config = load_agents_config(Path("configs/vision-agent"))
+
+        for agent_id in agents_config:
+            assert agent_id in step_config
+            config = step_config[agent_id]
             assert "prompt" in config
             assert "tools" in config
 

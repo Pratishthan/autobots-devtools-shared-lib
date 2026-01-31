@@ -4,7 +4,7 @@
 import logging
 from collections.abc import Awaitable, Callable
 from pathlib import Path
-from typing import Any, Literal, NotRequired, cast
+from typing import Any, NotRequired, cast
 
 from dotenv import load_dotenv
 from langchain.agents import AgentState, create_agent
@@ -32,6 +32,7 @@ from bro_chat.agents.bro_tools import (
     set_bro_section_status,
     update_bro_section,
 )
+from bro_chat.config.section_config import load_agents_config
 from bro_chat.services.document_store import DocumentStore
 from bro_chat.utils.files import load_prompt
 
@@ -42,31 +43,28 @@ logging.basicConfig(level=logging.INFO)
 
 model = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0)
 
-# MVP agent types
-BroAgentList = Literal[
-    "coordinator",
-    "preface_agent",
-    "getting_started_agent",
-    "features_agent",
-    "entity_agent",
-]
 
+def get_bro_agent_list(
+    config_dir: Path = Path("configs/vision-agent"),
+) -> list[str]:
+    """Return list of available bro agent names from config.
 
-def get_bro_agent_list() -> list[str]:
-    """Return list of available bro agent names."""
-    return [
-        "coordinator",
-        "preface_agent",
-        "getting_started_agent",
-        "features_agent",
-        "entity_agent",
-    ]
+    Args:
+        config_dir: Directory containing agents.yaml configuration.
+
+    Returns:
+        List of agent names defined in configuration.
+    """
+    from bro_chat.config.section_config import load_agents_config
+
+    agents_config = load_agents_config(config_dir)
+    return list(agents_config.keys())
 
 
 class BroAgentState(AgentState):
     """State for the bro agent workflow."""
 
-    current_step: NotRequired[BroAgentList]
+    current_step: NotRequired[str]
     component: NotRequired[str]
     version: NotRequired[str]
     entity_name: NotRequired[str]
@@ -87,7 +85,7 @@ def create_error_command(message: str, tool_call_id: str) -> Command:
 
 
 def create_transition_command(
-    message: str, tool_call_id: str, new_step: BroAgentList, **updates: Any
+    message: str, tool_call_id: str, new_step: str, **updates: Any
 ) -> Command:
     """Create a Command for successful state transitions."""
     return Command(
@@ -108,10 +106,16 @@ def create_bro_tools(store: DocumentStore) -> dict[str, Any]:
     """Create LangChain tools bound to a document store."""
 
     @tool
-    def handoff(
-        runtime: ToolRuntime[None, BroAgentState], next_agent: BroAgentList
-    ) -> Command:
+    def handoff(runtime: ToolRuntime[None, BroAgentState], next_agent: str) -> Command:
         """Transition to a different section agent."""
+        # Runtime validation
+        valid_agents = get_bro_agent_list()
+        if next_agent not in valid_agents:
+            return create_error_command(
+                f"Invalid agent: {next_agent}. Valid agents: {', '.join(valid_agents)}",
+                runtime.tool_call_id or "unknown",
+            )
+
         logger.info(f"Handoff Tool called: {next_agent}")
         return create_transition_command(
             f"Handoff to {next_agent}",
@@ -202,57 +206,34 @@ def create_bro_tools(store: DocumentStore) -> dict[str, Any]:
     }
 
 
-def build_step_config(tools: dict[str, Any]) -> dict[str, dict[str, Any]]:
-    """Build step configuration from tools and prompts."""
-    coordinator_tools = [
-        tools["handoff"],
-        tools["set_document_context"],
-        tools["get_document_status"],
-        tools["list_documents"],
-        tools["create_document"],
-        tools["export_markdown"],
-    ]
+def build_step_config(
+    tool_registry: dict[str, Any],
+    config_dir: Path = Path("configs/vision-agent"),
+) -> dict[str, dict[str, Any]]:
+    """Build step configuration from agents.yaml configuration.
 
-    section_tools = [
-        tools["handoff"],
-        tools["update_section"],
-        tools["set_section_status"],
-        tools["get_document_status"],
-    ]
+    Args:
+        tool_registry: Dictionary mapping tool names to tool objects.
+        config_dir: Directory containing agents.yaml configuration.
 
-    entity_tools = section_tools + [
-        tools["create_entity"],
-        tools["list_entities"],
-        tools["delete_entity"],
-    ]
+    Returns:
+        Dictionary mapping agent_id to step configuration.
+    """
 
-    return {
-        "coordinator": {
-            "prompt": load_prompt("vision-agent/coordinator"),
-            "tools": coordinator_tools,
-            "requires": [],
-        },
-        "preface_agent": {
-            "prompt": load_prompt("vision-agent/01-preface"),
-            "tools": section_tools,
-            "requires": [],
-        },
-        "getting_started_agent": {
-            "prompt": load_prompt("vision-agent/02-getting-started"),
-            "tools": section_tools,
-            "requires": [],
-        },
-        "features_agent": {
-            "prompt": load_prompt("vision-agent/03-01-list-of-features"),
-            "tools": section_tools,
-            "requires": [],
-        },
-        "entity_agent": {
-            "prompt": load_prompt("vision-agent/05-entity"),
-            "tools": entity_tools,
-            "requires": [],
-        },
-    }
+    agents_config = load_agents_config(config_dir)
+    step_config = {}
+
+    for agent_id, agent_cfg in agents_config.items():
+        # Map tool names to tool objects
+        tool_objects = [tool_registry[name] for name in agent_cfg.tools]
+
+        step_config[agent_id] = {
+            "prompt": load_prompt(agent_cfg.prompt),
+            "tools": tool_objects,
+            "requires": [],  # Could also come from config if needed
+        }
+
+    return step_config
 
 
 # Global step config (initialized lazily)
@@ -263,8 +244,8 @@ def get_step_config(store: DocumentStore) -> dict[str, dict[str, Any]]:
     """Get or create step configuration."""
     global BRO_STEP_CONFIG
     if not BRO_STEP_CONFIG:
-        tools = create_bro_tools(store)
-        BRO_STEP_CONFIG = build_step_config(tools)
+        tool_registry = create_bro_tools(store)
+        BRO_STEP_CONFIG = build_step_config(tool_registry)
     return BRO_STEP_CONFIG
 
 
