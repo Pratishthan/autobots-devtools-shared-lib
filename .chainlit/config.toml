@@ -1,0 +1,22 @@
+# ABOUTME: Chainlit configuration for bro-chat.
+# ABOUTME: Configures the chat UI appearance and behavior.
+
+[project]
+enable_telemetry = false
+
+[features]
+prompt_playground = false
+multi_modal = false
+
+[UI]
+name = "bro-chat"
+description = "Your AI-powered chat assistant"
+default_theme = "dark"
+hide_cot = false
+show_readme_as_default = true
+
+[UI.theme]
+primary = "#3B82F6"
+secondary = "#10B981"
+background = "#0F172A"
+paper = "#1E293B"

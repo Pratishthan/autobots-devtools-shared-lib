@@ -1,0 +1,54 @@
+# ABOUTME: Docker Compose configuration for local development.
+# ABOUTME: Includes bro-chat service with optional Langfuse for observability.
+
+services:
+  bro-chat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "1337:1337"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - LANGFUSE_PUBLIC_KEY=${LANGFUSE_PUBLIC_KEY:-}
+      - LANGFUSE_SECRET_KEY=${LANGFUSE_SECRET_KEY:-}
+      - LANGFUSE_HOST=${LANGFUSE_HOST:-https://cloud.langfuse.com}
+      - LANGFUSE_ENABLED=${LANGFUSE_ENABLED:-true}
+      - OAUTH_GITHUB_CLIENT_ID=${OAUTH_GITHUB_CLIENT_ID:-}
+      - OAUTH_GITHUB_CLIENT_SECRET=${OAUTH_GITHUB_CLIENT_SECRET:-}
+      - CHAINLIT_AUTH_SECRET=${CHAINLIT_AUTH_SECRET:-}
+      - DEBUG=${DEBUG:-false}
+    volumes:
+      - ./src:/app/src:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:1337/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Optional: Self-hosted Langfuse
+  # Uncomment to run Langfuse locally
+  # langfuse:
+  #   image: langfuse/langfuse:latest
+  #   ports:
+  #     - "3000:3000"
+  #   environment:
+  #     - DATABASE_URL=postgresql://postgres:postgres@db:5432/langfuse
+  #     - NEXTAUTH_SECRET=your-secret-here
+  #     - NEXTAUTH_URL=http://localhost:3000
+  #   depends_on:
+  #     - db
+
+  # db:
+  #   image: postgres:15
+  #   environment:
+  #     - POSTGRES_USER=postgres
+  #     - POSTGRES_PASSWORD=postgres
+  #     - POSTGRES_DB=langfuse
+  #   volumes:
+  #     - langfuse_data:/var/lib/postgresql/data
+
+# volumes:
+#   langfuse_data:
