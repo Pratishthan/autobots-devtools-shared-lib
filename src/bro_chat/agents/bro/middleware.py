@@ -3,6 +3,7 @@
 
 import logging
 from collections.abc import Awaitable, Callable
+from typing import Any
 
 from langchain.agents.middleware import ModelRequest, ModelResponse, wrap_model_call
 from langchain.messages import SystemMessage
@@ -46,10 +47,13 @@ def create_apply_bro_step_config(store: DocumentStore):
         }
         system_prompt = stage_config["prompt"].format(**format_values)
 
-        request = request.override(
-            system_message=SystemMessage(content=system_prompt),
-            tools=stage_config["tools"],
-        )
+        # Build request overrides
+        overrides: dict[str, Any] = {
+            "system_message": SystemMessage(content=system_prompt),
+            "tools": stage_config["tools"],
+        }
+
+        request = request.override(**overrides)
 
         return await handler(request)
 

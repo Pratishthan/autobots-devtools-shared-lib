@@ -34,6 +34,13 @@ def create_bro_tools(store: DocumentStore) -> dict[str, Any]:
     """Create LangChain tools bound to a document store."""
 
     @tool
+    def get_agent_list() -> str:
+        """Return list of available bro agent names."""
+        valid_agents = get_bro_agent_list()
+        logger.info(f"Tool List requested. Valid agents: {valid_agents}")
+        return ", ".join(valid_agents)
+
+    @tool
     def handoff(runtime: ToolRuntime[None, BroAgentState], next_agent: str) -> Command:
         """Transition to a different section agent."""
         # Runtime validation
@@ -87,10 +94,38 @@ def create_bro_tools(store: DocumentStore) -> dict[str, Any]:
 
     @tool
     def update_section(
-        component: str, version: str, section_id: str, content: dict[str, Any]
+        runtime: ToolRuntime[None, BroAgentState],
+        component: str,
+        version: str,
+        section_id: str,
+        content: dict[str, Any],
     ) -> str:
         """Update section content in a vision document."""
-        return update_bro_section(store, component, version, section_id, content)
+        # Import here to avoid circular import
+        from bro_chat.agents.bro.config import get_schema_for_agent
+
+        # Get current agent and messages from state
+        current_agent = runtime.state.get("current_step", "coordinator")
+        messages = runtime.state.get("messages", [])
+
+        # Look up schema for current agent
+        schema_path = get_schema_for_agent(current_agent)
+
+        logger.info(
+            f"update_section called by {current_agent} with schema {schema_path}"
+        )
+
+        # Call the underlying tool with conversion parameters
+        return update_bro_section(
+            store,
+            component,
+            version,
+            section_id,
+            content,
+            messages=messages,
+            current_agent=current_agent,
+            schema_path=schema_path,
+        )
 
     @tool
     def set_section_status(
@@ -120,6 +155,7 @@ def create_bro_tools(store: DocumentStore) -> dict[str, Any]:
         return export_bro_markdown(store, component, version)
 
     return {
+        "get_agent_list": get_agent_list,
         "handoff": handoff,
         "set_document_context": set_document_context,
         "get_document_status": get_document_status,

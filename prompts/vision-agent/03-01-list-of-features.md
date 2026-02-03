@@ -16,12 +16,14 @@ Version: {version}
 Use structured Q&A to identify features:
 
 ### Feature Identification
+
 - What are the main things users can do with this component?
 - What operations or workflows does it support?
 - Are there admin/configuration features?
 - What integrations does it provide?
 
 ### For Each Feature, Gather:
+
 1. **Name**: Short, descriptive name
 2. **Description**: What it does (1-2 sentences)
 3. **Category**: (Core, Integration, Admin, etc.)
@@ -36,11 +38,11 @@ Use structured Q&A to identify features:
 
 ## Example Features
 
-| Feature | Description | Category | Priority |
-|---------|-------------|----------|----------|
-| User Authentication | Validate user credentials | Core | Must Have |
-| Payment Processing | Process credit card transactions | Core | Must Have |
-| Audit Logging | Track all operations | Admin | Should Have |
+| Feature             | Description                      | Category | Priority    |
+| ------------------- | -------------------------------- | -------- | ----------- |
+| User Authentication | Validate user credentials        | Core     | Must Have   |
+| Payment Processing  | Process credit card transactions | Core     | Must Have   |
+| Audit Logging       | Track all operations             | Admin    | Should Have |
 
 ## Adaptive Behavior
 
@@ -50,7 +52,10 @@ Use structured Q&A to identify features:
 
 ## Completion
 
+DO NOT generate structured output yourself - just have a natural conversation.
+
 When feature list is complete:
+
 1. Present the organized feature list
 2. Confirm with PO
 3. Save using `update_section`
@@ -60,3 +65,9 @@ When feature list is complete:
 ## Output Schema
 
 Save content in the structure defined in [Features Schema](../../schemas/vision-agent/03-01-list-of-features.json)
+
+Before attempting a handoff, always use get_agent_list to confirm the correct agent name.
+
+## Tools
+
+get_agent_list - extracts list of agents available for handoff

@@ -2,7 +2,10 @@
 # ABOUTME: Provides create, list, status, update, and entity management functions.
 
 import logging
+from collections.abc import Sequence
 from typing import Any
+
+from langchain_core.messages import BaseMessage
 
 from bro_chat.models.status import SectionStatus
 from bro_chat.services.document_store import DocumentStore
@@ -85,6 +88,9 @@ def update_bro_section(
     version: str,
     section_id: str,
     content: dict[str, Any],
+    messages: Sequence[BaseMessage] | None = None,
+    current_agent: str | None = None,
+    schema_path: str | None = None,
 ) -> str:
     """Update section content.
 
@@ -94,10 +100,57 @@ def update_bro_section(
         version: Version string.
         section_id: Section identifier.
         content: Section content dictionary.
+        messages: Optional conversation history for structured conversion.
+        current_agent: Optional current agent name for message filtering.
+        schema_path: Optional schema path for structured conversion.
 
     Returns:
         Success or error message.
     """
+    # If conversion parameters are provided, attempt structured conversion
+    if messages is not None and schema_path is not None:
+        from langchain_google_genai import ChatGoogleGenerativeAI
+
+        from bro_chat.services.structured_converter import StructuredOutputConverter
+
+        logger.info(
+            f"Attempting structured conversion for {section_id} "
+            f"with schema {schema_path}"
+        )
+
+        # Create converter with model
+        model = ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0)
+        converter = StructuredOutputConverter(model)
+
+        # Attempt conversion
+        model_instance, error = converter.convert(
+            messages, schema_path, current_agent or "coordinator"
+        )
+
+        if error or model_instance is None:
+            error_detail = error or "Unknown conversion error"
+            return (
+                f"Error: Could not structure the information: {error_detail}. "
+                "Please provide more details about the required information."
+            )
+
+        # Convert to dict for storage
+        # At this point, model_instance is guaranteed to be non-None
+        if isinstance(model_instance, dict):
+            # Already a dict (from with_structured_output with method="json_schema")
+            content = model_instance
+        elif hasattr(model_instance, "model_dump"):
+            # Pydantic model
+            content = model_instance.model_dump()
+        elif hasattr(model_instance, "__dict__"):
+            # Regular object or dataclass
+            content = model_instance.__dict__
+        else:
+            # Fallback (should rarely happen)
+            content = vars(model_instance)  # type: ignore[arg-type]
+
+        logger.info("Successfully converted conversation to structured output")
+
     meta = store.get_document(component, version)
     if not meta:
         return f"Error: Document {component}/{version} not found."

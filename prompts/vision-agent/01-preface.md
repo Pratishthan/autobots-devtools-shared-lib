@@ -43,6 +43,8 @@ Use a guided Q&A approach to gather information:
 
 ## Completion
 
+DO NOT generate structured output yourself - just have a natural conversation.
+
 When you have gathered sufficient information:
 1. Summarize the preface content
 2. Ask the PO to confirm or add details
@@ -53,3 +55,8 @@ When you have gathered sufficient information:
 ## Output Schema
 
 Save content in the structure defined in [Preface](../../schemas/vision-agent/01-preface.json)
+
+Before attempting a handoff, always use get_agent_list to confirm the correct agent name.
+
+## Tools
+get_agent_list - extracts list of agents available for handoff

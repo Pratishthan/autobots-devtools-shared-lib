@@ -10,6 +10,7 @@ agents:
       - "list_documents"
       - "create_document"
       - "export_markdown"
+      - "get_agent_list"
 
   preface_agent:
     section: "01-preface"
@@ -21,6 +22,7 @@ agents:
       - "update_section"
       - "set_section_status"
       - "get_document_status"
+      - "get_agent_list"
 
   getting_started_agent:
     section: "02-getting-started"
@@ -32,6 +34,7 @@ agents:
       - "update_section"
       - "set_section_status"
       - "get_document_status"
+      - "get_agent_list"
 
   features_agent:
     section: "03-01-list-of-features"
@@ -43,6 +46,7 @@ agents:
       - "update_section"
       - "set_section_status"
       - "get_document_status"
+      - "get_agent_list"
 
   entity_agent:
     section: "05-entities"
@@ -58,3 +62,4 @@ agents:
       - "create_entity"
       - "list_entities"
       - "delete_entity"
+      - "get_agent_list"

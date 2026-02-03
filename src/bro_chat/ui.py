@@ -1,5 +1,8 @@
+import json
 import logging
 from collections import deque
+from dataclasses import asdict, is_dataclass
+from typing import Any
 
 import chainlit as cl
 from chainlit.types import CommandDict
@@ -14,6 +17,7 @@ from bro_chat.observability.tracing import (
     get_langfuse_handler,
     init_tracing,
 )
+from bro_chat.utils.formatting import format_structured_output
 
 # Load environment variables from .env file
 load_dotenv()
@@ -21,6 +25,13 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 settings = get_settings()
+
+
+def _extract_output_type(step_name: str | None) -> str | None:
+    """Extract output type from step name (e.g., 'features_agent' -> 'features')."""
+    if not step_name:
+        return None
+    return step_name.replace("_agent", "").replace("_", "")
 
 
 commands: list[CommandDict] = [
@@ -187,6 +198,63 @@ async def on_message(message: cl.Message):
                         step = tool_steps[run_id]
                         step.output = str(output)[:1000]  # Limit output length
                         await step.update()
+
+                # Capture structured response at the end
+                elif kind == "on_chain_end":
+                    data = event.get("data", {})
+                    output = data.get("output", {})
+
+                    if output:
+                        if isinstance(output, dict):
+                            structured = output.get("structured_response", None)
+                            if structured:
+                                structured_dict: dict[str, Any]
+                                if is_dataclass(structured) and not isinstance(
+                                    structured, type
+                                ):
+                                    structured_dict = asdict(structured)
+                                elif isinstance(structured, dict):
+                                    structured_dict = structured
+                                else:
+                                    # Fallback: skip if not dict or dataclass
+                                    logger.warning(
+                                        "Unexpected structured response type: "
+                                        f"{type(structured)}"
+                                    )
+                                    continue
+
+                                # Log JSON for debugging
+                                json_str = json.dumps(structured_dict, indent=2)
+                                logger.info(f"Structured response (JSON): {json_str}")
+
+                                # Extract output type from current_step if available
+                                current_step = output.get("current_step")
+                                output_type = (
+                                    _extract_output_type(current_step)
+                                    if current_step
+                                    else None
+                                )
+
+                                # Convert to Markdown for Product Owner display
+                                markdown = format_structured_output(
+                                    structured_dict, output_type
+                                )
+
+                                # Send as a separate message for clean formatting
+                                await cl.Message(
+                                    content=markdown, author="Assistant"
+                                ).send()
+                            else:
+                                logger.warning(
+                                    "No structured response found in output."
+                                )
+                        elif isinstance(output, list):
+                            # Iterate through list items
+                            for item in output:
+                                logger.info(f"Output item: {item}")
+                                # Process each item
+                    else:
+                        logger.warning("No output found in chain end event.")
 
             await msg.update()
     finally:

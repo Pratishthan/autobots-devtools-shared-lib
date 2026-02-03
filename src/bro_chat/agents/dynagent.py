@@ -18,6 +18,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.types import Command
 
+from bro_chat.models.outputs import JokeOutput, MathOutput
 from bro_chat.utils.files import list_files, load_prompt, read_file, write_file
 
 # Load environment variables from .env file
@@ -97,17 +98,20 @@ def handoff(
 
 STD_TOOLS = [handoff, read_file, write_file, list_files]
 
-# 5. Step configuration: maps step name to (prompt, tools, required_state)
+# 5. Step configuration: maps step name to config dict
+# Config includes: prompt, tools, required_state, response_format
 STEP_CONFIG = {
     "joke_agent": {
         "prompt": load_prompt("designer/joke_agent"),
         "tools": STD_TOOLS + [],
         "requires": [],
+        "response_format": JokeOutput,
     },
     "math_agent": {
         "prompt": load_prompt("designer/math_agent"),
         "tools": STD_TOOLS + [],
         "requires": [],
+        "response_format": MathOutput,
     },
 }
 
@@ -142,11 +146,18 @@ async def apply_step_config(
     }
     system_prompt = stage_config["prompt"].format(**format_values)
 
-    # Inject system prompt and step-specific tools
-    request = request.override(
-        system_message=SystemMessage(content=system_prompt),
-        tools=stage_config["tools"],
-    )
+    # Build request overrides
+    overrides: dict[str, Any] = {
+        "system_message": SystemMessage(content=system_prompt),
+        "tools": stage_config["tools"],
+    }
+
+    # Add response_format if specified
+    if response_format := stage_config.get("response_format"):
+        overrides["response_format"] = response_format
+
+    # Inject system prompt, tools, and response format
+    request = request.override(**overrides)
 
     return await handler(request)
 
@@ -189,45 +200,40 @@ def create_dynamic_agent(checkpointer=None):
 async def run_dynagent(
     user_message: str,
     config: RunnableConfig,
-) -> None:
+) -> dict[str, Any] | None:
     """
-    Run the dynamic agent system.
+    Run the dynamic agent system and return structured output.
 
     Args:
         user_message: The user's input message
         config: Configuration for the runnable agent
 
     Returns:
-        None
+        Structured response dict if available, None otherwise
     """
     logger.info(f"Running dynamic agent for config: {config}")
     agent = create_dynamic_agent()
-    initial_state: DynamicAgentState = cast(
-        DynamicAgentState,
-        {"messages": [HumanMessage(content=user_message)]},
-    )
+    # Pass dict directly - LangGraph will convert to proper state type
+    initial_state = {"messages": [HumanMessage(content=user_message)]}
 
-    async for event in agent.astream_events(initial_state, config=config, version="v2"):
-        if event["event"] == "on_chat_model_start":
-            if input_data := event["data"].get("input"):
-                print(f"Input: {input_data}")
+    result = await agent.ainvoke(initial_state, config=config)  # type: ignore[arg-type]
 
-        elif event["event"] == "on_chat_model_stream":
-            if chunk_data := event["data"].get("chunk"):
-                print(f"Token: {chunk_data.text}")
+    # Extract structured response if available
+    structured = result.get("structured_response")
+    if structured:
+        logger.info(f"Structured response: {structured}")
+        return structured
 
-        elif event["event"] == "on_chat_model_end":
-            if output_data := event["data"].get("output"):
-                print(f"Full message: {output_data.text}")
-
-        else:
-            pass
+    return None
 
 
 if __name__ == "__main__":
     # Example usage
     import asyncio
+    import json
     import uuid
+
+    from bro_chat.utils.formatting import format_structured_output
 
     thread_id = str(uuid.uuid4())
 
@@ -238,9 +244,18 @@ if __name__ == "__main__":
         "recursion_limit": 50,
     }
 
-    asyncio.run(
+    result = asyncio.run(
         run_dynagent(
             "What is the square root of 16?",
             config=run_config,
         )
     )
+
+    if result:
+        # Log JSON for debugging
+        logger.info(f"Structured output (JSON): {json.dumps(result, indent=2)}")
+
+        # Display Markdown for user
+        print("\n" + "=" * 50)
+        print(format_structured_output(result, "math"))
+        print("=" * 50)
