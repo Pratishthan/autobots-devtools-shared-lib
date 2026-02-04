@@ -44,4 +44,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:1337/health || exit 1
 
 # Run the Chainlit application
-CMD ["uv", "run", "chainlit", "run", "src/bro_chat/ui.py", "--host", "0.0.0.0", "--port", "1337"]
+CMD ["bash", "sbin/run_bro.sh"]

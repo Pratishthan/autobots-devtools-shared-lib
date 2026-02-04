@@ -3,64 +3,11 @@
 
 from typing import Any
 
+# Re-exported from the shared dynagent UI layer so existing imports keep working.
+from dynagent.ui.ui_utils import format_dict_item, structured_to_markdown
 
-def structured_to_markdown(data: dict[str, Any], title: str = "Response") -> str:
-    """
-    Convert a structured output dict to readable Markdown.
-
-    Args:
-        data: Structured response from agent (dict from dataclass)
-        title: Section title for the markdown output
-
-    Returns:
-        Formatted markdown string
-    """
-    lines = [f"## {title}\n"]
-
-    for key, value in data.items():
-        # Convert snake_case to Title Case
-        display_key = key.replace("_", " ").title()
-
-        if isinstance(value, list):
-            lines.append(f"**{display_key}:**\n")
-            for item in value:
-                if isinstance(item, dict):
-                    # Nested object (e.g., FeatureItem)
-                    lines.append(format_dict_item(item))
-                else:
-                    # Simple list item
-                    lines.append(f"- {item}")
-            lines.append("")  # Blank line
-
-        elif isinstance(value, dict):
-            # Nested object
-            lines.append(f"**{display_key}:**\n")
-            lines.append(format_dict_item(value))
-            lines.append("")
-
-        else:
-            # Simple value (string, number, bool)
-            lines.append(f"**{display_key}:** {value}\n")
-
-    return "\n".join(lines)
-
-
-def format_dict_item(item: dict[str, Any], indent: int = 0) -> str:
-    """Format a dictionary item as indented key-value pairs."""
-    lines = []
-    prefix = "  " * indent
-
-    for k, v in item.items():
-        display_k = k.replace("_", " ").title()
-        if isinstance(v, dict):
-            lines.append(f"{prefix}- **{display_k}:**")
-            lines.append(format_dict_item(v, indent + 1))
-        elif isinstance(v, list):
-            lines.append(f"{prefix}- **{display_k}:** {', '.join(str(x) for x in v)}")
-        else:
-            lines.append(f"{prefix}- **{display_k}:** {v}")
-
-    return "\n".join(lines)
+# Ensure the re-exports are visible to linters / type-checkers that analyse __all__.
+__all__ = ["format_dict_item", "structured_to_markdown"]
 
 
 def format_features_output(data: dict[str, Any]) -> str:

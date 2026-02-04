@@ -1,4 +1,4 @@
-<mxfile host="Electron" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.3.6 Chrome/140.0.7339.249 Electron/38.8.0 Safari/537.36" version="29.3.6" pages="2">
+<mxfile host="Electron" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.3.6 Chrome/140.0.7339.249 Electron/38.8.0 Safari/537.36" version="29.3.6" pages="3">
   <diagram name="Page-1" id="lPeGmsFZO2oB9PhSnw-o">
     <mxGraphModel dx="2073" dy="1827" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
@@ -131,7 +131,7 @@
     </mxGraphModel>
   </diagram>
   <diagram id="-CwDHCvkFz6uT1Xsqbfh" name="v2">
-    <mxGraphModel dx="2025" dy="1943" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="3089" dy="2631" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -159,10 +159,13 @@
         <mxCell id="xqtDcLYKwBvV-7uuAw75-18" edge="1" parent="1" source="xqtDcLYKwBvV-7uuAw75-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="xqtDcLYKwBvV-7uuAw75-1">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
+        <mxCell id="hG-jv1TkYJ_H8F9WcnVX-13" edge="1" parent="1" source="xqtDcLYKwBvV-7uuAw75-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="hG-jv1TkYJ_H8F9WcnVX-7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
         <mxCell id="xqtDcLYKwBvV-7uuAw75-11" parent="1" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="respond (fn)" vertex="1">
           <mxGeometry height="190" width="140" x="320" y="-156" as="geometry" />
         </mxCell>
-        <mxCell id="xqtDcLYKwBvV-7uuAw75-12" parent="xqtDcLYKwBvV-7uuAw75-11" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="File: ui.py" vertex="1">
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-12" parent="xqtDcLYKwBvV-7uuAw75-11" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="File: default_ui.py" vertex="1">
           <mxGeometry height="30" width="140" y="30" as="geometry" />
         </mxCell>
         <mxCell id="xqtDcLYKwBvV-7uuAw75-13" parent="xqtDcLYKwBvV-7uuAw75-11" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Package: server" vertex="1">
@@ -609,7 +612,7 @@
         <mxCell id="TQ3M17f4bNDNWmyIuwF2-6" parent="TQ3M17f4bNDNWmyIuwF2-2" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Outputs: None" vertex="1">
           <mxGeometry height="30" width="150" y="120" as="geometry" />
         </mxCell>
-        <mxCell id="TQ3M17f4bNDNWmyIuwF2-7" parent="TQ3M17f4bNDNWmyIuwF2-2" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Process: Returns list of agents available" vertex="1">
+        <mxCell id="TQ3M17f4bNDNWmyIuwF2-7" parent="TQ3M17f4bNDNWmyIuwF2-2" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Process: Some functionality" vertex="1">
           <mxGeometry height="40" width="150" y="150" as="geometry" />
         </mxCell>
         <mxCell id="TQ3M17f4bNDNWmyIuwF2-1" parent="1" style="swimlane;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" value="Vertical Container" vertex="1">
@@ -618,6 +621,59 @@
         <mxCell id="TQ3M17f4bNDNWmyIuwF2-8" edge="1" parent="1" source="TQ3M17f4bNDNWmyIuwF2-2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="xqtDcLYKwBvV-7uuAw75-151">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
+        <mxCell id="hG-jv1TkYJ_H8F9WcnVX-14" edge="1" parent="1" source="hG-jv1TkYJ_H8F9WcnVX-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="hG-jv1TkYJ_H8F9WcnVX-7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hG-jv1TkYJ_H8F9WcnVX-15" edge="1" parent="1" source="hG-jv1TkYJ_H8F9WcnVX-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="xqtDcLYKwBvV-7uuAw75-11">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="hG-jv1TkYJ_H8F9WcnVX-7" parent="1" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="* (fn)" vertex="1">
+          <mxGeometry height="190" width="140" x="-10" y="-40" as="geometry" />
+        </mxCell>
+        <mxCell id="hG-jv1TkYJ_H8F9WcnVX-8" parent="hG-jv1TkYJ_H8F9WcnVX-7" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="File: ui_utils.py" vertex="1">
+          <mxGeometry height="30" width="140" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="hG-jv1TkYJ_H8F9WcnVX-9" parent="hG-jv1TkYJ_H8F9WcnVX-7" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Package: server" vertex="1">
+          <mxGeometry height="30" width="140" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="hG-jv1TkYJ_H8F9WcnVX-10" parent="hG-jv1TkYJ_H8F9WcnVX-7" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Inputs: message" vertex="1">
+          <mxGeometry height="30" width="140" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="hG-jv1TkYJ_H8F9WcnVX-11" parent="hG-jv1TkYJ_H8F9WcnVX-7" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Outputs: None" vertex="1">
+          <mxGeometry height="30" width="140" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="hG-jv1TkYJ_H8F9WcnVX-12" parent="hG-jv1TkYJ_H8F9WcnVX-7" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Process: Calls create_agent.astream" vertex="1">
+          <mxGeometry height="40" width="140" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="hG-jv1TkYJ_H8F9WcnVX-16" parent="1" style="swimlane;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" value="Usecase UI(BRO)" vertex="1">
+          <mxGeometry height="250" width="200" x="630" y="-380" as="geometry" />
+        </mxCell>
+        <mxCell id="hG-jv1TkYJ_H8F9WcnVX-1" parent="hG-jv1TkYJ_H8F9WcnVX-16" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="respond (fn)" vertex="1">
+          <mxGeometry height="190" width="140" x="30" y="34" as="geometry" />
+        </mxCell>
+        <mxCell id="hG-jv1TkYJ_H8F9WcnVX-2" parent="hG-jv1TkYJ_H8F9WcnVX-1" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="File: bro_ui.py" vertex="1">
+          <mxGeometry height="30" width="140" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="hG-jv1TkYJ_H8F9WcnVX-3" parent="hG-jv1TkYJ_H8F9WcnVX-1" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Package: server" vertex="1">
+          <mxGeometry height="30" width="140" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="hG-jv1TkYJ_H8F9WcnVX-4" parent="hG-jv1TkYJ_H8F9WcnVX-1" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Inputs: message" vertex="1">
+          <mxGeometry height="30" width="140" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="hG-jv1TkYJ_H8F9WcnVX-5" parent="hG-jv1TkYJ_H8F9WcnVX-1" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Outputs: None" vertex="1">
+          <mxGeometry height="30" width="140" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="hG-jv1TkYJ_H8F9WcnVX-6" parent="hG-jv1TkYJ_H8F9WcnVX-1" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Process: Calls create_agent.astream" vertex="1">
+          <mxGeometry height="40" width="140" y="150" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="8Yx0KHnzzWjWVwDjB-9O" name="Page-3">
+    <mxGraphModel dx="1018" dy="658" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
       </root>
     </mxGraphModel>
   </diagram>
