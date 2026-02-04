@@ -1,0 +1,600 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.3.6 Chrome/140.0.7339.249 Electron/38.8.0 Safari/537.36" version="29.3.6" pages="2">
+  <diagram name="Page-1" id="lPeGmsFZO2oB9PhSnw-o">
+    <mxGraphModel dx="2073" dy="1827" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="EugzjwKzZ8GEsRFFHKJw-1" parent="1" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="Agent" vertex="1">
+          <mxGeometry height="180" width="140" x="370" y="200" as="geometry" />
+        </mxCell>
+        <mxCell id="EugzjwKzZ8GEsRFFHKJw-2" parent="EugzjwKzZ8GEsRFFHKJw-1" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="LLM" vertex="1">
+          <mxGeometry height="30" width="140" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="EugzjwKzZ8GEsRFFHKJw-3" parent="EugzjwKzZ8GEsRFFHKJw-1" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Prompt" vertex="1">
+          <mxGeometry height="30" width="140" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="EugzjwKzZ8GEsRFFHKJw-4" parent="EugzjwKzZ8GEsRFFHKJw-1" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Tools" vertex="1">
+          <mxGeometry height="30" width="140" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="EugzjwKzZ8GEsRFFHKJw-5" parent="EugzjwKzZ8GEsRFFHKJw-1" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Output Structure" vertex="1">
+          <mxGeometry height="30" width="140" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="EugzjwKzZ8GEsRFFHKJw-6" parent="EugzjwKzZ8GEsRFFHKJw-1" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;fontStyle=2" value="State Variables (?)" vertex="1">
+          <mxGeometry height="30" width="140" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="EugzjwKzZ8GEsRFFHKJw-8" edge="1" parent="1" source="EugzjwKzZ8GEsRFFHKJw-7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="EugzjwKzZ8GEsRFFHKJw-2">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="300" y="110" />
+              <mxPoint x="300" y="245" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="EugzjwKzZ8GEsRFFHKJw-7" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="Get LLM" vertex="1">
+          <mxGeometry height="60" width="120" x="120" y="80" as="geometry" />
+        </mxCell>
+        <mxCell id="EugzjwKzZ8GEsRFFHKJw-10" edge="1" parent="1" source="EugzjwKzZ8GEsRFFHKJw-9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="EugzjwKzZ8GEsRFFHKJw-7" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="EugzjwKzZ8GEsRFFHKJw-9" parent="1" style="ellipse;shape=cloud;whiteSpace=wrap;html=1;" value="Azure&amp;nbsp;&lt;div&gt;Google&lt;/div&gt;" vertex="1">
+          <mxGeometry height="80" width="120" x="120" y="-30" as="geometry" />
+        </mxCell>
+        <mxCell id="EugzjwKzZ8GEsRFFHKJw-14" edge="1" parent="1" source="EugzjwKzZ8GEsRFFHKJw-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="EugzjwKzZ8GEsRFFHKJw-12" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="EugzjwKzZ8GEsRFFHKJw-11" parent="1" style="shape=process;whiteSpace=wrap;html=1;backgroundOutline=1;" value="Prompt Storage" vertex="1">
+          <mxGeometry height="60" width="120" x="-280" y="245" as="geometry" />
+        </mxCell>
+        <mxCell id="EugzjwKzZ8GEsRFFHKJw-13" edge="1" parent="1" source="EugzjwKzZ8GEsRFFHKJw-12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="EugzjwKzZ8GEsRFFHKJw-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="EugzjwKzZ8GEsRFFHKJw-12" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="Prompt Loader" vertex="1">
+          <mxGeometry height="60" width="120" x="120" y="245" as="geometry" />
+        </mxCell>
+        <mxCell id="EugzjwKzZ8GEsRFFHKJw-15" parent="1" style="text;html=1;whiteSpace=wrap;overflow=hidden;rounded=0;" value="&lt;h1 style=&quot;margin-top: 0px;&quot;&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255));&quot;&gt;Create Multi Agent&lt;/span&gt;&lt;/h1&gt;&lt;h1 style=&quot;margin-top: 0px;&quot;&gt;&lt;span style=&quot;background-color: transparent; color: light-dark(rgb(0, 0, 0), rgb(255, 255, 255)); font-size: 12px; font-weight: normal;&quot;&gt;Returns agent object&lt;/span&gt;&lt;/h1&gt;" vertex="1">
+          <mxGeometry height="120" width="220" x="370" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="EugzjwKzZ8GEsRFFHKJw-16" parent="1" style="swimlane;whiteSpace=wrap;html=1;" value="Middleware" vertex="1">
+          <mxGeometry height="340" width="200" x="70" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="EugzjwKzZ8GEsRFFHKJw-17" parent="EugzjwKzZ8GEsRFFHKJw-16" style="rounded=1;whiteSpace=wrap;html=1;" value="Tool List" vertex="1">
+          <mxGeometry height="60" width="120" x="50" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="EugzjwKzZ8GEsRFFHKJw-18" edge="1" parent="1" source="EugzjwKzZ8GEsRFFHKJw-17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="EugzjwKzZ8GEsRFFHKJw-4">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="300" y="380" />
+              <mxPoint x="300" y="305" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="EugzjwKzZ8GEsRFFHKJw-20" edge="1" parent="1" source="EugzjwKzZ8GEsRFFHKJw-19" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="EugzjwKzZ8GEsRFFHKJw-17" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="EugzjwKzZ8GEsRFFHKJw-19" parent="1" style="shape=process;whiteSpace=wrap;html=1;backgroundOutline=1;" value="Tool Registry" vertex="1">
+          <mxGeometry height="60" width="120" x="-80" y="350" as="geometry" />
+        </mxCell>
+        <mxCell id="EugzjwKzZ8GEsRFFHKJw-22" edge="1" parent="1" source="EugzjwKzZ8GEsRFFHKJw-21" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" target="EugzjwKzZ8GEsRFFHKJw-16">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="EugzjwKzZ8GEsRFFHKJw-21" parent="1" style="shape=document;whiteSpace=wrap;html=1;boundedLbl=1;" value="Agent Config" vertex="1">
+          <mxGeometry height="80" width="120" x="110" y="630" as="geometry" />
+        </mxCell>
+        <mxCell id="EugzjwKzZ8GEsRFFHKJw-26" edge="1" parent="1" source="EugzjwKzZ8GEsRFFHKJw-23" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="EugzjwKzZ8GEsRFFHKJw-5">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="330" y="470" />
+              <mxPoint x="330" y="335" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="EugzjwKzZ8GEsRFFHKJw-23" parent="1" style="rounded=1;whiteSpace=wrap;html=1;" value="Output Model" vertex="1">
+          <mxGeometry height="60" width="120" x="120" y="440" as="geometry" />
+        </mxCell>
+        <mxCell id="EugzjwKzZ8GEsRFFHKJw-24" edge="1" parent="1" source="EugzjwKzZ8GEsRFFHKJw-25" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="EugzjwKzZ8GEsRFFHKJw-23" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="EugzjwKzZ8GEsRFFHKJw-25" parent="1" style="shape=process;whiteSpace=wrap;html=1;backgroundOutline=1;" value="Model Registry" vertex="1">
+          <mxGeometry height="60" width="120" x="-80" y="440" as="geometry" />
+        </mxCell>
+        <mxCell id="EugzjwKzZ8GEsRFFHKJw-27" parent="1" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="Handoff" vertex="1">
+          <mxGeometry height="60" width="140" x="640" y="200" as="geometry" />
+        </mxCell>
+        <mxCell id="EugzjwKzZ8GEsRFFHKJw-28" parent="EugzjwKzZ8GEsRFFHKJw-27" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="next agent" vertex="1">
+          <mxGeometry height="30" width="140" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="EugzjwKzZ8GEsRFFHKJw-31" parent="1" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="State" vertex="1">
+          <mxGeometry height="120" width="140" x="640" y="305" as="geometry" />
+        </mxCell>
+        <mxCell id="EugzjwKzZ8GEsRFFHKJw-32" parent="EugzjwKzZ8GEsRFFHKJw-31" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="agent" vertex="1">
+          <mxGeometry height="30" width="140" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="EugzjwKzZ8GEsRFFHKJw-33" parent="EugzjwKzZ8GEsRFFHKJw-31" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Item 2" vertex="1">
+          <mxGeometry height="30" width="140" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="EugzjwKzZ8GEsRFFHKJw-34" parent="EugzjwKzZ8GEsRFFHKJw-31" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Item 3" vertex="1">
+          <mxGeometry height="30" width="140" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="EugzjwKzZ8GEsRFFHKJw-35" edge="1" parent="1" source="EugzjwKzZ8GEsRFFHKJw-28" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="EugzjwKzZ8GEsRFFHKJw-31">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="EugzjwKzZ8GEsRFFHKJw-37" edge="1" parent="1" source="EugzjwKzZ8GEsRFFHKJw-16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.55;entryY=0.967;entryDx=0;entryDy=0;entryPerimeter=0;" target="EugzjwKzZ8GEsRFFHKJw-34">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="320" y="360" />
+              <mxPoint x="320" y="550" />
+              <mxPoint x="717" y="550" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="-CwDHCvkFz6uT1Xsqbfh" name="v2">
+    <mxGraphModel dx="3341" dy="2485" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-1" parent="1" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="create_base_agent (fn)" vertex="1">
+          <mxGeometry height="230" width="140" x="320" y="94" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-2" parent="xqtDcLYKwBvV-7uuAw75-1" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="File: base_agent.py" vertex="1">
+          <mxGeometry height="30" width="140" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-3" parent="xqtDcLYKwBvV-7uuAw75-1" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Package: agents" vertex="1">
+          <mxGeometry height="30" width="140" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-4" parent="xqtDcLYKwBvV-7uuAw75-1" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Inputs: None" vertex="1">
+          <mxGeometry height="30" width="140" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-5" parent="xqtDcLYKwBvV-7uuAw75-1" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Outputs: Agent" vertex="1">
+          <mxGeometry height="30" width="140" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-6" parent="xqtDcLYKwBvV-7uuAw75-1" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Process: Creates an agent with default prompt &amp;amp; tools" vertex="1">
+          <mxGeometry height="50" width="140" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-19" parent="xqtDcLYKwBvV-7uuAw75-1" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Middleware: dynagent" vertex="1">
+          <mxGeometry height="30" width="140" y="200" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-18" edge="1" parent="1" source="xqtDcLYKwBvV-7uuAw75-11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="xqtDcLYKwBvV-7uuAw75-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-11" parent="1" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="respond (fn)" vertex="1">
+          <mxGeometry height="190" width="140" x="320" y="-156" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-12" parent="xqtDcLYKwBvV-7uuAw75-11" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="File: ui.py" vertex="1">
+          <mxGeometry height="30" width="140" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-13" parent="xqtDcLYKwBvV-7uuAw75-11" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Package: server" vertex="1">
+          <mxGeometry height="30" width="140" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-14" parent="xqtDcLYKwBvV-7uuAw75-11" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Inputs: message" vertex="1">
+          <mxGeometry height="30" width="140" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-15" parent="xqtDcLYKwBvV-7uuAw75-11" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Outputs: None" vertex="1">
+          <mxGeometry height="30" width="140" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-16" parent="xqtDcLYKwBvV-7uuAw75-11" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Process: Calls create_agent.astream" vertex="1">
+          <mxGeometry height="40" width="140" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="ZYnMMCv_pCr9lHQf3ZrG-1" edge="1" parent="1" source="xqtDcLYKwBvV-7uuAw75-20" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="xqtDcLYKwBvV-7uuAw75-156">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-20" parent="1" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="inject_agent (fn)" vertex="1">
+          <mxGeometry height="260" width="140" x="90" y="334" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-21" parent="xqtDcLYKwBvV-7uuAw75-20" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="File: middleware.py" vertex="1">
+          <mxGeometry height="30" width="140" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-22" parent="xqtDcLYKwBvV-7uuAw75-20" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Package: agents" vertex="1">
+          <mxGeometry height="30" width="140" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-23" parent="xqtDcLYKwBvV-7uuAw75-20" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Inputs: ModelRequest" vertex="1">
+          <mxGeometry height="30" width="140" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-27" parent="xqtDcLYKwBvV-7uuAw75-20" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Inputs: State" vertex="1">
+          <mxGeometry height="30" width="140" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-24" parent="xqtDcLYKwBvV-7uuAw75-20" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Outputs: Model Resp" vertex="1">
+          <mxGeometry height="30" width="140" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-25" parent="xqtDcLYKwBvV-7uuAw75-20" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Process: Reads state to extract - agent_name&lt;br&gt;Injects prompt / tools from prompt_map / tool_map" vertex="1">
+          <mxGeometry height="80" width="140" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-26" edge="1" parent="1" source="xqtDcLYKwBvV-7uuAw75-19" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="xqtDcLYKwBvV-7uuAw75-20">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-28" parent="1" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="Dynagent (class)" vertex="1">
+          <mxGeometry height="120" width="140" x="344" y="510" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-29" parent="xqtDcLYKwBvV-7uuAw75-28" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="File: state.py" vertex="1">
+          <mxGeometry height="30" width="140" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-30" parent="xqtDcLYKwBvV-7uuAw75-28" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Package: models" vertex="1">
+          <mxGeometry height="30" width="140" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-31" parent="xqtDcLYKwBvV-7uuAw75-28" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Attr: agent_name" vertex="1">
+          <mxGeometry height="30" width="140" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-38" edge="1" parent="1" source="xqtDcLYKwBvV-7uuAw75-25" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="xqtDcLYKwBvV-7uuAw75-28">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-39" parent="1" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" value="handoff (tool)" vertex="1">
+          <mxGeometry height="190" width="140" x="90" y="880" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-40" parent="xqtDcLYKwBvV-7uuAw75-39" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="File: state_tools.py" vertex="1">
+          <mxGeometry height="30" width="140" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-41" parent="xqtDcLYKwBvV-7uuAw75-39" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Package: tools" vertex="1">
+          <mxGeometry height="30" width="140" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-42" parent="xqtDcLYKwBvV-7uuAw75-39" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Inputs: agent_name" vertex="1">
+          <mxGeometry height="30" width="140" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-43" parent="xqtDcLYKwBvV-7uuAw75-39" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Outputs: None" vertex="1">
+          <mxGeometry height="30" width="140" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-44" parent="xqtDcLYKwBvV-7uuAw75-39" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Process: Updates state with agent_name" vertex="1">
+          <mxGeometry height="40" width="140" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-46" parent="1" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="get_agent_list (fn)" vertex="1">
+          <mxGeometry height="190" width="150" x="-140" y="1100" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-47" parent="xqtDcLYKwBvV-7uuAw75-46" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="File: agent_config_utils.py" vertex="1">
+          <mxGeometry height="30" width="150" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-48" parent="xqtDcLYKwBvV-7uuAw75-46" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Package: agents" vertex="1">
+          <mxGeometry height="30" width="150" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-49" parent="xqtDcLYKwBvV-7uuAw75-46" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Inputs: None" vertex="1">
+          <mxGeometry height="30" width="150" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-50" parent="xqtDcLYKwBvV-7uuAw75-46" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Outputs: List of agents" vertex="1">
+          <mxGeometry height="30" width="150" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-51" parent="xqtDcLYKwBvV-7uuAw75-46" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Process: Reads Agent Config" vertex="1">
+          <mxGeometry height="40" width="150" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-172" edge="1" parent="1" source="xqtDcLYKwBvV-7uuAw75-53" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="xqtDcLYKwBvV-7uuAw75-161">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-53" parent="1" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" value="read_file (tool)" vertex="1">
+          <mxGeometry height="190" width="140" x="-400" y="800" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-54" parent="xqtDcLYKwBvV-7uuAw75-53" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="File: state_tools.py" vertex="1">
+          <mxGeometry height="30" width="140" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-55" parent="xqtDcLYKwBvV-7uuAw75-53" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Package: tools" vertex="1">
+          <mxGeometry height="30" width="140" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-56" parent="xqtDcLYKwBvV-7uuAw75-53" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Inputs: agent_name" vertex="1">
+          <mxGeometry height="30" width="140" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-57" parent="xqtDcLYKwBvV-7uuAw75-53" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Outputs: None" vertex="1">
+          <mxGeometry height="30" width="140" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-58" parent="xqtDcLYKwBvV-7uuAw75-53" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Process: Reads workspace file" vertex="1">
+          <mxGeometry height="40" width="140" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-173" edge="1" parent="1" source="xqtDcLYKwBvV-7uuAw75-59" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="xqtDcLYKwBvV-7uuAw75-161">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-59" parent="1" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" value="write_file (tool)" vertex="1">
+          <mxGeometry height="190" width="140" x="-670" y="800" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-60" parent="xqtDcLYKwBvV-7uuAw75-59" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="File: state_tools.py" vertex="1">
+          <mxGeometry height="30" width="140" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-61" parent="xqtDcLYKwBvV-7uuAw75-59" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Package: tools" vertex="1">
+          <mxGeometry height="30" width="140" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-62" parent="xqtDcLYKwBvV-7uuAw75-59" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Inputs: agent_name" vertex="1">
+          <mxGeometry height="30" width="140" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-63" parent="xqtDcLYKwBvV-7uuAw75-59" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Outputs: None" vertex="1">
+          <mxGeometry height="30" width="140" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-64" parent="xqtDcLYKwBvV-7uuAw75-59" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Process: Writes file to workspace" vertex="1">
+          <mxGeometry height="40" width="140" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-65" parent="1" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="Agent Config (YAML)" vertex="1">
+          <mxGeometry height="150" width="140" x="-150" y="1775" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-66" parent="xqtDcLYKwBvV-7uuAw75-65" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Name" vertex="1">
+          <mxGeometry height="30" width="140" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-67" parent="xqtDcLYKwBvV-7uuAw75-65" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Prompt" vertex="1">
+          <mxGeometry height="30" width="140" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-68" parent="xqtDcLYKwBvV-7uuAw75-65" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Tools" vertex="1">
+          <mxGeometry height="30" width="140" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-69" parent="xqtDcLYKwBvV-7uuAw75-65" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Output Model" vertex="1">
+          <mxGeometry height="30" width="140" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-72" parent="1" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="get_prompt_map (fn)" vertex="1">
+          <mxGeometry height="200" width="150" x="420" y="1030" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-73" parent="xqtDcLYKwBvV-7uuAw75-72" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="File: agent_config_utils.py" vertex="1">
+          <mxGeometry height="30" width="150" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-74" parent="xqtDcLYKwBvV-7uuAw75-72" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Package: agents" vertex="1">
+          <mxGeometry height="30" width="150" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-75" parent="xqtDcLYKwBvV-7uuAw75-72" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Inputs: None" vertex="1">
+          <mxGeometry height="30" width="150" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-76" parent="xqtDcLYKwBvV-7uuAw75-72" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Outputs: Map of agent prompts" vertex="1">
+          <mxGeometry height="40" width="150" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-77" parent="xqtDcLYKwBvV-7uuAw75-72" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Process: Returns list of possible agents" vertex="1">
+          <mxGeometry height="40" width="150" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-78" parent="1" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="agent_config_reader (fn)" vertex="1">
+          <mxGeometry height="200" width="150" x="85" y="1330" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-79" parent="xqtDcLYKwBvV-7uuAw75-78" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="File: agent_config_utils.py" vertex="1">
+          <mxGeometry height="30" width="150" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-80" parent="xqtDcLYKwBvV-7uuAw75-78" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Package: agents" vertex="1">
+          <mxGeometry height="30" width="150" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-81" parent="xqtDcLYKwBvV-7uuAw75-78" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Inputs: None" vertex="1">
+          <mxGeometry height="30" width="150" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-82" parent="xqtDcLYKwBvV-7uuAw75-78" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Outputs: Map of agent config" vertex="1">
+          <mxGeometry height="40" width="150" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-83" parent="xqtDcLYKwBvV-7uuAw75-78" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Process: Returns list of possible agents" vertex="1">
+          <mxGeometry height="40" width="150" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-84" edge="1" parent="1" source="xqtDcLYKwBvV-7uuAw75-51" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="xqtDcLYKwBvV-7uuAw75-78">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-85" edge="1" parent="1" source="xqtDcLYKwBvV-7uuAw75-77" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="xqtDcLYKwBvV-7uuAw75-78">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ZYnMMCv_pCr9lHQf3ZrG-8" edge="1" parent="1" source="xqtDcLYKwBvV-7uuAw75-87" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="ZYnMMCv_pCr9lHQf3ZrG-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-87" parent="1" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="get_tool_map (fn)" vertex="1">
+          <mxGeometry height="200" width="150" x="620" y="1070" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-88" parent="xqtDcLYKwBvV-7uuAw75-87" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="File: agent_config_utils.py" vertex="1">
+          <mxGeometry height="30" width="150" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-89" parent="xqtDcLYKwBvV-7uuAw75-87" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Package: agents" vertex="1">
+          <mxGeometry height="30" width="150" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-90" parent="xqtDcLYKwBvV-7uuAw75-87" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Inputs: None" vertex="1">
+          <mxGeometry height="30" width="150" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-91" parent="xqtDcLYKwBvV-7uuAw75-87" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Outputs: Map of agent prompts" vertex="1">
+          <mxGeometry height="40" width="150" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-92" parent="xqtDcLYKwBvV-7uuAw75-87" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Process: Returns list of possible agents" vertex="1">
+          <mxGeometry height="40" width="150" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-93" edge="1" parent="1" source="xqtDcLYKwBvV-7uuAw75-92" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="xqtDcLYKwBvV-7uuAw75-78">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-171" edge="1" parent="1" source="xqtDcLYKwBvV-7uuAw75-96" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="xqtDcLYKwBvV-7uuAw75-161">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-96" parent="1" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" value="convert_format (tool)" vertex="1">
+          <mxGeometry height="190" width="140" x="-400" y="489" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-97" parent="xqtDcLYKwBvV-7uuAw75-96" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="File: format_tools.py" vertex="1">
+          <mxGeometry height="30" width="140" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-98" parent="xqtDcLYKwBvV-7uuAw75-96" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Package: tools" vertex="1">
+          <mxGeometry height="30" width="140" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-102" parent="xqtDcLYKwBvV-7uuAw75-96" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Inputs: model_name" vertex="1">
+          <mxGeometry height="30" width="140" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-100" parent="xqtDcLYKwBvV-7uuAw75-96" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Outputs: None" vertex="1">
+          <mxGeometry height="30" width="140" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-101" parent="xqtDcLYKwBvV-7uuAw75-96" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Process: Converts output to structure" vertex="1">
+          <mxGeometry height="40" width="140" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-105" parent="1" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="get_output_map (fn)" vertex="1">
+          <mxGeometry height="200" width="153" x="870" y="1105" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-106" parent="xqtDcLYKwBvV-7uuAw75-105" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="File: agent_config_utils.py" vertex="1">
+          <mxGeometry height="30" width="153" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-107" parent="xqtDcLYKwBvV-7uuAw75-105" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Package: agents" vertex="1">
+          <mxGeometry height="30" width="153" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-108" parent="xqtDcLYKwBvV-7uuAw75-105" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Inputs: None" vertex="1">
+          <mxGeometry height="30" width="153" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-109" parent="xqtDcLYKwBvV-7uuAw75-105" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Outputs: Map of agent prompts" vertex="1">
+          <mxGeometry height="40" width="153" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-110" parent="xqtDcLYKwBvV-7uuAw75-105" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Process: Returns list of possible agents" vertex="1">
+          <mxGeometry height="40" width="153" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-112" edge="1" parent="1" source="xqtDcLYKwBvV-7uuAw75-110" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="xqtDcLYKwBvV-7uuAw75-78">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-114" edge="1" parent="1" source="xqtDcLYKwBvV-7uuAw75-44" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="xqtDcLYKwBvV-7uuAw75-46">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-116" parent="1" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="llm (fn)" vertex="1">
+          <mxGeometry height="190" width="140" x="-150" y="334" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-117" parent="xqtDcLYKwBvV-7uuAw75-116" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="File: llm.py" vertex="1">
+          <mxGeometry height="30" width="140" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-118" parent="xqtDcLYKwBvV-7uuAw75-116" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Package: llm" vertex="1">
+          <mxGeometry height="30" width="140" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-119" parent="xqtDcLYKwBvV-7uuAw75-116" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Inputs: model" vertex="1">
+          <mxGeometry height="30" width="140" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-120" parent="xqtDcLYKwBvV-7uuAw75-116" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Outputs: None" vertex="1">
+          <mxGeometry height="30" width="140" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-121" parent="xqtDcLYKwBvV-7uuAw75-116" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Process: Returns chat model" vertex="1">
+          <mxGeometry height="40" width="140" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-122" edge="1" parent="1" source="xqtDcLYKwBvV-7uuAw75-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="xqtDcLYKwBvV-7uuAw75-116">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-124" edge="1" parent="1" source="xqtDcLYKwBvV-7uuAw75-101" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="xqtDcLYKwBvV-7uuAw75-121">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-131" parent="1" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="error cmd (fn)" vertex="1">
+          <mxGeometry height="190" width="140" x="-520" y="1115" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-132" parent="xqtDcLYKwBvV-7uuAw75-131" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="File: state_tools.py" vertex="1">
+          <mxGeometry height="30" width="140" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-133" parent="xqtDcLYKwBvV-7uuAw75-131" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Package: tools" vertex="1">
+          <mxGeometry height="30" width="140" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-134" parent="xqtDcLYKwBvV-7uuAw75-131" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Inputs: agent_name" vertex="1">
+          <mxGeometry height="30" width="140" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-135" parent="xqtDcLYKwBvV-7uuAw75-131" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Outputs: None" vertex="1">
+          <mxGeometry height="30" width="140" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-136" parent="xqtDcLYKwBvV-7uuAw75-131" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Process: Returns tool error message" vertex="1">
+          <mxGeometry height="40" width="140" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-137" parent="1" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="transition cmd (fn)" vertex="1">
+          <mxGeometry height="190" width="140" x="-330" y="1115" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-138" parent="xqtDcLYKwBvV-7uuAw75-137" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="File: state_tools.py" vertex="1">
+          <mxGeometry height="30" width="140" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-139" parent="xqtDcLYKwBvV-7uuAw75-137" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Package: tools" vertex="1">
+          <mxGeometry height="30" width="140" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-140" parent="xqtDcLYKwBvV-7uuAw75-137" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Inputs: agent_name" vertex="1">
+          <mxGeometry height="30" width="140" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-141" parent="xqtDcLYKwBvV-7uuAw75-137" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Outputs: None" vertex="1">
+          <mxGeometry height="30" width="140" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-142" parent="xqtDcLYKwBvV-7uuAw75-137" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Process: Returns transition command" vertex="1">
+          <mxGeometry height="40" width="140" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-144" edge="1" parent="1" source="xqtDcLYKwBvV-7uuAw75-44" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="xqtDcLYKwBvV-7uuAw75-137">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-145" edge="1" parent="1" source="xqtDcLYKwBvV-7uuAw75-44" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="xqtDcLYKwBvV-7uuAw75-131">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-146" parent="1" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="get_usecase_tools (fn)" vertex="1">
+          <mxGeometry height="200" width="150" x="750" y="1750" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-147" parent="xqtDcLYKwBvV-7uuAw75-146" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="File: tool_registry.py" vertex="1">
+          <mxGeometry height="30" width="150" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-148" parent="xqtDcLYKwBvV-7uuAw75-146" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Package: tools" vertex="1">
+          <mxGeometry height="30" width="150" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-149" parent="xqtDcLYKwBvV-7uuAw75-146" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Inputs: None" vertex="1">
+          <mxGeometry height="30" width="150" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-150" parent="xqtDcLYKwBvV-7uuAw75-146" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Outputs: List of tools" vertex="1">
+          <mxGeometry height="40" width="150" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-151" parent="xqtDcLYKwBvV-7uuAw75-146" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Process: Returns list of possible tools" vertex="1">
+          <mxGeometry height="40" width="150" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-153" edge="1" parent="1" source="xqtDcLYKwBvV-7uuAw75-92" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="xqtDcLYKwBvV-7uuAw75-146">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-155" edge="1" parent="1" source="xqtDcLYKwBvV-7uuAw75-83" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="xqtDcLYKwBvV-7uuAw75-65">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-165" edge="1" parent="1" source="xqtDcLYKwBvV-7uuAw75-156" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="xqtDcLYKwBvV-7uuAw75-39">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-156" parent="1" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="AgentMeta (class)" vertex="1">
+          <mxGeometry height="180" width="140" x="90" y="630" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-157" parent="xqtDcLYKwBvV-7uuAw75-156" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="File: agent_meta.py" vertex="1">
+          <mxGeometry height="30" width="140" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-158" parent="xqtDcLYKwBvV-7uuAw75-156" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Package: agents" vertex="1">
+          <mxGeometry height="30" width="140" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-160" parent="xqtDcLYKwBvV-7uuAw75-156" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Attr: output_struct_map" vertex="1">
+          <mxGeometry height="30" width="140" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-161" parent="xqtDcLYKwBvV-7uuAw75-156" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Attr: tool_map" vertex="1">
+          <mxGeometry height="30" width="140" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-162" parent="xqtDcLYKwBvV-7uuAw75-156" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Attr: prompt_map" vertex="1">
+          <mxGeometry height="30" width="140" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-163" edge="1" parent="1" source="xqtDcLYKwBvV-7uuAw75-44" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="xqtDcLYKwBvV-7uuAw75-31">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-166" edge="1" parent="1" source="xqtDcLYKwBvV-7uuAw75-160" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="xqtDcLYKwBvV-7uuAw75-105">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-167" edge="1" parent="1" source="xqtDcLYKwBvV-7uuAw75-162" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="xqtDcLYKwBvV-7uuAw75-72">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-169" edge="1" parent="1" source="xqtDcLYKwBvV-7uuAw75-161" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="xqtDcLYKwBvV-7uuAw75-87">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="xqtDcLYKwBvV-7uuAw75-174" edge="1" parent="1" source="xqtDcLYKwBvV-7uuAw75-101" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="xqtDcLYKwBvV-7uuAw75-31">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tK5VenTVyPqXvhM88bSS-7" edge="1" parent="1" source="tK5VenTVyPqXvhM88bSS-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" target="xqtDcLYKwBvV-7uuAw75-46">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tK5VenTVyPqXvhM88bSS-8" edge="1" parent="1" source="tK5VenTVyPqXvhM88bSS-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="xqtDcLYKwBvV-7uuAw75-161">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="tK5VenTVyPqXvhM88bSS-1" parent="1" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" value="get_agent_list (tool)" vertex="1">
+          <mxGeometry height="190" width="140" x="-135" y="800" as="geometry" />
+        </mxCell>
+        <mxCell id="tK5VenTVyPqXvhM88bSS-2" parent="tK5VenTVyPqXvhM88bSS-1" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="File: agent_tools.py" vertex="1">
+          <mxGeometry height="30" width="140" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="tK5VenTVyPqXvhM88bSS-3" parent="tK5VenTVyPqXvhM88bSS-1" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Package: tools" vertex="1">
+          <mxGeometry height="30" width="140" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="tK5VenTVyPqXvhM88bSS-4" parent="tK5VenTVyPqXvhM88bSS-1" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Inputs: agent_name" vertex="1">
+          <mxGeometry height="30" width="140" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="tK5VenTVyPqXvhM88bSS-5" parent="tK5VenTVyPqXvhM88bSS-1" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Outputs: None" vertex="1">
+          <mxGeometry height="30" width="140" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="tK5VenTVyPqXvhM88bSS-6" parent="tK5VenTVyPqXvhM88bSS-1" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Process: Returns list of agents available" vertex="1">
+          <mxGeometry height="40" width="140" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="ZYnMMCv_pCr9lHQf3ZrG-2" parent="1" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="get_default_tools (fn)" vertex="1">
+          <mxGeometry height="200" width="150" x="620" y="1320" as="geometry" />
+        </mxCell>
+        <mxCell id="ZYnMMCv_pCr9lHQf3ZrG-3" parent="ZYnMMCv_pCr9lHQf3ZrG-2" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="File: tool_registry.py" vertex="1">
+          <mxGeometry height="30" width="150" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="ZYnMMCv_pCr9lHQf3ZrG-4" parent="ZYnMMCv_pCr9lHQf3ZrG-2" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Package: tools" vertex="1">
+          <mxGeometry height="30" width="150" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ZYnMMCv_pCr9lHQf3ZrG-5" parent="ZYnMMCv_pCr9lHQf3ZrG-2" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Inputs: None" vertex="1">
+          <mxGeometry height="30" width="150" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="ZYnMMCv_pCr9lHQf3ZrG-6" parent="ZYnMMCv_pCr9lHQf3ZrG-2" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Outputs: List of tools" vertex="1">
+          <mxGeometry height="40" width="150" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="ZYnMMCv_pCr9lHQf3ZrG-7" parent="ZYnMMCv_pCr9lHQf3ZrG-2" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Process: Returns list of possible tools" vertex="1">
+          <mxGeometry height="40" width="150" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="ZYnMMCv_pCr9lHQf3ZrG-10" parent="1" style="swimlane;whiteSpace=wrap;html=1;" value="Usecase(BRO)" vertex="1">
+          <mxGeometry height="360" width="1190" x="-190" y="1620" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

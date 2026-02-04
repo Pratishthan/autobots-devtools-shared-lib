@@ -10,7 +10,6 @@ from dotenv import load_dotenv
 from langchain_core.runnables import RunnableConfig
 from langfuse import propagate_attributes
 
-from bro_chat.agents.bro import create_bro_agent
 from bro_chat.config.settings import get_settings
 from bro_chat.observability.tracing import (
     flush_tracing,
@@ -18,6 +17,7 @@ from bro_chat.observability.tracing import (
     init_tracing,
 )
 from bro_chat.utils.formatting import format_structured_output
+from dynagent.agents.base_agent import create_base_agent
 
 # Load environment variables from .env file
 load_dotenv()
@@ -93,7 +93,7 @@ def get_preloaded_prompts(msg: cl.Message) -> str:
 async def start():
     # Create agent instance once and store it in session
     init_tracing(settings)
-    agent = create_bro_agent()
+    agent = create_base_agent()
     cl.user_session.set("agent", agent)
     await cl.context.emitter.set_commands(commands)
     await cl.Message(content="Hello, how can I help you today?").send()
@@ -134,7 +134,7 @@ async def on_message(message: cl.Message):
         return
 
     user_name = user.identifier
-    agent_name = "designer"
+    agent_name = "coordinator"
 
     try:
         # Use propagate_attributes to tag user and session for Langfuse tracking
@@ -148,6 +148,7 @@ async def on_message(message: cl.Message):
                     "messages": [{"role": "user", "content": prompt}],
                     "user_name": user_name,
                     "agent_name": agent_name,
+                    "session_id": cl.context.session.thread_id,
                 },
                 config=RunnableConfig(**config),
                 version="v2",
@@ -228,7 +229,7 @@ async def on_message(message: cl.Message):
                                 logger.info(f"Structured response (JSON): {json_str}")
 
                                 # Extract output type from current_step if available
-                                current_step = output.get("current_step")
+                                current_step = output.get("agent_name")
                                 output_type = (
                                     _extract_output_type(current_step)
                                     if current_step
