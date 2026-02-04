@@ -9,7 +9,6 @@ from dynagent.tools.state_tools import get_agent_list, handoff, read_file, write
 # --- Module-level usecase storage (populated by register_* at startup) ---
 
 _USECASE_TOOLS: list[Any] = []
-_USECASE_OUTPUT_MODELS: dict[str, Any] = {}
 
 
 # --- Default (dynagent-layer) tools ---
@@ -28,11 +27,6 @@ def register_usecase_tools(tools: list[Any]) -> None:
     _USECASE_TOOLS.extend(tools)
 
 
-def register_usecase_output_models(model_map: dict[str, Any]) -> None:
-    """Merge use-case output-model map into the shared registry."""
-    _USECASE_OUTPUT_MODELS.update(model_map)
-
-
 # --- Read-only accessors ---
 
 
@@ -46,17 +40,8 @@ def get_all_tools() -> list[Any]:
     return get_default_tools() + get_usecase_tools()
 
 
-def get_usecase_output_models() -> dict[str, Any]:
-    """Return the merged usecase output-model map."""
-    return dict(_USECASE_OUTPUT_MODELS)
-
-
 # --- Test-isolation helpers (private; used only by fixtures) ---
 
 
 def _reset_usecase_tools() -> None:
     _USECASE_TOOLS.clear()
-
-
-def _reset_usecase_output_models() -> None:
-    _USECASE_OUTPUT_MODELS.clear()

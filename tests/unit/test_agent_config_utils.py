@@ -5,7 +5,6 @@ import logging
 
 from dynagent.agents.agent_config_utils import (
     get_agent_list,
-    get_output_map,
     get_prompt_map,
     get_schema_path_map,
     get_tool_map,
@@ -40,23 +39,6 @@ def test_get_prompt_map_values_are_non_empty_strings():
     for name, prompt in prompt_map.items():
         assert isinstance(prompt, str), f"{name} prompt is not a string"
         assert len(prompt) > 0, f"{name} prompt is empty"
-
-
-def test_get_output_map_coordinator_is_none():
-    output_map = get_output_map()
-    assert output_map.get("coordinator") is None
-
-
-def test_get_output_map_section_agents_have_classes(bro_registered):  # noqa: ARG001
-    """Output map is populated only after BRO registration."""
-    output_map = get_output_map()
-    for agent in (
-        "preface_agent",
-        "getting_started_agent",
-        "features_agent",
-        "entity_agent",
-    ):
-        assert output_map.get(agent) is not None, f"{agent} should have an output class"
 
 
 def test_get_schema_path_map_coordinator_is_none():

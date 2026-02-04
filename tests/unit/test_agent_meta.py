@@ -47,25 +47,6 @@ def test_prompt_map_values_are_non_empty_strings():
         assert len(prompt) > 0, f"{name} has empty prompt"
 
 
-def test_output_struct_map_coordinator_is_none():
-    meta = AgentMeta.instance()
-    assert meta.output_struct_map.get("coordinator") is None
-
-
-def test_output_struct_map_section_agents_populated(bro_registered):  # noqa: ARG001
-    """Output structs are populated only after BRO registration."""
-    meta = AgentMeta.instance()
-    for agent in (
-        "preface_agent",
-        "getting_started_agent",
-        "features_agent",
-        "entity_agent",
-    ):
-        assert (
-            meta.output_struct_map.get(agent) is not None
-        ), f"{agent} output_struct_map is None"
-
-
 def test_schema_path_map_coordinator_is_none():
     meta = AgentMeta.instance()
     assert meta.schema_path_map.get("coordinator") is None

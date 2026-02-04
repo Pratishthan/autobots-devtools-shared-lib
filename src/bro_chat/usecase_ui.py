@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 from langchain_core.runnables import RunnableConfig
 from langfuse import propagate_attributes
 
-from bro_chat.agents.bro_tools import register_bro_outputs, register_bro_tools
+from bro_chat.agents.bro_tools import register_bro_tools
 from bro_chat.config.settings import get_settings
 from bro_chat.observability.tracing import (
     flush_tracing,
@@ -30,7 +30,6 @@ settings = get_settings()
 
 # Registration must precede AgentMeta.instance() (called inside create_base_agent).
 register_bro_tools()
-register_bro_outputs()
 
 commands: list[CommandDict] = [
     {
@@ -124,12 +123,12 @@ async def on_message(message: cl.Message):
         return
 
     user_name = user.identifier
-    agent_name = "coordinator"
+    app_name = "coordinator"
 
     input_state: dict[str, Any] = {
         "messages": [{"role": "user", "content": prompt}],
         "user_name": user_name,
-        "agent_name": agent_name,
+        "app_name": app_name,
         "session_id": cl.context.session.thread_id,
     }
 

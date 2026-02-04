@@ -91,20 +91,6 @@ def get_prompt_map(config_dir: Path = CONFIG_DIR) -> dict[str, str]:
     }
 
 
-def get_output_map(config_dir: Path = CONFIG_DIR) -> dict[str, Any]:
-    """Return {agent_name: output_dataclass_or_None}.
-
-    Resolves each agent's output_schema against the usecase output-model registry.
-    """
-    from dynagent.tools.tool_registry import get_usecase_output_models
-
-    output_models = get_usecase_output_models()
-    return {
-        name: output_models.get(cfg.output_schema) if cfg.output_schema else None
-        for name, cfg in agent_config_reader(config_dir).items()
-    }
-
-
 def get_schema_path_map(config_dir: Path = CONFIG_DIR) -> dict[str, str | None]:
     """Return {agent_name: raw_schema_path_or_None}."""
     return {

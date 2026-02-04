@@ -3,32 +3,16 @@
 
 import json
 import logging
-from typing import Any
 
 from langchain.tools import ToolRuntime, tool
 
 import dynagent.tools.state_tools as state_tools
-from bro_chat.models.outputs import (
-    EntityOutput,
-    FeaturesOutput,
-    GettingStartedOutput,
-    PrefaceOutput,
-)
 from bro_chat.models.status import SectionStatus
 from bro_chat.services.document_store import DocumentStore
 from bro_chat.services.markdown_exporter import export_document
 from dynagent.models.state import Dynagent
 
 logger = logging.getLogger(__name__)
-
-# --- Output-model map (registered into dynagent at startup) ---
-
-SCHEMA_TO_MODEL: dict[str, Any] = {
-    "vision-agent/01-preface.json": PrefaceOutput,
-    "vision-agent/02-getting-started.json": GettingStartedOutput,
-    "vision-agent/03-01-list-of-features.json": FeaturesOutput,
-    "vision-agent/05-entity.json": EntityOutput,
-}
 
 # --- DocumentStore factory (monkeypatchable in tests) ---
 
@@ -307,10 +291,3 @@ def register_bro_tools() -> None:
             delete_entity,
         ]
     )
-
-
-def register_bro_outputs() -> None:
-    """Register BRO output-model map into the dynagent usecase registry."""
-    from dynagent.tools.tool_registry import register_usecase_output_models
-
-    register_usecase_output_models(SCHEMA_TO_MODEL)

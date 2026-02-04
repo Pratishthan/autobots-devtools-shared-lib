@@ -4,13 +4,10 @@
 import pytest
 
 from dynagent.tools.tool_registry import (
-    _reset_usecase_output_models,
     _reset_usecase_tools,
     get_all_tools,
     get_default_tools,
-    get_usecase_output_models,
     get_usecase_tools,
-    register_usecase_output_models,
     register_usecase_tools,
 )
 
@@ -40,10 +37,8 @@ BRO_TOOL_NAMES = {
 def reset_usecase():
     """Isolate every test from prior usecase registrations."""
     _reset_usecase_tools()
-    _reset_usecase_output_models()
     yield
     _reset_usecase_tools()
-    _reset_usecase_output_models()
 
 
 # --- get_default_tools (was get_tools) ---
@@ -118,18 +113,3 @@ def test_get_default_tools_stable_after_registration():
     register_usecase_tools([_FakeTool("interloper")])
     names = {t.name for t in get_default_tools()}
     assert names == EXPECTED_DEFAULT_NAMES
-
-
-# --- usecase output-model registration ---
-
-
-def test_register_usecase_output_models():
-    register_usecase_output_models({"schema/a.json": str})
-    assert get_usecase_output_models()["schema/a.json"] is str
-
-
-def test_get_usecase_output_models_returns_copy():
-    register_usecase_output_models({"schema/b.json": int})
-    copy = get_usecase_output_models()
-    copy.clear()
-    assert "schema/b.json" in get_usecase_output_models()
