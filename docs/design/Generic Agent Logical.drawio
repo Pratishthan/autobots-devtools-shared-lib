@@ -131,7 +131,7 @@
     </mxGraphModel>
   </diagram>
   <diagram id="-CwDHCvkFz6uT1Xsqbfh" name="v2">
-    <mxGraphModel dx="3089" dy="2631" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="1845" dy="1827" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -665,6 +665,30 @@
         </mxCell>
         <mxCell id="hG-jv1TkYJ_H8F9WcnVX-6" parent="hG-jv1TkYJ_H8F9WcnVX-1" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Process: Calls create_agent.astream" vertex="1">
           <mxGeometry height="40" width="140" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="_bkrPpybncGChG7l29Qf-8" edge="1" parent="1" source="_bkrPpybncGChG7l29Qf-1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="xqtDcLYKwBvV-7uuAw75-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="_bkrPpybncGChG7l29Qf-1" parent="1" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=1;marginBottom=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="batch_invoker (fn)" vertex="1">
+          <mxGeometry height="220" width="140" x="610" y="-50" as="geometry" />
+        </mxCell>
+        <mxCell id="_bkrPpybncGChG7l29Qf-2" parent="_bkrPpybncGChG7l29Qf-1" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="File: batch.py" vertex="1">
+          <mxGeometry height="30" width="140" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="_bkrPpybncGChG7l29Qf-3" parent="_bkrPpybncGChG7l29Qf-1" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Package: agents" vertex="1">
+          <mxGeometry height="30" width="140" y="60" as="geometry" />
+        </mxCell>
+        <mxCell id="_bkrPpybncGChG7l29Qf-4" parent="_bkrPpybncGChG7l29Qf-1" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Inputs: agent_name" vertex="1">
+          <mxGeometry height="30" width="140" y="90" as="geometry" />
+        </mxCell>
+        <mxCell id="_bkrPpybncGChG7l29Qf-7" parent="_bkrPpybncGChG7l29Qf-1" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Inputs: list" vertex="1">
+          <mxGeometry height="30" width="140" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="_bkrPpybncGChG7l29Qf-5" parent="_bkrPpybncGChG7l29Qf-1" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Outputs: Result" vertex="1">
+          <mxGeometry height="30" width="140" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="_bkrPpybncGChG7l29Qf-6" parent="_bkrPpybncGChG7l29Qf-1" style="text;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;rotatable=0;whiteSpace=wrap;html=1;" value="Process: Calls create_agent.batch(list)" vertex="1">
+          <mxGeometry height="40" width="140" y="180" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>

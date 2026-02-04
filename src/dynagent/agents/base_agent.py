@@ -9,7 +9,7 @@ from langchain.agents.middleware import AgentMiddleware, SummarizationMiddleware
 from langgraph.checkpoint.memory import InMemorySaver
 
 from dynagent.agents.agent_meta import AgentMeta
-from dynagent.agents.middleware import inject_agent
+from dynagent.agents.middleware import inject_agent_async, inject_agent_sync
 from dynagent.llm.llm import lm
 from dynagent.models.state import Dynagent
 from dynagent.tools.tool_registry import get_all_tools
@@ -17,7 +17,7 @@ from dynagent.tools.tool_registry import get_all_tools
 logger = logging.getLogger(__name__)
 
 
-def create_base_agent(checkpointer: Any = None):
+def create_base_agent(checkpointer: Any = None, sync_mode: bool = False) -> Any:
     """Create the dynagent base agent with middleware.
 
     Args:
@@ -38,6 +38,8 @@ def create_base_agent(checkpointer: Any = None):
     # All registry tools — middleware controls which subset is active per agent
     all_tools = get_all_tools()
 
+    _middleware = inject_agent_sync if sync_mode else inject_agent_async
+
     agent = create_agent(
         model,
         name="dynagent",
@@ -46,7 +48,7 @@ def create_base_agent(checkpointer: Any = None):
         middleware=cast(
             list[AgentMiddleware[Any, Any]],
             [
-                inject_agent,
+                _middleware,
                 SummarizationMiddleware(
                     model=model,
                     trigger=("fraction", 0.6),

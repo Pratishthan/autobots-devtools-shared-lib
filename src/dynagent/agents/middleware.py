@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 @wrap_model_call  # type: ignore[arg-type]
-async def inject_agent(
+async def inject_agent_async(
     request: ModelRequest,
     handler: Callable[[ModelRequest], Awaitable[ModelResponse]],
 ) -> ModelResponse:
@@ -37,3 +37,29 @@ async def inject_agent(
     )
 
     return await handler(request)
+
+
+@wrap_model_call  # type: ignore[arg-type]
+def inject_agent_sync(
+    request: ModelRequest,
+    handler: Callable[[ModelRequest], ModelResponse],
+) -> ModelResponse:
+    """Belt-and-suspenders: inject prompt + tools from AgentMeta on every model call."""
+    agent_name = request.state.get("agent_name", "coordinator")
+    logger.info(f"inject_agent: active agent = {agent_name}")
+
+    meta = AgentMeta.instance()
+
+    # Format prompt safely — missing placeholders become empty strings
+    raw_prompt = meta.prompt_map.get(agent_name, "")
+    format_values = defaultdict(str, **request.state)
+    system_prompt = raw_prompt.format_map(format_values)
+
+    tools = meta.tool_map.get(agent_name, [])
+
+    request = request.override(
+        system_message=SystemMessage(content=system_prompt),
+        tools=tools,
+    )
+
+    return handler(request)
