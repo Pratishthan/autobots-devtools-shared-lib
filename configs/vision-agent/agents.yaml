@@ -9,6 +9,7 @@ agents:
       - "get_document_status"
       - "list_documents"
       - "create_document"
+      - "set_document_context"
       - "export_markdown"
       - "get_agent_list"
 

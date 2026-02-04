@@ -52,7 +52,8 @@ def test_output_struct_map_coordinator_is_none():
     assert meta.output_struct_map.get("coordinator") is None
 
 
-def test_output_struct_map_section_agents_populated():
+def test_output_struct_map_section_agents_populated(bro_registered):  # noqa: ARG001
+    """Output structs are populated only after BRO registration."""
     meta = AgentMeta.instance()
     for agent in (
         "preface_agent",
@@ -88,7 +89,8 @@ def test_tool_map_has_all_agents():
     assert set(meta.tool_map.keys()) == EXPECTED_AGENTS
 
 
-def test_tool_map_values_are_non_empty_lists():
+def test_tool_map_values_are_non_empty_lists(bro_registered):  # noqa: ARG001
+    """With BRO registered, every agent resolves at least its listed tools."""
     meta = AgentMeta.instance()
     for name, tools in meta.tool_map.items():
         assert isinstance(tools, list), f"{name} tool_map value is not a list"

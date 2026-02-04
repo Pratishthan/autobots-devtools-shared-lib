@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 from langchain_core.runnables import RunnableConfig
 from langfuse import propagate_attributes
 
+from bro_chat.agents.bro_tools import register_bro_outputs, register_bro_tools
 from bro_chat.config.settings import get_settings
 from bro_chat.observability.tracing import (
     flush_tracing,
@@ -25,6 +26,10 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 settings = get_settings()
+
+# Registration must precede AgentMeta.instance() (called inside create_base_agent).
+register_bro_tools()
+register_bro_outputs()
 
 
 def _extract_output_type(step_name: str | None) -> str | None:

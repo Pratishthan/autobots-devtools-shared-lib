@@ -1,32 +1,81 @@
 # ABOUTME: Configuration utility functions for loading agent definitions.
 # ABOUTME: Reads agents.yaml and provides typed accessors for prompts, tools, schemas.
 
+import logging
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from bro_chat.config.section_config import load_agents_config
-from bro_chat.models.outputs import (
-    EntityOutput,
-    FeaturesOutput,
-    GettingStartedOutput,
-    PrefaceOutput,
-)
-from bro_chat.utils.files import load_prompt
-
-# Mapping from schema filename to output dataclass
-SCHEMA_TO_MODEL: dict[str, Any] = {
-    "vision-agent/01-preface.json": PrefaceOutput,
-    "vision-agent/02-getting-started.json": GettingStartedOutput,
-    "vision-agent/03-01-list-of-features.json": FeaturesOutput,
-    "vision-agent/05-entity.json": EntityOutput,
-}
+import yaml
 
 CONFIG_DIR = Path("configs/vision-agent")
 
+logger = logging.getLogger(__name__)
 
-def agent_config_reader(config_dir: Path = CONFIG_DIR):
+
+# --- Inline dataclass (generic; no bro_chat dependency) ---
+
+
+@dataclass
+class AgentConfig:
+    """Configuration for an agent loaded from agents.yaml."""
+
+    agent_id: str
+    prompt: str
+    tools: list[str]
+    section: str | None = None
+    output_schema: str | None = None
+    approach: str | None = None
+    dynamic: bool = False
+
+    @classmethod
+    def from_dict(cls, agent_id: str, data: dict[str, Any]) -> "AgentConfig":
+        """Create AgentConfig from a dictionary."""
+        return cls(
+            agent_id=agent_id,
+            prompt=data.get("prompt", ""),
+            tools=data.get("tools", []),
+            section=data.get("section"),
+            output_schema=data.get("output_schema"),
+            approach=data.get("approach"),
+            dynamic=data.get("dynamic", False),
+        )
+
+
+# --- Generic config / prompt readers (no bro_chat dependency) ---
+
+
+def _load_agents_config(config_dir: Path = CONFIG_DIR) -> dict[str, AgentConfig]:
+    """Load agent configurations from agents.yaml."""
+    config_path = Path(config_dir) / "agents.yaml"
+
+    with open(config_path) as f:  # noqa: PTH123
+        data = yaml.safe_load(f)
+
+    agents = {}
+    for agent_id, agent_data in data.get("agents", {}).items():
+        agents[agent_id] = AgentConfig.from_dict(agent_id, agent_data)
+
+    logger.info(f"Loaded {len(agents)} agent configs from {config_path}")
+    return agents
+
+
+def _load_prompt(name: str) -> str:
+    """Read a prompt file by name from the prompts/ directory."""
+    try:
+        with open(f"prompts/{name}.md") as f:  # noqa: PTH123
+            return f.read()
+    except Exception as e:
+        logger.error(f"Error reading prompt {name}: {e}")
+        return f"Error reading prompt: {e}"
+
+
+# --- Public accessors (used by AgentMeta) ---
+
+
+def agent_config_reader(config_dir: Path = CONFIG_DIR) -> dict[str, AgentConfig]:
     """Load raw agent config from YAML."""
-    return load_agents_config(config_dir)
+    return _load_agents_config(config_dir)
 
 
 def get_agent_list(config_dir: Path = CONFIG_DIR) -> list[str]:
@@ -37,15 +86,21 @@ def get_agent_list(config_dir: Path = CONFIG_DIR) -> list[str]:
 def get_prompt_map(config_dir: Path = CONFIG_DIR) -> dict[str, str]:
     """Return {agent_name: prompt_text} loaded from prompt files."""
     return {
-        name: load_prompt(cfg.prompt)
+        name: _load_prompt(cfg.prompt)
         for name, cfg in agent_config_reader(config_dir).items()
     }
 
 
 def get_output_map(config_dir: Path = CONFIG_DIR) -> dict[str, Any]:
-    """Return {agent_name: output_dataclass_or_None}."""
+    """Return {agent_name: output_dataclass_or_None}.
+
+    Resolves each agent's output_schema against the usecase output-model registry.
+    """
+    from dynagent.tools.tool_registry import get_usecase_output_models
+
+    output_models = get_usecase_output_models()
     return {
-        name: SCHEMA_TO_MODEL.get(cfg.output_schema) if cfg.output_schema else None
+        name: output_models.get(cfg.output_schema) if cfg.output_schema else None
         for name, cfg in agent_config_reader(config_dir).items()
     }
 
@@ -60,10 +115,23 @@ def get_schema_path_map(config_dir: Path = CONFIG_DIR) -> dict[str, str | None]:
 def get_tool_map(config_dir: Path = CONFIG_DIR) -> dict[str, list[Any]]:
     """Return {agent_name: [tool_objects]}.
 
-    Each agent receives all dynagent-layer tools from the registry.
-    Tools listed in agents.yaml that are not in the registry are silently skipped.
+    Resolves each agent's tool list from agents.yaml against the combined
+    default + usecase tool pool.  Unrecognised tool names are skipped with a warning.
     """
-    from dynagent.tools.tool_registry import get_tools
+    from dynagent.tools.tool_registry import get_all_tools
 
-    all_tools = get_tools()
-    return {name: list(all_tools) for name in agent_config_reader(config_dir)}
+    all_tools = get_all_tools()
+    tool_by_name = {t.name: t for t in all_tools}
+    result: dict[str, list[Any]] = {}
+    for name, cfg in _load_agents_config(config_dir).items():
+        resolved: list[Any] = []
+        for tool_name in cfg.tools:
+            if tool_name in tool_by_name:
+                resolved.append(tool_by_name[tool_name])
+                logger.info(f"Agent '{name}': adding resolved tool '{tool_name}'")
+            else:
+                logger.warning(
+                    f"get_tool_map: unresolved tool '{tool_name}' for agent '{name}'"
+                )
+        result[name] = resolved
+    return result

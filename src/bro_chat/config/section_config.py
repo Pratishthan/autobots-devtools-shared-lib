@@ -1,5 +1,5 @@
-# ABOUTME: Configuration loader for vision agent sections and agents.
-# ABOUTME: Parses YAML files into typed SectionConfig and AgentConfig dataclasses.
+# ABOUTME: Configuration loader for vision document sections.
+# ABOUTME: Parses sections.yaml into typed SectionConfig dataclasses.
 
 import logging
 from dataclasses import dataclass, field
@@ -37,32 +37,6 @@ class SectionConfig:
         )
 
 
-@dataclass
-class AgentConfig:
-    """Configuration for a vision agent."""
-
-    agent_id: str
-    prompt: str
-    tools: list[str]
-    section: str | None = None
-    output_schema: str | None = None
-    approach: str | None = None
-    dynamic: bool = False
-
-    @classmethod
-    def from_dict(cls, agent_id: str, data: dict[str, Any]) -> "AgentConfig":
-        """Create AgentConfig from a dictionary."""
-        return cls(
-            agent_id=agent_id,
-            prompt=data.get("prompt", ""),
-            tools=data.get("tools", []),
-            section=data.get("section"),
-            output_schema=data.get("output_schema"),
-            approach=data.get("approach"),
-            dynamic=data.get("dynamic", False),
-        )
-
-
 def load_sections_config(config_dir: Path | str) -> dict[str, SectionConfig]:
     """Load section configurations from sections.yaml.
 
@@ -83,25 +57,3 @@ def load_sections_config(config_dir: Path | str) -> dict[str, SectionConfig]:
 
     logger.info(f"Loaded {len(sections)} section configs from {config_path}")
     return sections
-
-
-def load_agents_config(config_dir: Path | str) -> dict[str, AgentConfig]:
-    """Load agent configurations from agents.yaml.
-
-    Args:
-        config_dir: Directory containing agents.yaml.
-
-    Returns:
-        Dictionary mapping agent_id to AgentConfig.
-    """
-    config_path = Path(config_dir) / "agents.yaml"
-
-    with open(config_path) as f:
-        data = yaml.safe_load(f)
-
-    agents = {}
-    for agent_id, agent_data in data.get("agents", {}).items():
-        agents[agent_id] = AgentConfig.from_dict(agent_id, agent_data)
-
-    logger.info(f"Loaded {len(agents)} agent configs from {config_path}")
-    return agents

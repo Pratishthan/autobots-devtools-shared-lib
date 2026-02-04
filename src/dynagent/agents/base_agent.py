@@ -12,7 +12,7 @@ from dynagent.agents.agent_meta import AgentMeta
 from dynagent.agents.middleware import inject_agent
 from dynagent.llm.llm import lm
 from dynagent.models.state import Dynagent
-from dynagent.tools.tool_registry import get_tools
+from dynagent.tools.tool_registry import get_all_tools
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +36,7 @@ def create_base_agent(checkpointer: Any = None):
     model = lm()
 
     # All registry tools — middleware controls which subset is active per agent
-    all_tools = get_tools()
+    all_tools = get_all_tools()
 
     agent = create_agent(
         model,
