@@ -11,14 +11,13 @@ from langchain_core.runnables import RunnableConfig
 from langfuse import propagate_attributes
 
 from bro_chat.agents.bro_tools import register_bro_tools
-from bro_chat.config.settings import get_settings
-from bro_chat.observability.tracing import (
+from bro_chat.utils.formatting import format_structured_output
+from dynagent.agents.base_agent import create_base_agent
+from dynagent.observability.tracing import (
     flush_tracing,
     get_langfuse_handler,
     init_tracing,
 )
-from bro_chat.utils.formatting import format_structured_output
-from dynagent.agents.base_agent import create_base_agent
 from dynagent.ui.ui_utils import stream_agent_events
 
 # Load environment variables from .env file
@@ -26,7 +25,6 @@ load_dotenv()
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
-settings = get_settings()
 
 # Registration must precede AgentMeta.instance() (called inside create_base_agent).
 register_bro_tools()
@@ -89,7 +87,7 @@ def get_preloaded_prompts(msg: Any) -> str:
 @cl.on_chat_start
 async def start():
     # Create agent instance once and store it in session
-    init_tracing(settings)
+    init_tracing()
     agent = create_base_agent()
     cl.user_session.set("agent", agent)
     await cl.context.emitter.set_commands(commands)

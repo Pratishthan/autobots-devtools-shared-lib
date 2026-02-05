@@ -7,27 +7,25 @@ from typing import Any
 from langfuse import Langfuse
 from langfuse.langchain import CallbackHandler
 
-from bro_chat.config.settings import Settings, get_settings
+from dynagent.config.settings import get_settings
 
 logger = logging.getLogger(__name__)
 
 _langfuse_client: Langfuse | None = None
 
 
-def init_tracing(settings: Settings | None = None) -> bool:
+def init_tracing() -> bool:
     """
     Initialize Langfuse tracing.
 
-    Args:
-        settings: Optional settings instance. Uses get_settings() if not provided.
+    Reads configuration from environment via get_settings().
 
     Returns:
         True if tracing was initialized successfully, False otherwise.
     """
     global _langfuse_client
 
-    if settings is None:
-        settings = get_settings()
+    settings = get_settings()
 
     if not settings.is_langfuse_configured():
         logger.info("Langfuse not configured, tracing disabled")

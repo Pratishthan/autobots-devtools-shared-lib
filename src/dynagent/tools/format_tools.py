@@ -22,9 +22,9 @@ def convert_format(
     Args:
         model_name: Reserved for future model selection. Currently uses the default LM.
     """
-    from bro_chat.services.structured_converter import StructuredOutputConverter
     from dynagent.agents.agent_meta import AgentMeta
     from dynagent.llm.llm import lm
+    from dynagent.tools.structured_converter import StructuredOutputConverter
 
     agent_name = runtime.state.get("agent_name", "coordinator")
     messages = runtime.state.get("messages", [])

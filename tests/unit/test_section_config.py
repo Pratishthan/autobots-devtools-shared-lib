@@ -1,47 +1,18 @@
-# ABOUTME: Unit tests for section configuration loading.
-# ABOUTME: Tests YAML config parsing for sections and agent configs.
+# ABOUTME: Unit tests for agent configuration loading.
+# ABOUTME: Tests YAML config parsing for agent configs via dynagent.
 
 from pathlib import Path
 
 import pytest
 
-from bro_chat.config.section_config import (
-    SectionConfig,
-    load_sections_config,
-)
 from dynagent.agents.agent_config_utils import AgentConfig, _load_agents_config
 
 
 @pytest.fixture
 def config_dir(tmp_path: Path) -> Path:
-    """Create a temporary config directory with sample configs."""
+    """Create a temporary config directory with sample agent config."""
     vision_dir = tmp_path / "vision-agent"
     vision_dir.mkdir()
-
-    sections_yaml = """
-sections:
-  01-preface:
-    title: "Preface"
-    description: "About this guide, audience, references, and glossary"
-    static: true
-    subsections:
-      - "11-about-this-guide"
-      - "12-audience"
-      - "13-reference-documents"
-      - "14-glossary"
-
-  02-getting-started:
-    title: "Getting Started"
-    description: "Overview and vision of the component"
-    static: true
-
-  05-entities:
-    title: "Entities"
-    description: "Entity and meta attribute details"
-    dynamic: true
-    item_prefix: "05-entity"
-"""
-    (vision_dir / "sections.yaml").write_text(sections_yaml)
 
     agents_yaml = """
 agents:
@@ -75,50 +46,6 @@ agents:
     (vision_dir / "agents.yaml").write_text(agents_yaml)
 
     return tmp_path
-
-
-class TestLoadSectionsConfig:
-    """Tests for loading sections.yaml."""
-
-    def test_loads_sections(self, config_dir: Path) -> None:
-        """load_sections_config should return a dict of section configs."""
-        sections = load_sections_config(config_dir / "vision-agent")
-
-        assert len(sections) == 3
-        assert "01-preface" in sections
-        assert "02-getting-started" in sections
-        assert "05-entities" in sections
-
-    def test_section_has_title(self, config_dir: Path) -> None:
-        """Section config should have a title."""
-        sections = load_sections_config(config_dir / "vision-agent")
-
-        assert sections["01-preface"].title == "Preface"
-
-    def test_section_has_description(self, config_dir: Path) -> None:
-        """Section config should have a description."""
-        sections = load_sections_config(config_dir / "vision-agent")
-
-        assert "audience" in sections["01-preface"].description.lower()
-
-    def test_section_has_static_flag(self, config_dir: Path) -> None:
-        """Section config should have static/dynamic flags."""
-        sections = load_sections_config(config_dir / "vision-agent")
-
-        assert sections["01-preface"].static is True
-        assert sections["05-entities"].dynamic is True
-
-    def test_section_has_subsections(self, config_dir: Path) -> None:
-        """Section config should have optional subsections."""
-        sections = load_sections_config(config_dir / "vision-agent")
-
-        assert "11-about-this-guide" in sections["01-preface"].subsections
-
-    def test_dynamic_section_has_item_prefix(self, config_dir: Path) -> None:
-        """Dynamic section should have an item prefix."""
-        sections = load_sections_config(config_dir / "vision-agent")
-
-        assert sections["05-entities"].item_prefix == "05-entity"
 
 
 class TestLoadAgentsConfig:
@@ -172,33 +99,6 @@ class TestLoadAgentsConfig:
 
         assert agents["entity_agent"].dynamic is True
         assert agents["preface_agent"].dynamic is False
-
-
-class TestSectionConfig:
-    """Tests for SectionConfig dataclass."""
-
-    def test_create_minimal(self) -> None:
-        """SectionConfig should be creatable with minimal params."""
-        config = SectionConfig(
-            section_id="01-preface",
-            title="Preface",
-            description="About this guide",
-        )
-
-        assert config.section_id == "01-preface"
-        assert config.static is False
-        assert config.dynamic is False
-        assert config.subsections == []
-
-    def test_defaults(self) -> None:
-        """SectionConfig should have sensible defaults."""
-        config = SectionConfig(
-            section_id="test",
-            title="Test",
-            description="Test section",
-        )
-
-        assert config.item_prefix is None
 
 
 class TestAgentConfig:
