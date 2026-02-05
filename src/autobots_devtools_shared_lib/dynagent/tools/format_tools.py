@@ -6,7 +6,7 @@ import logging
 
 from langchain.tools import ToolRuntime, tool
 
-from dynagent.models.state import Dynagent
+from autobots_devtools_shared_lib.dynagent.models.state import Dynagent
 
 logger = logging.getLogger(__name__)
 
@@ -22,9 +22,9 @@ def output_format_converter(
     Args:
         model_name: Reserved for future model selection. Currently uses the default LM.
     """
-    from dynagent.agents.agent_meta import AgentMeta
-    from dynagent.llm.llm import lm
-    from dynagent.services.structured_converter import StructuredOutputConverter
+    from autobots_devtools_shared_lib.dynagent.agents.agent_meta import AgentMeta
+    from autobots_devtools_shared_lib.dynagent.llm.llm import lm
+    from autobots_devtools_shared_lib.dynagent.services.structured_converter import StructuredOutputConverter
 
     agent_name = runtime.state.get("agent_name", "coordinator")
     messages = runtime.state.get("messages", [])

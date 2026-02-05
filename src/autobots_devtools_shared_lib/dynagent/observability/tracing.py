@@ -7,7 +7,7 @@ from typing import Any
 from langfuse import Langfuse
 from langfuse.langchain import CallbackHandler
 
-from dynagent.config.settings import get_settings
+from autobots_devtools_shared_lib.dynagent.config.settings import get_settings
 
 logger = logging.getLogger(__name__)
 

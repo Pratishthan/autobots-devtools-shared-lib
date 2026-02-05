@@ -3,7 +3,7 @@
 
 import pytest
 
-from dynagent.agents.agent_meta import AgentMeta
+from autobots_devtools_shared_lib.dynagent.agents.agent_meta import AgentMeta
 
 EXPECTED_AGENTS = {
     "coordinator",

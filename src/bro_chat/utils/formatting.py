@@ -4,7 +4,7 @@
 from typing import Any
 
 # Re-exported from the shared dynagent UI layer so existing imports keep working.
-from dynagent.ui.ui_utils import format_dict_item, structured_to_markdown
+from autobots_devtools_shared_lib.dynagent.ui.ui_utils import format_dict_item, structured_to_markdown
 
 # Ensure the re-exports are visible to linters / type-checkers that analyse __all__.
 __all__ = ["format_dict_item", "structured_to_markdown"]

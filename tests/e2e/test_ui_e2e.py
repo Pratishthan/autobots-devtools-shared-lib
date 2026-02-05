@@ -1,5 +1,5 @@
 # ABOUTME: End-to-end tests for the UI formatting pipeline.
-# ABOUTME: Validates the full re-export chain from dynagent through bro_chat.
+# ABOUTME: Validates the full re-export chain from autobots_devtools_shared_lib.dynagent through bro_chat.
 
 import pytest
 

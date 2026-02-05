@@ -1,7 +1,7 @@
 # ABOUTME: Integration tests for batch_invoker against a live Gemini backend.
 # ABOUTME: bro_registered_integration (autouse) in conftest handles tool registration.
 
-from dynagent.agents.batch import batch_invoker
+from autobots_devtools_shared_lib.dynagent.agents.batch import batch_invoker
 from tests.conftest import requires_google_api
 
 

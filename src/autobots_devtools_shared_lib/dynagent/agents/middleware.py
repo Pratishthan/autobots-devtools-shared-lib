@@ -8,7 +8,7 @@ from collections.abc import Awaitable, Callable
 from langchain.agents.middleware import ModelRequest, ModelResponse, wrap_model_call
 from langchain.messages import SystemMessage
 
-from dynagent.agents.agent_meta import AgentMeta
+from autobots_devtools_shared_lib.dynagent.agents.agent_meta import AgentMeta
 
 logger = logging.getLogger(__name__)
 

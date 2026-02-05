@@ -8,11 +8,14 @@ from langchain.agents import create_agent
 from langchain.agents.middleware import AgentMiddleware, SummarizationMiddleware
 from langgraph.checkpoint.memory import InMemorySaver
 
-from dynagent.agents.agent_meta import AgentMeta
-from dynagent.agents.middleware import inject_agent_async, inject_agent_sync
-from dynagent.llm.llm import lm
-from dynagent.models.state import Dynagent
-from dynagent.tools.tool_registry import get_all_tools
+from autobots_devtools_shared_lib.dynagent.agents.agent_meta import AgentMeta
+from autobots_devtools_shared_lib.dynagent.agents.middleware import (
+    inject_agent_async,
+    inject_agent_sync,
+)
+from autobots_devtools_shared_lib.dynagent.llm.llm import lm
+from autobots_devtools_shared_lib.dynagent.models.state import Dynagent
+from autobots_devtools_shared_lib.dynagent.tools.tool_registry import get_all_tools
 
 logger = logging.getLogger(__name__)
 

@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from dynagent.agents.agent_config_utils import (
+from autobots_devtools_shared_lib.dynagent.agents.agent_config_utils import (
     get_prompt_map,
     get_schema_path_map,
     get_tool_map,

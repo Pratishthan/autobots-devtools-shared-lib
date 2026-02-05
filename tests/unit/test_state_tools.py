@@ -3,7 +3,7 @@
 
 from langgraph.types import Command
 
-from dynagent.tools.state_tools import (
+from autobots_devtools_shared_lib.dynagent.tools.state_tools import (
     _do_read_file,
     _do_write_file,
     _validate_handoff,

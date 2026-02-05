@@ -4,7 +4,7 @@
 from langchain_core.runnables import RunnableConfig
 from langgraph.checkpoint.memory import InMemorySaver
 
-from dynagent.agents.base_agent import create_base_agent
+from autobots_devtools_shared_lib.dynagent.agents.base_agent import create_base_agent
 from tests.conftest import requires_google_api
 
 

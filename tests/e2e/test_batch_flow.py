@@ -1,7 +1,7 @@
 # ABOUTME: End-to-end tests for the batch_invoker full round-trip.
 # ABOUTME: bro_registered_e2e (autouse) in conftest handles tool registration.
 
-from dynagent.agents.batch import BatchResult, RecordResult, batch_invoker
+from autobots_devtools_shared_lib.dynagent.agents.batch import BatchResult, RecordResult, batch_invoker
 from tests.conftest import requires_google_api
 
 

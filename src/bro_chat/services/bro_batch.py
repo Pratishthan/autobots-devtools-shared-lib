@@ -3,7 +3,7 @@
 
 import logging
 
-from dynagent.agents.batch import BatchResult, batch_invoker
+from autobots_devtools_shared_lib.dynagent.agents.batch import BatchResult, batch_invoker
 
 logger = logging.getLogger(__name__)
 

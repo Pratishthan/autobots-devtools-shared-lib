@@ -6,7 +6,7 @@ import logging
 import pytest
 
 from bro_chat.services.bro_batch import BRO_AGENTS, bro_batch
-from dynagent.agents.batch import BatchResult, RecordResult
+from autobots_devtools_shared_lib.dynagent.agents.batch import BatchResult, RecordResult
 
 # ---------------------------------------------------------------------------
 # Stub infrastructure (autouse — replaces batch_invoker for every test here)

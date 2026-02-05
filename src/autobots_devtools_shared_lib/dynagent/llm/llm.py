@@ -3,7 +3,7 @@
 
 from langchain_google_genai import ChatGoogleGenerativeAI
 
-from dynagent.config.settings import get_settings
+from autobots_devtools_shared_lib.dynagent.config.settings import get_settings
 
 
 def lm() -> ChatGoogleGenerativeAI:

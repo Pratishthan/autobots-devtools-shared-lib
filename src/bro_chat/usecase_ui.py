@@ -10,15 +10,15 @@ from dotenv import load_dotenv
 from langchain_core.runnables import RunnableConfig
 from langfuse import propagate_attributes
 
-from bro_chat.agents.bro_tools import register_bro_tools
-from bro_chat.utils.formatting import format_structured_output
-from dynagent.agents.base_agent import create_base_agent
-from dynagent.observability.tracing import (
+from autobots_devtools_shared_lib.dynagent.agents.base_agent import create_base_agent
+from autobots_devtools_shared_lib.dynagent.observability.tracing import (
     flush_tracing,
     get_langfuse_handler,
     init_tracing,
 )
-from dynagent.ui.ui_utils import stream_agent_events
+from autobots_devtools_shared_lib.dynagent.ui.ui_utils import stream_agent_events
+from bro_chat.agents.bro_tools import register_bro_tools
+from bro_chat.utils.formatting import format_structured_output
 
 # Load environment variables from .env file
 load_dotenv()

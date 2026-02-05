@@ -8,7 +8,7 @@ from typing import Any
 
 import yaml
 
-CONFIG_DIR = Path("configs/vision-agent")
+CONFIG_DIR = Path("autobots-devtools-shared-lib/configs/vision-agent")
 
 logger = logging.getLogger(__name__)
 
@@ -104,7 +104,7 @@ def get_tool_map(config_dir: Path = CONFIG_DIR) -> dict[str, list[Any]]:
     Resolves each agent's tool list from agents.yaml against the combined
     default + usecase tool pool.  Unrecognised tool names are skipped with a warning.
     """
-    from dynagent.tools.tool_registry import get_all_tools
+    from autobots_devtools_shared_lib.dynagent.tools.tool_registry import get_all_tools
 
     all_tools = get_all_tools()
     tool_by_name = {t.name: t for t in all_tools}

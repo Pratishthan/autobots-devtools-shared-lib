@@ -119,7 +119,7 @@ def batch_invoker(agent_name: str, records: list[str]) -> BatchResult:
         ValueError: If agent_name is unknown or records is empty.
     """
     # --- Validation (same source as _validate_handoff in state_tools) ---
-    from dynagent.agents.agent_config_utils import get_agent_list
+    from autobots_devtools_shared_lib.dynagent.agents.agent_config_utils import get_agent_list
 
     valid_agents = get_agent_list()
     if agent_name not in valid_agents:
@@ -132,7 +132,7 @@ def batch_invoker(agent_name: str, records: list[str]) -> BatchResult:
     # --- Agent creation ---
     from langgraph.checkpoint.memory import InMemorySaver
 
-    from dynagent.agents.base_agent import create_base_agent
+    from autobots_devtools_shared_lib.dynagent.agents.base_agent import create_base_agent
 
     agent = create_base_agent(checkpointer=InMemorySaver(), sync_mode=True)
 

@@ -3,7 +3,7 @@
 
 from langchain.agents import AgentState
 
-from dynagent.models.state import Dynagent
+from autobots_devtools_shared_lib.dynagent.models.state import Dynagent
 
 
 def test_dynagent_is_agent_state_subclass():

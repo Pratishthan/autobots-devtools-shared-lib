@@ -3,7 +3,7 @@
 
 import logging
 
-from dynagent.agents.agent_config_utils import (
+from autobots_devtools_shared_lib.dynagent.agents.agent_config_utils import (
     get_agent_list,
     get_prompt_map,
     get_schema_path_map,
@@ -82,7 +82,7 @@ def test_get_tool_map_resolves_per_agent(bro_registered):  # noqa: ARG001
 
 def test_get_tool_map_warns_on_unresolved(caplog):
     """Without BRO registration, BRO tools are unresolved → warning logged."""
-    from dynagent.tools.tool_registry import _reset_usecase_tools
+    from autobots_devtools_shared_lib.dynagent.tools.tool_registry import _reset_usecase_tools
 
     _reset_usecase_tools()
     with caplog.at_level(logging.WARNING):

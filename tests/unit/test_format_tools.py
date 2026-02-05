@@ -3,8 +3,8 @@
 
 import pytest
 
-from dynagent.agents.agent_meta import AgentMeta
-from dynagent.config.settings import get_settings
+from autobots_devtools_shared_lib.dynagent.agents.agent_meta import AgentMeta
+from autobots_devtools_shared_lib.dynagent.config.settings import get_settings
 
 
 @pytest.fixture(autouse=True)

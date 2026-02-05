@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from dynagent.agents.agent_config_utils import AgentConfig, _load_agents_config
+from autobots_devtools_shared_lib.dynagent.agents.agent_config_utils import AgentConfig, _load_agents_config
 
 
 @pytest.fixture

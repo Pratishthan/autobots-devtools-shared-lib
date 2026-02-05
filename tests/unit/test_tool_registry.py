@@ -3,7 +3,7 @@
 
 import pytest
 
-from dynagent.tools.tool_registry import (
+from autobots_devtools_shared_lib.dynagent.tools.tool_registry import (
     _reset_usecase_tools,
     get_all_tools,
     get_default_tools,

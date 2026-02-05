@@ -4,7 +4,7 @@
 
 def test_dynagent_ui_utils_importable():
     """dynagent.ui.ui_utils loads cleanly and exposes expected symbols."""
-    import dynagent.ui.ui_utils as mod
+    import autobots_devtools_shared_lib.dynagent.ui.ui_utils as mod
 
     assert callable(mod.structured_to_markdown)
     assert callable(mod.format_dict_item)
@@ -14,7 +14,7 @@ def test_dynagent_ui_utils_importable():
 
 def test_dynagent_default_ui_importable():
     """dynagent.ui.default_ui loads cleanly (Chainlit decorators register)."""
-    import dynagent.ui.default_ui as mod  # noqa: F401
+    import autobots_devtools_shared_lib.dynagent.ui.default_ui as mod  # noqa: F401
 
 
 def test_bro_usecase_ui_importable():
@@ -25,7 +25,7 @@ def test_bro_usecase_ui_importable():
 def test_formatting_re_export_works():
     """The re-export in bro_chat.utils.formatting resolves to the dynagent origin."""
     from bro_chat.utils.formatting import structured_to_markdown
-    from dynagent.ui.ui_utils import (
+    from autobots_devtools_shared_lib.dynagent.ui.ui_utils import (
         structured_to_markdown as canonical,
     )
 

@@ -2,7 +2,7 @@
 # ABOUTME: Covers structured_to_markdown, format_dict_item, and _extract_output_type.
 
 
-from dynagent.ui.ui_utils import (
+from autobots_devtools_shared_lib.dynagent.ui.ui_utils import (
     _extract_output_type,
     format_dict_item,
     structured_to_markdown,
