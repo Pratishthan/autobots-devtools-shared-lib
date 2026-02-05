@@ -5,19 +5,20 @@ from pathlib import Path
 
 import pytest
 
-from autobots_devtools_shared_lib.dynagent.agents.agent_config_utils import AgentConfig, _load_agents_config
+from autobots_devtools_shared_lib.dynagent.agents.agent_config_utils import (
+    AgentConfig,
+    _reset_agent_config,
+    load_agents_config,
+)
 
 
 @pytest.fixture
-def config_dir(tmp_path: Path) -> Path:
+def config_dir(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     """Create a temporary config directory with sample agent config."""
-    vision_dir = tmp_path / "vision-agent"
-    vision_dir.mkdir()
-
     agents_yaml = """
 agents:
   coordinator:
-    prompt: "vision-agent/coordinator"
+    prompt: "coordinator"
     tools:
       - "handoff"
       - "get_document_status"
@@ -25,8 +26,8 @@ agents:
 
   preface_agent:
     section: "01-preface"
-    prompt: "vision-agent/01-preface"
-    output_schema: "vision-agent/01-preface.json"
+    prompt: "01-preface"
+    output_schema: "01-preface.json"
     approach: "qa"
     tools:
       - "read_file"
@@ -34,8 +35,8 @@ agents:
 
   entity_agent:
     section: "05-entities"
-    prompt: "vision-agent/05-entity"
-    output_schema: "vision-agent/05-entity.json"
+    prompt: "05-entity"
+    output_schema: "05-entity.json"
     approach: "template"
     dynamic: true
     tools:
@@ -43,59 +44,60 @@ agents:
       - "update_section"
       - "create_entity"
 """
-    (vision_dir / "agents.yaml").write_text(agents_yaml)
-
+    (tmp_path / "agents.yaml").write_text(agents_yaml)
+    _reset_agent_config()
+    monkeypatch.setenv("DYNAGENT_CONFIG_ROOT_DIR", str(tmp_path))
     return tmp_path
 
 
 class TestLoadAgentsConfig:
-    """Tests for loading agents.yaml (via dynagent._load_agents_config)."""
+    """Tests for loading agents.yaml (via dynagent.load_agents_config)."""
 
-    def test_loads_agents(self, config_dir: Path) -> None:
-        """_load_agents_config should return a dict of agent configs."""
-        agents = _load_agents_config(config_dir / "vision-agent")
+    def test_loads_agents(self, config_dir: Path) -> None:  # noqa: ARG002
+        """load_agents_config should return a dict of agent configs."""
+        agents = load_agents_config()
 
         assert len(agents) == 3
         assert "coordinator" in agents
         assert "preface_agent" in agents
         assert "entity_agent" in agents
 
-    def test_agent_has_prompt(self, config_dir: Path) -> None:
+    def test_agent_has_prompt(self, config_dir: Path) -> None:  # noqa: ARG002
         """Agent config should have a prompt path."""
-        agents = _load_agents_config(config_dir / "vision-agent")
+        agents = load_agents_config()
 
-        assert agents["coordinator"].prompt == "vision-agent/coordinator"
+        assert agents["coordinator"].prompt == "coordinator"
 
-    def test_agent_has_tools(self, config_dir: Path) -> None:
+    def test_agent_has_tools(self, config_dir: Path) -> None:  # noqa: ARG002
         """Agent config should have a list of tools."""
-        agents = _load_agents_config(config_dir / "vision-agent")
+        agents = load_agents_config()
 
         assert "handoff" in agents["coordinator"].tools
         assert "get_document_status" in agents["coordinator"].tools
 
-    def test_agent_has_section_reference(self, config_dir: Path) -> None:
+    def test_agent_has_section_reference(self, config_dir: Path) -> None:  # noqa: ARG002
         """Agent config should have optional section reference."""
-        agents = _load_agents_config(config_dir / "vision-agent")
+        agents = load_agents_config()
 
         assert agents["preface_agent"].section == "01-preface"
         assert agents["coordinator"].section is None
 
-    def test_agent_has_approach(self, config_dir: Path) -> None:
+    def test_agent_has_approach(self, config_dir: Path) -> None:  # noqa: ARG002
         """Agent config should have optional approach."""
-        agents = _load_agents_config(config_dir / "vision-agent")
+        agents = load_agents_config()
 
         assert agents["preface_agent"].approach == "qa"
         assert agents["entity_agent"].approach == "template"
 
-    def test_agent_has_output_schema(self, config_dir: Path) -> None:
+    def test_agent_has_output_schema(self, config_dir: Path) -> None:  # noqa: ARG002
         """Agent config should have optional output schema."""
-        agents = _load_agents_config(config_dir / "vision-agent")
+        agents = load_agents_config()
 
-        assert agents["preface_agent"].output_schema == "vision-agent/01-preface.json"
+        assert agents["preface_agent"].output_schema == "01-preface.json"
 
-    def test_agent_has_dynamic_flag(self, config_dir: Path) -> None:
+    def test_agent_has_dynamic_flag(self, config_dir: Path) -> None:  # noqa: ARG002
         """Agent config should have optional dynamic flag."""
-        agents = _load_agents_config(config_dir / "vision-agent")
+        agents = load_agents_config()
 
         assert agents["entity_agent"].dynamic is True
         assert agents["preface_agent"].dynamic is False

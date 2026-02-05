@@ -76,7 +76,9 @@ def _do_read_file(session_id: str, filename: str) -> str:
 
 def _validate_handoff(next_agent: str) -> str | None:
     """Validate agent name against config. Returns error string or None."""
-    from autobots_devtools_shared_lib.dynagent.agents.agent_config_utils import get_agent_list
+    from autobots_devtools_shared_lib.dynagent.agents.agent_config_utils import (
+        get_agent_list,
+    )
 
     valid = get_agent_list()
     if next_agent not in valid:
@@ -90,7 +92,9 @@ def _validate_handoff(next_agent: str) -> str | None:
 @tool
 def get_agent_list() -> str:
     """Return list of available agent names."""
-    from autobots_devtools_shared_lib.dynagent.agents.agent_config_utils import get_agent_list as _list_agents
+    from autobots_devtools_shared_lib.dynagent.agents.agent_config_utils import (
+        get_agent_list as _list_agents,
+    )
 
     agents = _list_agents()
     logger.info(f"Agent list requested: {agents}")

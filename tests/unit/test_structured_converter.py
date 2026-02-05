@@ -1,13 +1,29 @@
 # ABOUTME: Unit tests for StructuredOutputConverter service.
 # ABOUTME: Tests message filtering, conversion success/failure, and error handling.
 
+import json
 from unittest.mock import Mock
 
 import pytest
 from langchain.messages import AIMessage, HumanMessage, ToolMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
 
-from autobots_devtools_shared_lib.dynagent.services.structured_converter import StructuredOutputConverter
+from autobots_devtools_shared_lib.dynagent.services.structured_converter import (
+    StructuredOutputConverter,
+)
+
+
+@pytest.fixture(autouse=True)
+def schema_dir(tmp_path, monkeypatch):
+    """Create a tmp schema directory with a minimal schema and set SCHEMA_BASE."""
+    schema = {
+        "title": "Preface",
+        "type": "object",
+        "properties": {"audience": {"type": "string"}},
+        "required": ["audience"],
+    }
+    (tmp_path / "01-preface.json").write_text(json.dumps(schema))
+    monkeypatch.setenv("SCHEMA_BASE", str(tmp_path))
 
 
 @pytest.fixture
@@ -102,9 +118,7 @@ def test_convert_missing_required_fields(converter, mock_model):
         AIMessage(content="It's a thing"),
     ]
 
-    result, error = converter.convert(
-        messages, "vision-agent/01-preface.json", "preface_agent"
-    )
+    result, error = converter.convert(messages, "01-preface.json", "preface_agent")
 
     assert result is None
     assert error is not None
@@ -119,9 +133,7 @@ def test_convert_invalid_schema(converter):
         AIMessage(content="Test response"),
     ]
 
-    result, error = converter.convert(
-        messages, "vision-agent/99-unknown.json", "unknown_agent"
-    )
+    result, error = converter.convert(messages, "99-unknown.json", "unknown_agent")
 
     assert result is None
     assert error is not None
@@ -132,9 +144,7 @@ def test_convert_no_messages(converter):
     """Test conversion handles empty message list."""
     messages = []
 
-    result, error = converter.convert(
-        messages, "vision-agent/01-preface.json", "preface_agent"
-    )
+    result, error = converter.convert(messages, "01-preface.json", "preface_agent")
 
     assert result is None
     assert error is not None

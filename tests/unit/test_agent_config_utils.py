@@ -2,13 +2,41 @@
 # ABOUTME: Validates config loading helpers produce correct shapes from agents.yaml.
 
 import logging
+from pathlib import Path
+
+import pytest
 
 from autobots_devtools_shared_lib.dynagent.agents.agent_config_utils import (
+    _reset_agent_config,
     get_agent_list,
     get_prompt_map,
     get_schema_path_map,
     get_tool_map,
 )
+
+
+@pytest.fixture(autouse=True)
+def setup_config_dir(monkeypatch):
+    """Ensure DYNAGENT_CONFIG_ROOT_DIR is set and cache is cleared for all tests."""
+    _reset_agent_config()
+    candidates = [
+        Path("autobots-agents-bro/configs/bro"),
+        Path("configs/bro"),
+        Path("../autobots-agents-bro/configs/bro"),
+    ]
+    config_dir = None
+    for c in candidates:
+        if (c / "agents.yaml").exists():
+            config_dir = c
+            break
+
+    if not config_dir:
+        config_dir = Path("tests/fixtures/config")
+
+    monkeypatch.setenv("DYNAGENT_CONFIG_ROOT_DIR", str(config_dir))
+    yield
+    _reset_agent_config()
+
 
 EXPECTED_AGENTS = {
     "coordinator",
@@ -49,10 +77,10 @@ def test_get_schema_path_map_coordinator_is_none():
 def test_get_schema_path_map_section_agents_have_expected_paths():
     schema_map = get_schema_path_map()
     expected = {
-        "preface_agent": "vision-agent/01-preface.json",
-        "getting_started_agent": "vision-agent/02-getting-started.json",
-        "features_agent": "vision-agent/03-01-list-of-features.json",
-        "entity_agent": "vision-agent/05-entity.json",
+        "preface_agent": "01-preface.json",
+        "getting_started_agent": "02-getting-started.json",
+        "features_agent": "03-01-list-of-features.json",
+        "entity_agent": "05-entity.json",
     }
     for agent, path in expected.items():
         assert schema_map.get(agent) == path, f"{agent} schema path mismatch"
@@ -82,7 +110,9 @@ def test_get_tool_map_resolves_per_agent(bro_registered):  # noqa: ARG001
 
 def test_get_tool_map_warns_on_unresolved(caplog):
     """Without BRO registration, BRO tools are unresolved → warning logged."""
-    from autobots_devtools_shared_lib.dynagent.tools.tool_registry import _reset_usecase_tools
+    from autobots_devtools_shared_lib.dynagent.tools.tool_registry import (
+        _reset_usecase_tools,
+    )
 
     _reset_usecase_tools()
     with caplog.at_level(logging.WARNING):

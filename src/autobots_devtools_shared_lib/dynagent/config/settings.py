@@ -25,7 +25,7 @@ class Settings(BaseSettings):
         default=Path("workspace"), description="Workspace base directory"
     )
     schema_base: Path = Field(
-        default=Path("schemas"), description="Schema base directory"
+        default=Path("schemas"), description="Base directory for JSON schemas"
     )
 
     # Langfuse observability settings

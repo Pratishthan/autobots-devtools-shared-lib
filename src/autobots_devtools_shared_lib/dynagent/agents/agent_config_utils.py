@@ -2,18 +2,14 @@
 # ABOUTME: Reads agents.yaml and provides typed accessors for prompts, tools, schemas.
 
 import logging
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 import yaml
 
-CONFIG_DIR = Path("autobots-agents-bro/configs/vision-agent")
-
 logger = logging.getLogger(__name__)
-
-
-# --- Inline dataclass (generic; no bro_chat dependency) ---
 
 
 @dataclass
@@ -42,11 +38,33 @@ class AgentConfig:
         )
 
 
-# --- Generic config / prompt readers (no bro_chat dependency) ---
+_GLOBAL_AGENT_CONFIG: dict[str, AgentConfig] = {}
 
 
-def _load_agents_config(config_dir: Path = CONFIG_DIR) -> dict[str, AgentConfig]:
+def _reset_agent_config() -> None:
+    """Clear the cached agent config — for test isolation."""
+    global _GLOBAL_AGENT_CONFIG
+    _GLOBAL_AGENT_CONFIG = {}
+
+
+def get_config_dir() -> Path:
+    """Get the configuration directory from environment variable."""
+    config_dir = os.getenv("DYNAGENT_CONFIG_ROOT_DIR")
+    if not config_dir:
+        raise OSError("DYNAGENT_CONFIG_ROOT_DIR environment variable is not set")
+    return Path(config_dir)
+
+
+# NOTE: Call get_config_dir() instead of using a global CONFIG_DIR to allow
+# environment variable setup (e.g. in tests) before the path is resolved.
+
+
+def load_agents_config() -> dict[str, AgentConfig]:
     """Load agent configurations from agents.yaml."""
+    global _GLOBAL_AGENT_CONFIG
+    if _GLOBAL_AGENT_CONFIG:
+        return _GLOBAL_AGENT_CONFIG
+    config_dir = get_config_dir()
     config_path = Path(config_dir) / "agents.yaml"
 
     with open(config_path) as f:  # noqa: PTH123
@@ -56,49 +74,40 @@ def _load_agents_config(config_dir: Path = CONFIG_DIR) -> dict[str, AgentConfig]
     for agent_id, agent_data in data.get("agents", {}).items():
         agents[agent_id] = AgentConfig.from_dict(agent_id, agent_data)
 
-    logger.info(f"Loaded {len(agents)} agent configs from {config_path}")
+    _GLOBAL_AGENT_CONFIG = agents
+
+    logger.info(f"Loaded {len(_GLOBAL_AGENT_CONFIG)} agent configs from {config_path}")
     return agents
 
 
-def _load_prompt(name: str) -> str:
+def load_prompt(name: str) -> str:
     """Read a prompt file by name from the prompts/ directory."""
+    config_dir = get_config_dir()
+    prompt_dir = Path(config_dir) / "prompts"
     try:
-        with open(f"prompts/{name}.md") as f:  # noqa: PTH123
+        with open(prompt_dir / f"{name}.md") as f:  # noqa: PTH123
             return f.read()
     except Exception as e:
-        logger.error(f"Error reading prompt {name}: {e}")
+        logger.error(f"Error reading prompt {name} from {prompt_dir}: {e}")
         return f"Error reading prompt: {e}"
 
 
-# --- Public accessors (used by AgentMeta) ---
-
-
-def agent_config_reader(config_dir: Path = CONFIG_DIR) -> dict[str, AgentConfig]:
-    """Load raw agent config from YAML."""
-    return _load_agents_config(config_dir)
-
-
-def get_agent_list(config_dir: Path = CONFIG_DIR) -> list[str]:
+def get_agent_list() -> list[str]:
     """Return list of agent names from config."""
-    return list(agent_config_reader(config_dir).keys())
+    return list(load_agents_config().keys())
 
 
-def get_prompt_map(config_dir: Path = CONFIG_DIR) -> dict[str, str]:
+def get_prompt_map() -> dict[str, str]:
     """Return {agent_name: prompt_text} loaded from prompt files."""
-    return {
-        name: _load_prompt(cfg.prompt)
-        for name, cfg in agent_config_reader(config_dir).items()
-    }
+    return {name: load_prompt(cfg.prompt) for name, cfg in load_agents_config().items()}
 
 
-def get_schema_path_map(config_dir: Path = CONFIG_DIR) -> dict[str, str | None]:
+def get_schema_path_map() -> dict[str, str | None]:
     """Return {agent_name: raw_schema_path_or_None}."""
-    return {
-        name: cfg.output_schema for name, cfg in agent_config_reader(config_dir).items()
-    }
+    return {name: cfg.output_schema for name, cfg in load_agents_config().items()}
 
 
-def get_tool_map(config_dir: Path = CONFIG_DIR) -> dict[str, list[Any]]:
+def get_tool_map() -> dict[str, list[Any]]:
     """Return {agent_name: [tool_objects]}.
 
     Resolves each agent's tool list from agents.yaml against the combined
@@ -109,7 +118,7 @@ def get_tool_map(config_dir: Path = CONFIG_DIR) -> dict[str, list[Any]]:
     all_tools = get_all_tools()
     tool_by_name = {t.name: t for t in all_tools}
     result: dict[str, list[Any]] = {}
-    for name, cfg in _load_agents_config(config_dir).items():
+    for name, cfg in load_agents_config().items():
         resolved: list[Any] = []
         for tool_name in cfg.tools:
             if tool_name in tool_by_name:

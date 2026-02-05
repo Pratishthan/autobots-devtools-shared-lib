@@ -104,6 +104,13 @@ class StructuredOutputConverter:
             (dict with structured data, None) on success
             (None, error_message) on failure
         """
+        # Filter messages to current agent's conversation (cheap check first)
+        filtered_messages = self._filter_messages_for_agent(messages, current_agent)
+        if not filtered_messages:
+            error_msg = "No conversation history found for current agent"
+            logger.warning(error_msg)
+            return None, error_msg
+
         # Load JSON schema from file
         schema_file = get_settings().schema_base / schema_path
         if not schema_file.exists():
@@ -117,13 +124,6 @@ class StructuredOutputConverter:
         except Exception as e:
             error_msg = f"Failed to load schema file {schema_file}: {str(e)}"
             logger.error(error_msg)
-            return None, error_msg
-
-        # Filter messages to current agent's conversation
-        filtered_messages = self._filter_messages_for_agent(messages, current_agent)
-        if not filtered_messages:
-            error_msg = "No conversation history found for current agent"
-            logger.warning(error_msg)
             return None, error_msg
 
         # Create conversion prompt

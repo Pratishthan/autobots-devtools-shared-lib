@@ -25,6 +25,8 @@ source .venv/bin/activate
 cd $WORKSPACE_DIR/autobots-devtools-shared-lib
 poetry lock
 poetry install
+poetry run pre-commit --version
+poetry run pre-commit install
 cd $WORKSPACE_DIR
 
 # Repo 2
@@ -32,6 +34,8 @@ cd $WORKSPACE_DIR
 cd autobots-agents-bro
 poetry lock
 poetry install
+poetry run pre-commit --version
+poetry run pre-commit install
 cd $WORKSPACE_DIR
 
 4. Prepare .env
