@@ -1,5 +1,7 @@
-# ABOUTME: Pydantic settings for dynagent observability.
-# ABOUTME: Extracts Langfuse fields so dynagent reads tracing config from env directly.
+# ABOUTME: Pydantic settings for dynagent configuration.
+# ABOUTME: Loads LLM, workspace, and observability settings from environment variables.
+
+from pathlib import Path
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -12,6 +14,18 @@ class Settings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8",
         extra="ignore",
+    )
+
+    # LLM settings
+    llm_model: str = Field(default="gemini-2.0-flash", description="LLM model name")
+    llm_temperature: float = Field(default=0, description="LLM temperature")
+
+    # Workspace settings
+    workspace_base: Path = Field(
+        default=Path("workspace"), description="Workspace base directory"
+    )
+    schema_base: Path = Field(
+        default=Path("schemas"), description="Schema base directory"
     )
 
     # Langfuse observability settings

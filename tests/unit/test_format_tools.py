@@ -1,11 +1,10 @@
 # ABOUTME: Unit tests for convert_format schema lookup logic.
 # ABOUTME: Verifies schema resolution per agent and error for no-schema agents.
 
-from pathlib import Path
-
 import pytest
 
 from dynagent.agents.agent_meta import AgentMeta
+from dynagent.config.settings import get_settings
 
 
 @pytest.fixture(autouse=True)
@@ -53,5 +52,5 @@ def test_all_schema_files_exist_on_disk():
     for agent, path in meta.schema_path_map.items():
         if path is None:
             continue
-        schema_file = Path("schemas") / path
+        schema_file = get_settings().schema_base / path
         assert schema_file.exists(), f"Schema file missing for {agent}: {schema_file}"

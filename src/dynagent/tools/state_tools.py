@@ -2,19 +2,16 @@
 # ABOUTME: Provides command helpers, workspace file I/O, and handoff logic.
 
 import logging
-from pathlib import Path
 from typing import Any
 
 from langchain.messages import ToolMessage
 from langchain.tools import ToolRuntime, tool
 from langgraph.types import Command
 
+from dynagent.config.settings import get_settings
 from dynagent.models.state import Dynagent
 
 logger = logging.getLogger(__name__)
-
-# Workspace root — monkeypatch in tests for isolation
-WORKSPACE_BASE = Path("workspace")
 
 
 # --- Command helpers ---
@@ -57,7 +54,8 @@ def transition_cmd(
 
 def _do_write_file(session_id: str, filename: str, content: str) -> str:
     """Core write logic."""
-    path = WORKSPACE_BASE / session_id / filename
+    workspace_base = get_settings().workspace_base
+    path = workspace_base / session_id / filename
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content)
     logger.info(f"Wrote workspace file: {path}")
@@ -66,7 +64,8 @@ def _do_write_file(session_id: str, filename: str, content: str) -> str:
 
 def _do_read_file(session_id: str, filename: str) -> str:
     """Core read logic."""
-    path = WORKSPACE_BASE / session_id / filename
+    workspace_base = get_settings().workspace_base
+    path = workspace_base / session_id / filename
     if not path.exists():
         return f"Error: file not found: workspace/{session_id}/{filename}"
     return path.read_text()

@@ -3,7 +3,12 @@
 
 from langchain_google_genai import ChatGoogleGenerativeAI
 
+from dynagent.config.settings import get_settings
+
 
 def lm() -> ChatGoogleGenerativeAI:
     """Return the default LLM instance."""
-    return ChatGoogleGenerativeAI(model="gemini-2.0-flash", temperature=0)
+    settings = get_settings()
+    return ChatGoogleGenerativeAI(
+        model=settings.llm_model, temperature=settings.llm_temperature
+    )

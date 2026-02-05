@@ -4,12 +4,13 @@
 import json
 import logging
 from collections.abc import Sequence
-from pathlib import Path
 from typing import Any
 
 from langchain.messages import ToolMessage
 from langchain_core.messages import BaseMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
+
+from dynagent.config.settings import get_settings
 
 logger = logging.getLogger(__name__)
 
@@ -104,7 +105,7 @@ class StructuredOutputConverter:
             (None, error_message) on failure
         """
         # Load JSON schema from file
-        schema_file = Path("schemas") / schema_path
+        schema_file = get_settings().schema_base / schema_path
         if not schema_file.exists():
             error_msg = f"Schema file not found: {schema_file}"
             logger.error(error_msg)

@@ -3,7 +3,6 @@
 
 from langgraph.types import Command
 
-import dynagent.tools.state_tools as state_tools
 from dynagent.tools.state_tools import (
     _do_read_file,
     _do_write_file,
@@ -65,27 +64,27 @@ def test_transition_cmd_passes_extra_updates():
 
 
 def test_write_file_creates_file(tmp_path, monkeypatch):
-    monkeypatch.setattr(state_tools, "WORKSPACE_BASE", tmp_path)
+    monkeypatch.setenv("WORKSPACE_BASE", str(tmp_path))
     result = _do_write_file("sess-1", "notes.md", "hello world")
     assert "Successfully wrote" in result
     assert (tmp_path / "sess-1" / "notes.md").read_text() == "hello world"
 
 
 def test_write_file_creates_nested_dirs(tmp_path, monkeypatch):
-    monkeypatch.setattr(state_tools, "WORKSPACE_BASE", tmp_path)
+    monkeypatch.setenv("WORKSPACE_BASE", str(tmp_path))
     _do_write_file("deep-session", "file.txt", "content")
     assert (tmp_path / "deep-session" / "file.txt").exists()
 
 
 def test_write_file_overwrites_existing(tmp_path, monkeypatch):
-    monkeypatch.setattr(state_tools, "WORKSPACE_BASE", tmp_path)
+    monkeypatch.setenv("WORKSPACE_BASE", str(tmp_path))
     _do_write_file("s", "f.txt", "first")
     _do_write_file("s", "f.txt", "second")
     assert (tmp_path / "s" / "f.txt").read_text() == "second"
 
 
 def test_read_file_reads_existing(tmp_path, monkeypatch):
-    monkeypatch.setattr(state_tools, "WORKSPACE_BASE", tmp_path)
+    monkeypatch.setenv("WORKSPACE_BASE", str(tmp_path))
     (tmp_path / "sess-2").mkdir()
     (tmp_path / "sess-2" / "data.txt").write_text("payload")
     result = _do_read_file("sess-2", "data.txt")
@@ -93,13 +92,13 @@ def test_read_file_reads_existing(tmp_path, monkeypatch):
 
 
 def test_read_file_returns_error_for_missing(tmp_path, monkeypatch):
-    monkeypatch.setattr(state_tools, "WORKSPACE_BASE", tmp_path)
+    monkeypatch.setenv("WORKSPACE_BASE", str(tmp_path))
     result = _do_read_file("sess-x", "nope.txt")
     assert "Error" in result
 
 
 def test_write_then_read_roundtrip(tmp_path, monkeypatch):
-    monkeypatch.setattr(state_tools, "WORKSPACE_BASE", tmp_path)
+    monkeypatch.setenv("WORKSPACE_BASE", str(tmp_path))
     _do_write_file("rt", "loop.md", "roundtrip data")
     assert _do_read_file("rt", "loop.md") == "roundtrip data"
 

@@ -6,10 +6,10 @@ import logging
 
 from langchain.tools import ToolRuntime, tool
 
-import dynagent.tools.state_tools as state_tools
 from bro_chat.models.status import SectionStatus
 from bro_chat.services.document_store import DocumentStore
 from bro_chat.services.markdown_exporter import export_document
+from dynagent.config.settings import get_settings
 from dynagent.models.state import Dynagent
 
 logger = logging.getLogger(__name__)
@@ -29,14 +29,16 @@ _CONTEXT_FILE = "_doc_context.json"
 
 def _write_context(session_id: str, component: str, version: str) -> None:
     """Persist the active document (component/version) into the session workspace."""
-    path = state_tools.WORKSPACE_BASE / session_id / _CONTEXT_FILE
+    workspace_base = get_settings().workspace_base
+    path = workspace_base / session_id / _CONTEXT_FILE
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps({"component": component, "version": version}))
 
 
 def _read_context(session_id: str) -> dict[str, str] | None:
     """Read the active document context from the session workspace."""
-    path = state_tools.WORKSPACE_BASE / session_id / _CONTEXT_FILE
+    workspace_base = get_settings().workspace_base
+    path = workspace_base / session_id / _CONTEXT_FILE
     if not path.exists():
         return None
     return json.loads(path.read_text())  # type: ignore[no-any-return]

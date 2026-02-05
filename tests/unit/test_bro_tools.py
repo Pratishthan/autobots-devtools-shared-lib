@@ -6,7 +6,6 @@ import json
 import pytest
 
 import bro_chat.agents.bro_tools as bro_tools
-import dynagent.tools.state_tools as state_tools
 from bro_chat.services.document_store import DocumentStore
 
 # ---------------------------------------------------------------------------
@@ -24,7 +23,7 @@ def tmp_store(tmp_path, monkeypatch):
 
     store = DocumentStore(docs_root)
     monkeypatch.setattr(bro_tools, "_make_store", lambda: store)
-    monkeypatch.setattr(state_tools, "WORKSPACE_BASE", workspace_root)
+    monkeypatch.setenv("WORKSPACE_BASE", str(workspace_root))
     return store
 
 
