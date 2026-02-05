@@ -16,7 +16,7 @@ EXPECTED_DEFAULT_NAMES = {
     "get_agent_list",
     "write_file",
     "read_file",
-    "convert_format",
+    "output_format_converter",
 }
 
 BRO_TOOL_NAMES = {

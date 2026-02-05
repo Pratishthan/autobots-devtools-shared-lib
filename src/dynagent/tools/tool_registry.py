@@ -3,7 +3,7 @@
 
 from typing import Any
 
-from dynagent.tools.format_tools import convert_format
+from dynagent.tools.format_tools import output_format_converter
 from dynagent.tools.state_tools import get_agent_list, handoff, read_file, write_file
 
 # --- Module-level usecase storage (populated by register_* at startup) ---
@@ -16,7 +16,7 @@ _USECASE_TOOLS: list[Any] = []
 
 def get_default_tools() -> list[Any]:
     """Return the 5 built-in dynagent-layer tools."""
-    return [handoff, get_agent_list, write_file, read_file, convert_format]
+    return [handoff, get_agent_list, write_file, read_file, output_format_converter]
 
 
 # --- Usecase registration (called once per use-case at startup) ---

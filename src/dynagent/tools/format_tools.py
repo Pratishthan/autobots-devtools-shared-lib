@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 @tool
-def convert_format(
+def output_format_converter(
     runtime: ToolRuntime[None, Dynagent], model_name: str = "gemini-2.0-flash"
 ) -> str:
     """Convert conversation history to structured output.
@@ -24,7 +24,7 @@ def convert_format(
     """
     from dynagent.agents.agent_meta import AgentMeta
     from dynagent.llm.llm import lm
-    from dynagent.tools.structured_converter import StructuredOutputConverter
+    from dynagent.services.structured_converter import StructuredOutputConverter
 
     agent_name = runtime.state.get("agent_name", "coordinator")
     messages = runtime.state.get("messages", [])

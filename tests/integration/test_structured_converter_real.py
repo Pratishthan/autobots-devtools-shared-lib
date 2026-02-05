@@ -5,7 +5,7 @@ import pytest
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
 
-from dynagent.tools.structured_converter import StructuredOutputConverter
+from dynagent.services.structured_converter import StructuredOutputConverter
 from tests.conftest import requires_google_api
 
 
