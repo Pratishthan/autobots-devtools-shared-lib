@@ -14,7 +14,7 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    # Google API key for CrewAI agents (Gemini)
+    # Google API key for agents (Gemini)
     google_api_key: str = Field(default="", description="Google API key for Gemini")
 
     # Langfuse observability settings
@@ -40,8 +40,8 @@ class Settings(BaseSettings):
 
     # Model configuration
     llm_model: str = Field(
-        default="gemini/gemini-2.5-flash-lite",
-        description="LLM model for CrewAI agents",
+        default="gemini-2.0-flash",
+        description="LLM model for agents",
     )
 
     def is_langfuse_configured(self) -> bool:
