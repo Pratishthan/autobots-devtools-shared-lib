@@ -7,13 +7,13 @@ import pytest
 @pytest.fixture(autouse=True)
 def bro_registered_integration():
     """Register BRO tools for every integration test; reset after."""
-    from bro_chat.agents.bro_tools import register_bro_tools
     from autobots_devtools_shared_lib.dynagent.agents.agent_meta import AgentMeta
-    from autobots_devtools_shared_lib.dynagent.tools.tool_registry import _reset_usecase_tools
+    from autobots_devtools_shared_lib.dynagent.tools.tool_registry import (
+        _reset_usecase_tools,
+    )
 
     _reset_usecase_tools()
     AgentMeta.reset()
-    register_bro_tools()
     yield
     _reset_usecase_tools()
     AgentMeta.reset()

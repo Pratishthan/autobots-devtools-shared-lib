@@ -1,7 +1,8 @@
 Prerequisites:
+
 - Install poetry (with brew or otherwise)
   - `brew install poetry`
-- Ensure Python 3.12 
+- Ensure Python 3.12
 
 Installation:
 
@@ -11,18 +12,26 @@ Installation:
    - `git clone https://github.com/Pratishthan/autobots-devtools-shared-lib.git`
    - `git clone https://github.com/Pratishthan/autobots-agents-bro.git`
 3. Install repos
-```shell
-cd /work/src/ws-autobots || exit 1 # check the path
-python3.12 -m venv .venv # only 3.12 
+
+export WORKSPACE_DIR=/work/src/ws-autobots
+cd $WORKSPACE_DIR || exit 1
+python3.12 -m venv .venv
 poetry config virtualenvs.path "$(pwd)" --local
 poetry config virtualenvs.in-project false --local
+source .venv/bin/activate
+
 # Repo 1
-cd autobots-devtools-shared-lib
+
+cd $WORKSPACE_DIR/autobots-devtools-shared-lib
 poetry lock
 poetry install
+cd $WORKSPACE_DIR
+
 # Repo 2
+
 cd autobots-agents-bro
 poetry lock
 poetry install
-```
-4. Prepare .env 
+cd $WORKSPACE_DIR
+
+4. Prepare .env

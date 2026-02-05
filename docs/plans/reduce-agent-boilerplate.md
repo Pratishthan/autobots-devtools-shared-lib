@@ -82,7 +82,7 @@ def build_step_config(
     config_dir: Path = Path("configs/vision-agent"),
 ) -> dict[str, dict[str, Any]]:
     """Build step config from agents.yaml configuration."""
-    from bro_chat.config.section_config import load_agents_config
+    from autobots_agents_bro.config.section_config import load_agents_config
 
     agents_config = load_agents_config(config_dir)
     step_config = {}
@@ -121,7 +121,7 @@ def get_bro_agent_list(
     config_dir: Path = Path("configs/vision-agent")
 ) -> list[str]:
     """Return list of available bro agent names from config."""
-    from bro_chat.config.section_config import load_agents_config
+    from autobots_agents_bro.config.section_config import load_agents_config
 
     agents_config = load_agents_config(config_dir)
     return list(agents_config.keys())
@@ -145,7 +145,7 @@ def handoff(..., next_agent: str) -> Command:
 ```python
 def _get_agent_literal():
     """Generate Literal type from config at import time."""
-    from bro_chat.config.section_config import load_agents_config
+    from autobots_agents_bro.config.section_config import load_agents_config
 
     agents = load_agents_config(Path("configs/vision-agent"))
     agent_names = tuple(agents.keys())
@@ -229,7 +229,7 @@ def test_includes_agents_from_config(self, tmp_path: Path) -> None:
     agents = get_bro_agent_list()
 
     # Load config directly to verify consistency
-    from bro_chat.config.section_config import load_agents_config
+    from autobots_agents_bro.config.section_config import load_agents_config
     expected = load_agents_config(Path("configs/vision-agent"))
 
     assert set(agents) == set(expected.keys())

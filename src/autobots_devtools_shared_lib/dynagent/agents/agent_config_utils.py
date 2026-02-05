@@ -8,7 +8,7 @@ from typing import Any
 
 import yaml
 
-CONFIG_DIR = Path("autobots-devtools-shared-lib/configs/vision-agent")
+CONFIG_DIR = Path("autobots-agents-bro/configs/vision-agent")
 
 logger = logging.getLogger(__name__)
 
