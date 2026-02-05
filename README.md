@@ -9,7 +9,7 @@ Installation:
    `mkdir ws-autobots`
 2. Git clone all autobot repos
    - `git clone https://github.com/Pratishthan/autobots-devtools-shared-lib.git`
-   - `git clone https://github.com/Pratishthan/autobots-devtools-shared-lib.git`
+   - `git clone https://github.com/Pratishthan/autobots-agents-bro.git`
 3. Install repos
 ```shell
 cd /work/src/ws-autobots || exit 1 # check the path
@@ -21,7 +21,7 @@ cd autobots-devtools-shared-lib
 poetry lock
 poetry install
 # Repo 2
-cd autobots-devtools-shared-lib
+cd autobots-agents-bro
 poetry lock
 poetry install
 ```
