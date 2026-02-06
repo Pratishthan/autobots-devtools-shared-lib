@@ -67,13 +67,25 @@ def _build_inputs(agent_name: str, records: list[str]) -> list[dict[str, Any]]:
     ]
 
 
-def _build_configs(count: int) -> list[RunnableConfig]:
+def _build_configs(
+    count: int, callbacks: list[Any] | None = None
+) -> list[RunnableConfig]:
     """Build a list of RunnableConfigs, each with a unique thread_id.
 
     MUST be a list — broadcasting a single config causes all items to share
     one checkpointer thread, corrupting state.
+
+    Args:
+        count: Number of configs to build.
+        callbacks: Optional list of callback handlers to inject into each config.
     """
-    return [{"configurable": {"thread_id": str(uuid.uuid4())}} for _ in range(count)]
+    configs: list[RunnableConfig] = []
+    for _ in range(count):
+        config: RunnableConfig = {"configurable": {"thread_id": str(uuid.uuid4())}}
+        if callbacks:
+            config["callbacks"] = callbacks
+        configs.append(config)
+    return configs
 
 
 def _extract_last_ai_content(state_output: dict[str, Any]) -> str | None:
@@ -105,12 +117,15 @@ def _extract_last_ai_content(state_output: dict[str, Any]) -> str | None:
 # ---------------------------------------------------------------------------
 
 
-def batch_invoker(agent_name: str, records: list[str]) -> BatchResult:
+def batch_invoker(
+    agent_name: str, records: list[str], callbacks: list[Any] | None = None
+) -> BatchResult:
     """Run a list of prompts through the dynagent in parallel.
 
     Args:
         agent_name: Name of the agent to invoke (must exist in agents.yaml).
         records: Non-empty list of plain-string prompts.
+        callbacks: Optional list of callback handlers (e.g., Langfuse) for tracing.
 
     Returns:
         BatchResult with per-record success/failure details.
@@ -142,7 +157,7 @@ def batch_invoker(agent_name: str, records: list[str]) -> BatchResult:
 
     # --- Build inputs & configs ---
     inputs = _build_inputs(agent_name, records)
-    configs = _build_configs(len(records))
+    configs = _build_configs(len(records), callbacks=callbacks)
 
     # --- Execute in parallel (thread pool via .batch) ---
     # return_exceptions=True captures per-record failures instead of aborting.

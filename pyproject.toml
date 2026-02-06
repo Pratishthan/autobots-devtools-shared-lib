@@ -77,3 +77,4 @@ allow-direct-references = true
 
 [tool.poetry.dependencies]
 python = "^3.12"
+packages = [{include = "autobots_devtools_shared_lib"}]

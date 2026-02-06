@@ -23,6 +23,7 @@ class AgentConfig:
     output_schema: str | None = None
     approach: str | None = None
     dynamic: bool = False
+    batch_enabled: bool = False
 
     @classmethod
     def from_dict(cls, agent_id: str, data: dict[str, Any]) -> "AgentConfig":
@@ -35,6 +36,7 @@ class AgentConfig:
             output_schema=data.get("output_schema"),
             approach=data.get("approach"),
             dynamic=data.get("dynamic", False),
+            batch_enabled=data.get("batch_enabled", False),
         )
 
 
@@ -130,3 +132,8 @@ def get_tool_map() -> dict[str, list[Any]]:
                 )
         result[name] = resolved
     return result
+
+
+def get_batch_enabled_agents() -> list[str]:
+    """Return list of agent names that have batch_enabled=True."""
+    return [name for name, cfg in load_agents_config().items() if cfg.batch_enabled]
