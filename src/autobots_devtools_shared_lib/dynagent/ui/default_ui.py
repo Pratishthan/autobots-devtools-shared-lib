@@ -17,7 +17,7 @@ logging.basicConfig(level=logging.INFO)
 @cl.on_chat_start
 async def start():
     """Create the base agent once and store it in the Chainlit session."""
-    agent = create_base_agent()
+    agent = create_base_agent(agent_name="coordinator")
     cl.user_session.set("agent", agent)
     await cl.Message(content="Hello, how can I help you today?").send()
 

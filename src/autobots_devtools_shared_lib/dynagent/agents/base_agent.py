@@ -20,12 +20,16 @@ from autobots_devtools_shared_lib.dynagent.tools.tool_registry import get_all_to
 logger = logging.getLogger(__name__)
 
 
-def create_base_agent(checkpointer: Any = None, sync_mode: bool = False) -> Any:
+def create_base_agent(
+    checkpointer: Any = None, sync_mode: bool = False, agent_name: str | None = None
+) -> Any:
     """Create the dynagent base agent with middleware.
 
     Args:
         checkpointer: LangGraph checkpointer for state persistence.
             Defaults to InMemorySaver.
+        sync_mode: Whether to use synchronous middleware (for batch processing).
+        agent_name: Name for tracing/observability. Defaults to "dynagent".
 
     Returns:
         Configured LangGraph agent.
@@ -45,7 +49,7 @@ def create_base_agent(checkpointer: Any = None, sync_mode: bool = False) -> Any:
 
     agent = create_agent(
         model,
-        name="dynagent",
+        name=agent_name or "dynagent",
         tools=all_tools,
         state_schema=Dynagent,
         middleware=cast(

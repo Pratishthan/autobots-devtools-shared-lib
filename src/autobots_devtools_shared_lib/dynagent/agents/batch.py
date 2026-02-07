@@ -3,11 +3,19 @@
 
 import logging
 import uuid
+from contextlib import nullcontext
 from dataclasses import dataclass, field
 from typing import Any
 
 from dotenv import load_dotenv
 from langchain_core.runnables import RunnableConfig
+from langfuse import propagate_attributes
+
+from autobots_devtools_shared_lib.dynagent.observability.tracing import (
+    flush_tracing,
+    get_langfuse_client,
+    get_langfuse_handler,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -118,7 +126,12 @@ def _extract_last_ai_content(state_output: dict[str, Any]) -> str | None:
 
 
 def batch_invoker(
-    agent_name: str, records: list[str], callbacks: list[Any] | None = None
+    agent_name: str,
+    records: list[str],
+    callbacks: list[Any] | None = None,
+    enable_tracing: bool = True,
+    batch_id: str | None = None,
+    trace_metadata: dict[str, Any] | None = None,
 ) -> BatchResult:
     """Run a list of prompts through the dynagent in parallel.
 
@@ -126,6 +139,11 @@ def batch_invoker(
         agent_name: Name of the agent to invoke (must exist in agents.yaml).
         records: Non-empty list of plain-string prompts.
         callbacks: Optional list of callback handlers (e.g., Langfuse) for tracing.
+        enable_tracing: Whether to enable Langfuse tracing (default True, gracefully
+            degrades if not configured).
+        batch_id: Optional batch ID for correlation (auto-generated if None).
+        trace_metadata: Optional metadata dict with keys: app_name, user_id, tags, etc.
+            Defaults: app_name="batch_invoker", user_id=agent_name, tags=[].
 
     Returns:
         BatchResult with per-record success/failure details.
@@ -146,33 +164,103 @@ def batch_invoker(
     if not records:
         raise ValueError("records must not be empty")
 
-    # --- Agent creation ---
-    from langgraph.checkpoint.memory import InMemorySaver
+    # --- Observability setup ---
+    # Generate batch_id if not provided
+    if batch_id is None:
+        batch_id = str(uuid.uuid4())
 
-    from autobots_devtools_shared_lib.dynagent.agents.base_agent import (
-        create_base_agent,
+    # Auto-create Langfuse handler if tracing enabled and no callbacks provided
+    if enable_tracing and callbacks is None:
+        langfuse_handler = get_langfuse_handler()
+        if langfuse_handler:
+            callbacks = [langfuse_handler]
+
+    # Extract metadata with defaults
+    app_name = (
+        trace_metadata.get("app_name", "batch_invoker")
+        if trace_metadata
+        else "batch_invoker"
     )
+    user_id = (
+        trace_metadata.get("user_id", agent_name) if trace_metadata else agent_name
+    )
+    tags = trace_metadata.get("tags", []) if trace_metadata else []
 
-    agent = create_base_agent(checkpointer=InMemorySaver(), sync_mode=True)
+    # --- Execute with observability wrapper ---
+    try:
+        client = get_langfuse_client() if enable_tracing else None
 
-    # --- Build inputs & configs ---
-    inputs = _build_inputs(agent_name, records)
-    configs = _build_configs(len(records), callbacks=callbacks)
+        with propagate_attributes(
+            user_id=user_id,
+            session_id=batch_id,
+            tags=tags,
+        ):
+            span_ctx = (
+                client.start_as_current_span(
+                    name=f"{app_name}-{agent_name}-batch",
+                    input={
+                        "agent_name": agent_name,
+                        "record_count": len(records),
+                    },
+                    metadata={"batch_id": batch_id, **(trace_metadata or {})},
+                )
+                if client is not None
+                else nullcontext()
+            )
+            with span_ctx as span:
+                # --- Agent creation ---
+                from langgraph.checkpoint.memory import InMemorySaver
 
-    # --- Execute in parallel (thread pool via .batch) ---
-    # return_exceptions=True captures per-record failures instead of aborting.
-    raw_outputs: list[Any] = agent.batch(inputs, config=configs, return_exceptions=True)
+                from autobots_devtools_shared_lib.dynagent.agents.base_agent import (
+                    create_base_agent,
+                )
 
-    # --- Wrap raw outputs into BatchResult ---
-    results: list[RecordResult] = []
-    for idx, output in enumerate(raw_outputs):
-        if isinstance(output, BaseException):
-            results.append(RecordResult(index=idx, success=False, error=str(output)))
-        else:
-            content = _extract_last_ai_content(output)
-            results.append(RecordResult(index=idx, success=True, output=content))
+                agent = create_base_agent(
+                    checkpointer=InMemorySaver(), sync_mode=True, agent_name=agent_name
+                )
 
-    return BatchResult(agent_name=agent_name, total=len(records), results=results)
+                # --- Build inputs & configs ---
+                inputs = _build_inputs(agent_name, records)
+                configs = _build_configs(len(records), callbacks=callbacks)
+
+                # --- Execute in parallel (thread pool via .batch) ---
+                # return_exceptions=True captures per-record failures
+                # instead of aborting.
+                raw_outputs: list[Any] = agent.batch(
+                    inputs, config=configs, return_exceptions=True
+                )
+
+                # --- Wrap raw outputs into BatchResult ---
+                results: list[RecordResult] = []
+                for idx, output in enumerate(raw_outputs):
+                    if isinstance(output, BaseException):
+                        results.append(
+                            RecordResult(index=idx, success=False, error=str(output))
+                        )
+                    else:
+                        content = _extract_last_ai_content(output)
+                        results.append(
+                            RecordResult(index=idx, success=True, output=content)
+                        )
+
+                result = BatchResult(
+                    agent_name=agent_name, total=len(records), results=results
+                )
+
+                # Update span with results
+                if span is not None:
+                    span.update(
+                        output={
+                            "total": len(records),
+                            "successes": len(result.successes),
+                            "failures": len(result.failures),
+                        }
+                    )
+
+                return result
+    finally:
+        if enable_tracing:
+            flush_tracing()
 
 
 if __name__ == "__main__":
