@@ -6,6 +6,7 @@ from __future__ import annotations
 from typing import Any
 
 from autobots_devtools_shared_lib.dynagent.agents.agent_config_utils import (
+    get_default_agent,
     get_prompt_map,
     get_schema_path_map,
     get_tool_map,
@@ -21,6 +22,7 @@ class AgentMeta:
         self.prompt_map: dict[str, str] = get_prompt_map()
         self.tool_map: dict[str, list[Any]] = get_tool_map()
         self.schema_path_map: dict[str, str | None] = get_schema_path_map()
+        self.default_agent: str | None = get_default_agent()
 
     @classmethod
     def instance(cls) -> AgentMeta:

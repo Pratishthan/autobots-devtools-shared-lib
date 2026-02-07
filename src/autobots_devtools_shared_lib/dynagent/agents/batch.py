@@ -78,9 +78,6 @@ def _build_inputs(agent_name: str, records: list[str]) -> list[dict[str, Any]]:
 def _build_configs(count: int, callbacks: list[Any] | None = None) -> list[RunnableConfig]:
     """Build a list of RunnableConfigs, each with a unique thread_id.
 
-    MUST be a list — broadcasting a single config causes all items to share
-    one checkpointer thread, corrupting state.
-
     Args:
         count: Number of configs to build.
         callbacks: Optional list of callback handlers to inject into each config.
@@ -149,7 +146,6 @@ def batch_invoker(
     Raises:
         ValueError: If agent_name is unknown or records is empty.
     """
-    # --- Validation (same source as _validate_handoff in state_tools) ---
     from autobots_devtools_shared_lib.dynagent.agents.agent_config_utils import (
         get_agent_list,
     )
@@ -160,8 +156,6 @@ def batch_invoker(
     if not records:
         raise ValueError("records must not be empty")
 
-    # --- Observability setup ---
-    # Generate batch_id if not provided
     if batch_id is None:
         batch_id = str(uuid.uuid4())
 

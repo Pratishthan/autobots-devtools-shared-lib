@@ -19,10 +19,10 @@ async def inject_agent_async(
     handler: Callable[[ModelRequest], Awaitable[ModelResponse]],
 ) -> ModelResponse:
     """Belt-and-suspenders: inject prompt + tools from AgentMeta on every model call."""
-    agent_name = request.state.get("agent_name", "coordinator")
-    logger.info(f"inject_agent: active agent = {agent_name}")
-
     meta = AgentMeta.instance()
+
+    agent_name = request.state.get("agent_name", meta.default_agent or "coordinator")
+    logger.info(f"inject_agent: active agent = {agent_name}")
 
     # Format prompt safely — missing placeholders become empty strings
     raw_prompt = meta.prompt_map.get(agent_name, "")
@@ -45,10 +45,10 @@ def inject_agent_sync(
     handler: Callable[[ModelRequest], ModelResponse],
 ) -> ModelResponse:
     """Belt-and-suspenders: inject prompt + tools from AgentMeta on every model call."""
-    agent_name = request.state.get("agent_name", "coordinator")
-    logger.info(f"inject_agent: active agent = {agent_name}")
-
     meta = AgentMeta.instance()
+
+    agent_name = request.state.get("agent_name", meta.default_agent or "coordinator")
+    logger.info(f"inject_agent: active agent = {agent_name}")
 
     # Format prompt safely — missing placeholders become empty strings
     raw_prompt = meta.prompt_map.get(agent_name, "")
