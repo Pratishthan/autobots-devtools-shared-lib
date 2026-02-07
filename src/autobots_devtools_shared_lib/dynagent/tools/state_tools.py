@@ -31,9 +31,7 @@ def error_cmd(message: str, tool_call_id: str) -> Command:
     )
 
 
-def transition_cmd(
-    message: str, tool_call_id: str, new_agent: str, **updates: Any
-) -> Command:
+def transition_cmd(message: str, tool_call_id: str, new_agent: str, **updates: Any) -> Command:
     """Create a Command for successful agent transitions."""
     return Command(
         update={
@@ -117,9 +115,7 @@ def handoff(runtime: ToolRuntime[None, Dynagent], next_agent: str) -> Command:
 
 
 @tool
-def write_file(
-    runtime: ToolRuntime[None, Dynagent], filename: str, content: str
-) -> str:
+def write_file(runtime: ToolRuntime[None, Dynagent], filename: str, content: str) -> str:
     """Write a file to the session workspace."""
     session_id = runtime.state.get("session_id", "default")
     return _do_write_file(session_id, filename, content)

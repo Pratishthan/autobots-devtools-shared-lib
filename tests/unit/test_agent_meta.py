@@ -60,9 +60,7 @@ def test_schema_path_map_section_agents_populated():
         "features_agent",
         "entity_agent",
     ):
-        assert (
-            meta.schema_path_map.get(agent) is not None
-        ), f"{agent} schema_path_map is None"
+        assert meta.schema_path_map.get(agent) is not None, f"{agent} schema_path_map is None"
 
 
 def test_tool_map_has_all_agents():

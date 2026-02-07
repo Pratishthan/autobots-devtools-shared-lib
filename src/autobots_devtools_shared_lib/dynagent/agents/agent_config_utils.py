@@ -127,9 +127,7 @@ def get_tool_map() -> dict[str, list[Any]]:
                 resolved.append(tool_by_name[tool_name])
                 logger.info(f"Agent '{name}': adding resolved tool '{tool_name}'")
             else:
-                logger.warning(
-                    f"get_tool_map: unresolved tool '{tool_name}' for agent '{name}'"
-                )
+                logger.warning(f"get_tool_map: unresolved tool '{tool_name}' for agent '{name}'")
         result[name] = resolved
     return result
 

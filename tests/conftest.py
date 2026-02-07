@@ -6,7 +6,8 @@ from collections.abc import Generator
 from pathlib import Path
 
 import pytest
-from autobots_agents_bro.config.settings import Settings
+
+from autobots_devtools_shared_lib.dynagent.config.settings import Settings
 
 # Resolve the bro config dir once at import time (relative to shared-lib root).
 _BRO_CONFIG_CANDIDATES = [
@@ -91,8 +92,11 @@ def oauth_settings() -> Settings:
 
 @pytest.fixture
 def bro_registered():
-    """Register BRO tools; reset after test."""
-    from autobots_agents_bro.agents.bro_tools import register_bro_tools
+    """Register BRO tools; reset after test. Skip if autobots_agents_bro is not available."""
+    try:
+        from autobots_agents_bro.agents.bro_tools import register_bro_tools
+    except ImportError:
+        pytest.skip("autobots_agents_bro module not available")
 
     from autobots_devtools_shared_lib.dynagent.agents.agent_meta import AgentMeta
     from autobots_devtools_shared_lib.dynagent.tools.tool_registry import (

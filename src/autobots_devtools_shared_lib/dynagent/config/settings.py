@@ -21,9 +21,7 @@ class Settings(BaseSettings):
     llm_temperature: float = Field(default=0, description="LLM temperature")
 
     # Workspace settings
-    workspace_base: Path = Field(
-        default=Path("workspace"), description="Workspace base directory"
-    )
+    workspace_base: Path = Field(default=Path("workspace"), description="Workspace base directory")
     schema_base: Path = Field(
         default=Path("schemas"), description="Base directory for JSON schemas"
     )
@@ -38,11 +36,7 @@ class Settings(BaseSettings):
 
     def is_langfuse_configured(self) -> bool:
         """Check if Langfuse is properly configured."""
-        return bool(
-            self.langfuse_enabled
-            and self.langfuse_public_key
-            and self.langfuse_secret_key
-        )
+        return bool(self.langfuse_enabled and self.langfuse_public_key and self.langfuse_secret_key)
 
 
 def get_settings() -> Settings:

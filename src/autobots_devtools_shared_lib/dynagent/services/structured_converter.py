@@ -132,12 +132,8 @@ class StructuredOutputConverter:
         # Use structured output to convert
         try:
             schema_title = json_schema.get("title", schema_path)
-            logger.info(
-                f"Converting conversation to {schema_title} for agent {current_agent}"
-            )
-            structured_llm = self.model.with_structured_output(
-                json_schema, method="json_schema"
-            )
+            logger.info(f"Converting conversation to {schema_title} for agent {current_agent}")
+            structured_llm = self.model.with_structured_output(json_schema, method="json_schema")
             result = structured_llm.invoke(conversion_prompt)
             logger.info(f"Successfully converted to structured output: {schema_title}")
             return result, None

@@ -34,7 +34,5 @@ def test_dynagent_session_id_is_optional():
 
 def test_dynagent_only_adds_agent_name_and_session_id():
     """No BRO-specific fields (component, version, entity_name, etc.) on Dynagent."""
-    own_fields = set(Dynagent.__annotations__.keys()) - set(
-        AgentState.__annotations__.keys()
-    )
+    own_fields = set(Dynagent.__annotations__.keys()) - set(AgentState.__annotations__.keys())
     assert own_fields == {"agent_name", "session_id"}
