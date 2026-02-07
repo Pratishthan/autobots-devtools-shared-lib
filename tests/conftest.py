@@ -6,7 +6,8 @@ from collections.abc import Generator
 from pathlib import Path
 
 import pytest
-from autobots_agents_bro.config.settings import Settings
+
+from autobots_devtools_shared_lib.dynagent.config.settings import Settings
 
 # Resolve the bro config dir once at import time (relative to shared-lib root).
 _BRO_CONFIG_CANDIDATES = [
