@@ -178,17 +178,14 @@ async def stream_agent_events(
                     structured = output.get("structured_response", None)
                     if structured:
                         structured_dict: dict[str, Any]
-                        if is_dataclass(structured) and not isinstance(
-                            structured, type
-                        ):
+                        if is_dataclass(structured) and not isinstance(structured, type):
                             structured_dict = asdict(structured)
                         elif isinstance(structured, dict):
                             structured_dict = structured
                         else:
                             # Fallback: skip if not dict or dataclass
                             logger.warning(
-                                "Unexpected structured response type: "
-                                f"{type(structured)}"
+                                f"Unexpected structured response type: {type(structured)}"
                             )
                             continue
 
@@ -198,15 +195,11 @@ async def stream_agent_events(
 
                         # Extract output type from agent_name if available
                         current_step = output.get("agent_name")
-                        output_type = (
-                            _extract_output_type(current_step) if current_step else None
-                        )
+                        output_type = _extract_output_type(current_step) if current_step else None
 
                         # Convert to Markdown
                         if on_structured_output:
-                            markdown = on_structured_output(
-                                structured_dict, output_type
-                            )
+                            markdown = on_structured_output(structured_dict, output_type)
                         else:
                             markdown = structured_to_markdown(structured_dict)
 

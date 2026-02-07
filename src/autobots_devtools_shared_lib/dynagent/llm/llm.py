@@ -9,6 +9,4 @@ from autobots_devtools_shared_lib.dynagent.config.settings import get_settings
 def lm() -> ChatGoogleGenerativeAI:
     """Return the default LLM instance."""
     settings = get_settings()
-    return ChatGoogleGenerativeAI(
-        model=settings.llm_model, temperature=settings.llm_temperature
-    )
+    return ChatGoogleGenerativeAI(model=settings.llm_model, temperature=settings.llm_temperature)

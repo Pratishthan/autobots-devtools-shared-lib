@@ -35,9 +35,7 @@ async def on_message(message: cl.Message):
     agent = cl.user_session.get("agent")
 
     if not agent:
-        await cl.Message(
-            content="Error: Session initialization failed. Please refresh."
-        ).send()
+        await cl.Message(content="Error: Session initialization failed. Please refresh.").send()
         return
 
     input_state: dict[str, Any] = {

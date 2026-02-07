@@ -37,9 +37,7 @@ def output_format_converter(
     if not schema_path:
         return f"Error: no output schema configured for agent '{agent_name}'"
 
-    logger.info(
-        f"convert_format: agent={agent_name}, schema={schema_path}, model={model_name}"
-    )
+    logger.info(f"convert_format: agent={agent_name}, schema={schema_path}, model={model_name}")
 
     converter = StructuredOutputConverter(lm())
     result, error = converter.convert(messages, schema_path, agent_name)

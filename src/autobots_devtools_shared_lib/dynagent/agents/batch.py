@@ -75,9 +75,7 @@ def _build_inputs(agent_name: str, records: list[str]) -> list[dict[str, Any]]:
     ]
 
 
-def _build_configs(
-    count: int, callbacks: list[Any] | None = None
-) -> list[RunnableConfig]:
+def _build_configs(count: int, callbacks: list[Any] | None = None) -> list[RunnableConfig]:
     """Build a list of RunnableConfigs, each with a unique thread_id.
 
     MUST be a list — broadcasting a single config causes all items to share
@@ -158,9 +156,7 @@ def batch_invoker(
 
     valid_agents = get_agent_list()
     if agent_name not in valid_agents:
-        raise ValueError(
-            f"Unknown agent: {agent_name}. Valid agents: {', '.join(valid_agents)}"
-        )
+        raise ValueError(f"Unknown agent: {agent_name}. Valid agents: {', '.join(valid_agents)}")
     if not records:
         raise ValueError("records must not be empty")
 
@@ -177,13 +173,9 @@ def batch_invoker(
 
     # Extract metadata with defaults
     app_name = (
-        trace_metadata.get("app_name", "batch_invoker")
-        if trace_metadata
-        else "batch_invoker"
+        trace_metadata.get("app_name", "batch_invoker") if trace_metadata else "batch_invoker"
     )
-    user_id = (
-        trace_metadata.get("user_id", agent_name) if trace_metadata else agent_name
-    )
+    user_id = trace_metadata.get("user_id", agent_name) if trace_metadata else agent_name
     tags = trace_metadata.get("tags", []) if trace_metadata else []
 
     # --- Execute with observability wrapper ---
@@ -226,26 +218,18 @@ def batch_invoker(
                 # --- Execute in parallel (thread pool via .batch) ---
                 # return_exceptions=True captures per-record failures
                 # instead of aborting.
-                raw_outputs: list[Any] = agent.batch(
-                    inputs, config=configs, return_exceptions=True
-                )
+                raw_outputs: list[Any] = agent.batch(inputs, config=configs, return_exceptions=True)
 
                 # --- Wrap raw outputs into BatchResult ---
                 results: list[RecordResult] = []
                 for idx, output in enumerate(raw_outputs):
                     if isinstance(output, BaseException):
-                        results.append(
-                            RecordResult(index=idx, success=False, error=str(output))
-                        )
+                        results.append(RecordResult(index=idx, success=False, error=str(output)))
                     else:
                         content = _extract_last_ai_content(output)
-                        results.append(
-                            RecordResult(index=idx, success=True, output=content)
-                        )
+                        results.append(RecordResult(index=idx, success=True, output=content))
 
-                result = BatchResult(
-                    agent_name=agent_name, total=len(records), results=results
-                )
+                result = BatchResult(agent_name=agent_name, total=len(records), results=results)
 
                 # Update span with results
                 if span is not None:
