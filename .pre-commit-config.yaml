@@ -1,26 +1,7 @@
-# ABOUTME: Pre-commit hook configuration for bro-chat.
+# ABOUTME: Pre-commit hook configuration for autobots-devtools-shared-lib.
 # ABOUTME: Enforces code quality with ruff and pyright.
 
 repos:
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.8.0
-    hooks:
-      - id: ruff
-        args: [--fix, --exit-non-zero-on-fix]
-      - id: ruff-format
-
-  - repo: https://github.com/RobertCraigie/pyright-python
-    rev: v1.1.391
-    hooks:
-      - id: pyright
-        additional_dependencies:
-          - chainlit
-          - crewai
-          - langfuse
-          - pydantic-settings
-          - pytest
-          - pytest-asyncio
-
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:
@@ -28,13 +9,65 @@ repos:
       - id: end-of-file-fixer
       - id: check-yaml
       - id: check-added-large-files
+      - id: check-json
+      - id: check-toml
       - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: detect-private-key
+      - id: mixed-line-ending
 
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.0
+    hooks:
+      # Run the linter
+      - id: ruff
+        args: [--fix]
+      # Run the formatter
+      - id: ruff-format
+
+  # Use local pyright from workspace venv to access all dependencies including local path deps
   - repo: local
     hooks:
+      - id: pyright
+        name: pyright
+        entry: bash -c 'cd "$(git rev-parse --show-toplevel)/.." && .venv/bin/pyright autobots-devtools-shared-lib/src'
+        language: system
+        types: [python]
+        files: ^src/
+        require_serial: true
+        pass_filenames: false
+
       - id: pytest
         name: pytest
-        entry: /Users/pralhad/work/src/pk-multi/.venv/bin/pytest tests/unit -q
+        entry: bash -c '"$(git rev-parse --show-toplevel)/../.venv/bin/pytest" tests/unit -q'
         language: system
         pass_filenames: false
         always_run: true
+
+  - repo: local
+    hooks:
+      - id: poetry-check
+        name: poetry-check
+        entry: bash -c 'cd "$(git rev-parse --show-toplevel)" && poetry check'
+        language: system
+        pass_filenames: false
+        files: pyproject.toml
+      - id: poetry-lock-check
+        name: poetry-lock-check
+        entry: bash -c 'cd "$(git rev-parse --show-toplevel)" && poetry check --lock'
+        language: system
+        pass_filenames: false
+        files: ^(pyproject.toml|poetry.lock)$
+
+# Configuration for pre-commit.ci
+ci:
+  autofix_commit_msg: |
+    [pre-commit.ci] auto fixes from pre-commit hooks
+
+    for more information, see https://pre-commit.ci
+  autofix_prs: true
+  autoupdate_branch: ''
+  autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
+  autoupdate_schedule: weekly
+  skip: [pyright, pytest, poetry-check, poetry-lock-check]  # Skip local hooks in CI
+  submodules: false

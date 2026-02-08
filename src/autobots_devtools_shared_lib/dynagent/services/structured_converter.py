@@ -56,8 +56,7 @@ class StructuredOutputConverter:
         # Return messages after handoff (or all if no handoff)
         if handoff_index is not None:
             return messages[handoff_index + 1 :]
-        else:
-            return messages  # Coordinator or first agent
+        return messages  # Coordinator or first agent
 
     def _create_conversion_prompt(self, messages: Sequence[BaseMessage]) -> str:
         """Create prompt for LLM to convert conversation to structured data.
@@ -78,7 +77,7 @@ class StructuredOutputConverter:
 
         conversation_history = "\n".join(conversation_lines)
 
-        prompt_text = (
+        return (
             "Based on the conversation history below, create a comprehensive "
             "structured summary.\n"
             "Extract all relevant information and ensure all required fields "
@@ -88,7 +87,6 @@ class StructuredOutputConverter:
             "available.\n\n"
             f"Conversation:\n{conversation_history}\n"
         )
-        return prompt_text
 
     def convert(
         self, messages: Sequence[BaseMessage], schema_path: str, current_agent: str
@@ -119,11 +117,11 @@ class StructuredOutputConverter:
             return None, error_msg
 
         try:
-            with open(schema_file) as f:
+            with schema_file.open() as f:
                 json_schema = json.load(f)
         except Exception as e:
-            error_msg = f"Failed to load schema file {schema_file}: {str(e)}"
-            logger.error(error_msg)
+            error_msg = f"Failed to load schema file {schema_file}: {e!s}"
+            logger.exception(error_msg)
             return None, error_msg
 
         # Create conversion prompt
@@ -135,10 +133,11 @@ class StructuredOutputConverter:
             logger.info(f"Converting conversation to {schema_title} for agent {current_agent}")
             structured_llm = self.model.with_structured_output(json_schema, method="json_schema")
             result = structured_llm.invoke(conversion_prompt)
-            logger.info(f"Successfully converted to structured output: {schema_title}")
-            return result, None
 
         except Exception as e:
-            error_msg = f"Failed to convert conversation to structured output: {str(e)}"
+            error_msg = f"Failed to convert conversation to structured output: {e!s}"
             logger.error(error_msg, exc_info=True)
             return None, error_msg
+        else:
+            logger.info(f"Successfully converted to structured output: {schema_title}")
+            return result, None

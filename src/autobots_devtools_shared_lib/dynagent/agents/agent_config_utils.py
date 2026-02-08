@@ -95,7 +95,7 @@ def load_prompt(name: str) -> str:
         with open(prompt_dir / f"{name}.md") as f:  # noqa: PTH123
             return f.read()
     except Exception as e:
-        logger.error(f"Error reading prompt {name} from {prompt_dir}: {e}")
+        logger.exception(f"Error reading prompt {name} from {prompt_dir}")
         return f"Error reading prompt: {e}"
 
 

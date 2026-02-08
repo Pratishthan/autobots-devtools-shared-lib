@@ -210,5 +210,5 @@ class TestBatchInvokerValidation:
             batch_invoker("totally_fake_agent", ["hello"])
 
     def test_raises_on_empty_records(self):
-        with pytest.raises(ValueError, match="[Ee]mpty"):
+        with pytest.raises(ValueError, match=r"[Ee]mpty"):
             batch_invoker("coordinator", [])

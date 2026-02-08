@@ -48,13 +48,13 @@ def create_base_agent(
 
     _middleware = inject_agent_sync if sync_mode else inject_agent_async
 
-    agent = create_agent(
+    return create_agent(
         model,
         name=agent_name or "dynagent",
         tools=all_tools,
         state_schema=Dynagent,
         middleware=cast(
-            list[AgentMiddleware[Any, Any]],
+            "list[AgentMiddleware[Any, Any]]",
             [
                 _middleware,
                 SummarizationMiddleware(
@@ -66,5 +66,3 @@ def create_base_agent(
         ),
         checkpointer=checkpointer,
     )
-
-    return agent

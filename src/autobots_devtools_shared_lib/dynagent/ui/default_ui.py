@@ -2,10 +2,12 @@
 # ABOUTME: No tracing, no commands, no OAuth — just agent streaming via ui_utils.
 
 import logging
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import chainlit as cl
-from langchain_core.runnables import RunnableConfig
+
+if TYPE_CHECKING:
+    from langchain_core.runnables import RunnableConfig
 
 from autobots_devtools_shared_lib.dynagent.agents.base_agent import create_base_agent
 from autobots_devtools_shared_lib.dynagent.ui.ui_utils import stream_agent_events

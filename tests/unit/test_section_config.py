@@ -53,7 +53,7 @@ agents:
 class TestLoadAgentsConfig:
     """Tests for loading agents.yaml (via dynagent.load_agents_config)."""
 
-    def test_loads_agents(self, config_dir: Path) -> None:  # noqa: ARG002
+    def test_loads_agents(self, config_dir: Path) -> None:
         """load_agents_config should return a dict of agent configs."""
         agents = load_agents_config()
 
@@ -62,40 +62,40 @@ class TestLoadAgentsConfig:
         assert "preface_agent" in agents
         assert "entity_agent" in agents
 
-    def test_agent_has_prompt(self, config_dir: Path) -> None:  # noqa: ARG002
+    def test_agent_has_prompt(self, config_dir: Path) -> None:
         """Agent config should have a prompt path."""
         agents = load_agents_config()
 
         assert agents["coordinator"].prompt == "coordinator"
 
-    def test_agent_has_tools(self, config_dir: Path) -> None:  # noqa: ARG002
+    def test_agent_has_tools(self, config_dir: Path) -> None:
         """Agent config should have a list of tools."""
         agents = load_agents_config()
 
         assert "handoff" in agents["coordinator"].tools
         assert "get_document_status" in agents["coordinator"].tools
 
-    def test_agent_has_section_reference(self, config_dir: Path) -> None:  # noqa: ARG002
+    def test_agent_has_section_reference(self, config_dir: Path) -> None:
         """Agent config should have optional section reference."""
         agents = load_agents_config()
 
         assert agents["preface_agent"].section == "01-preface"
         assert agents["coordinator"].section is None
 
-    def test_agent_has_approach(self, config_dir: Path) -> None:  # noqa: ARG002
+    def test_agent_has_approach(self, config_dir: Path) -> None:
         """Agent config should have optional approach."""
         agents = load_agents_config()
 
         assert agents["preface_agent"].approach == "qa"
         assert agents["entity_agent"].approach == "template"
 
-    def test_agent_has_output_schema(self, config_dir: Path) -> None:  # noqa: ARG002
+    def test_agent_has_output_schema(self, config_dir: Path) -> None:
         """Agent config should have optional output schema."""
         agents = load_agents_config()
 
         assert agents["preface_agent"].output_schema == "01-preface.json"
 
-    def test_agent_has_dynamic_flag(self, config_dir: Path) -> None:  # noqa: ARG002
+    def test_agent_has_dynamic_flag(self, config_dir: Path) -> None:
         """Agent config should have optional dynamic flag."""
         agents = load_agents_config()
 

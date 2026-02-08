@@ -1,8 +1,12 @@
 # ABOUTME: End-to-end tests for the dynagent reference architecture.
 # ABOUTME: Full flow: create agent, send message, verify response and state transitions.
 
-from langchain_core.runnables import RunnableConfig
+from typing import TYPE_CHECKING
+
 from langgraph.checkpoint.memory import InMemorySaver
+
+if TYPE_CHECKING:
+    from langchain_core.runnables import RunnableConfig
 
 from autobots_devtools_shared_lib.dynagent.agents.base_agent import create_base_agent
 from tests.conftest import requires_google_api
