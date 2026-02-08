@@ -8,6 +8,5 @@
 8. [X] Move compoent aND VERSION FROM AGENT state to SDLCContext
 9. [ ] Rename agent_name to app_name in SDLCReqContext
 1. [ ] Inject trace name in usecase_ui.py
-1. [ ] Add tracing for batch
-1. [ ] Fix dockerfile
-1. [ ]
+1. [X] Add tracing for batch
+1. [X] Fix dockerfile
