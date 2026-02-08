@@ -75,11 +75,10 @@ def _build_inputs(agent_name: str, records: list[str]) -> list[dict[str, Any]]:
     ]
 
 
-def _build_configs(count: int, callbacks: list[Any] | None = None) -> list[RunnableConfig]:
+def _build_configs(
+    count: int, callbacks: list[Any] | None = None, max_concurrency: int = 1
+) -> list[RunnableConfig]:
     """Build a list of RunnableConfigs, each with a unique thread_id.
-
-    MUST be a list — broadcasting a single config causes all items to share
-    one checkpointer thread, corrupting state.
 
     Args:
         count: Number of configs to build.
@@ -90,6 +89,7 @@ def _build_configs(count: int, callbacks: list[Any] | None = None) -> list[Runna
         config: RunnableConfig = {"configurable": {"thread_id": str(uuid.uuid4())}}
         if callbacks:
             config["callbacks"] = callbacks
+        config["max_concurrency"] = max_concurrency
         configs.append(config)
     return configs
 
@@ -149,21 +149,27 @@ def batch_invoker(
     Raises:
         ValueError: If agent_name is unknown or records is empty.
     """
-    # --- Validation (same source as _validate_handoff in state_tools) ---
     from autobots_devtools_shared_lib.dynagent.agents.agent_config_utils import (
         get_agent_list,
+        load_agents_config,
     )
 
     valid_agents = get_agent_list()
+
     if agent_name not in valid_agents:
         raise ValueError(f"Unknown agent: {agent_name}. Valid agents: {', '.join(valid_agents)}")
     if not records:
         raise ValueError("records must not be empty")
 
-    # --- Observability setup ---
-    # Generate batch_id if not provided
     if batch_id is None:
         batch_id = str(uuid.uuid4())
+
+    agent_cfg = load_agents_config()[agent_name]
+    max_concurrency: int = (
+        agent_cfg.max_concurrency
+        if agent_cfg.max_concurrency and agent_cfg.max_concurrency > 0
+        else 1
+    )
 
     # Auto-create Langfuse handler if tracing enabled and no callbacks provided
     if enable_tracing and callbacks is None:
@@ -213,12 +219,19 @@ def batch_invoker(
 
                 # --- Build inputs & configs ---
                 inputs = _build_inputs(agent_name, records)
-                configs = _build_configs(len(records), callbacks=callbacks)
+
+                configs = _build_configs(
+                    len(records), callbacks=callbacks, max_concurrency=max_concurrency
+                )
 
                 # --- Execute in parallel (thread pool via .batch) ---
                 # return_exceptions=True captures per-record failures
                 # instead of aborting.
-                raw_outputs: list[Any] = agent.batch(inputs, config=configs, return_exceptions=True)
+                raw_outputs: list[Any] = agent.batch(
+                    inputs,
+                    config=configs,
+                    return_exceptions=True,
+                )
 
                 # --- Wrap raw outputs into BatchResult ---
                 results: list[RecordResult] = []

@@ -2,17 +2,18 @@ agents:
   coordinator:
     prompt: coordinator
     tools:
-      - test_tool
+      - handoff
     section: null
     output_schema: null
     approach: null
     dynamic: false
     batch_enabled: false
+    max_concurrency: 2
 
   preface_agent:
     prompt: preface_agent
     tools:
-      - test_tool
+      - update_section
     section: preface
     output_schema: 01-preface.json
     approach: null
@@ -22,7 +23,7 @@ agents:
   getting_started_agent:
     prompt: getting_started_agent
     tools:
-      - test_tool
+      - update_section
     section: getting_started
     output_schema: 02-getting-started.json
     approach: null
@@ -32,7 +33,7 @@ agents:
   features_agent:
     prompt: features_agent
     tools:
-      - test_tool
+      - update_section
     section: features
     output_schema: 03-01-list-of-features.json
     approach: null
@@ -42,7 +43,9 @@ agents:
   entity_agent:
     prompt: entity_agent
     tools:
-      - test_tool
+      - create_entity
+      - list_entities
+      - delete_entity
     section: entity
     output_schema: 05-entity.json
     approach: null

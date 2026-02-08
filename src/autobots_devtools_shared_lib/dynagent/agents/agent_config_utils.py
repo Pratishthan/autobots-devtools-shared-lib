@@ -24,6 +24,8 @@ class AgentConfig:
     approach: str | None = None
     dynamic: bool = False
     batch_enabled: bool = False
+    is_default: bool = False
+    max_concurrency: int | None = None
 
     @classmethod
     def from_dict(cls, agent_id: str, data: dict[str, Any]) -> "AgentConfig":
@@ -37,6 +39,8 @@ class AgentConfig:
             approach=data.get("approach"),
             dynamic=data.get("dynamic", False),
             batch_enabled=data.get("batch_enabled", False),
+            is_default=data.get("is_default", False),
+            max_concurrency=data.get("max_concurrency"),
         )
 
 
@@ -52,6 +56,7 @@ def _reset_agent_config() -> None:
 def get_config_dir() -> Path:
     """Get the configuration directory from environment variable."""
     config_dir = os.getenv("DYNAGENT_CONFIG_ROOT_DIR")
+    logger.info(f"Using config directory: {config_dir}")
     if not config_dir:
         raise OSError("DYNAGENT_CONFIG_ROOT_DIR environment variable is not set")
     return Path(config_dir)
@@ -135,3 +140,11 @@ def get_tool_map() -> dict[str, list[Any]]:
 def get_batch_enabled_agents() -> list[str]:
     """Return list of agent names that have batch_enabled=True."""
     return [name for name, cfg in load_agents_config().items() if cfg.batch_enabled]
+
+
+def get_default_agent() -> str | None:
+    """Return the name of the default agent, or None if not set."""
+    for name, cfg in load_agents_config().items():
+        if cfg.is_default:
+            return name
+    return None

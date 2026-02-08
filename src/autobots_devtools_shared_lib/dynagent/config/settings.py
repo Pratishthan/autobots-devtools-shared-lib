@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     llm_temperature: float = Field(default=0, description="LLM temperature")
 
     # Workspace settings
+    # TODO: Remove these settings
     workspace_base: Path = Field(default=Path("workspace"), description="Workspace base directory")
     schema_base: Path = Field(
         default=Path("schemas"), description="Base directory for JSON schemas"
