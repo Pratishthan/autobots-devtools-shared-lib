@@ -54,13 +54,27 @@ select = [
     "ARG",    # flake8-unused-arguments
     "SIM",    # flake8-simplify
     "S",      # flake8-bandit (security)
+    "TCH",    # flake8-type-checking
+    "PTH",    # flake8-use-pathlib
+    "RET",    # flake8-return
+    "TRY",    # tryceratops
+    "PERF",   # Perflint
+    "RUF",    # Ruff-specific rules
 ]
 ignore = [
     "S101",   # Allow assert in tests
+    "E501",   # Line too long (handled by formatter)
+    "TRY003", # Avoid specifying long messages outside the exception class
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**/*.py" = ["S101", "S106", "ARG001", "ARG002"]
+"tests/**/*.py" = ["S101", "S106", "ARG001", "ARG002", "PLR2004"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -69,7 +83,7 @@ asyncio_default_fixture_loop_scope = "function"
 addopts = [
     "-v",
     "--tb=short",
-    "--cov=autobots_devtools_shared_lib",
+    "--cov=src/autobots_devtools_shared_lib",
     "--cov-branch",
     "--cov-report=term-missing",
     "--cov-report=html",

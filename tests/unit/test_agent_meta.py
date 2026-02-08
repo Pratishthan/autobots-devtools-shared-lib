@@ -68,7 +68,7 @@ def test_tool_map_has_all_agents():
     assert set(meta.tool_map.keys()) == EXPECTED_AGENTS
 
 
-def test_tool_map_values_are_non_empty_lists(bro_registered):  # noqa: ARG001
+def test_tool_map_values_are_non_empty_lists(bro_registered):
     """With BRO registered, every agent resolves at least its listed tools."""
     meta = AgentMeta.instance()
     for name, tools in meta.tool_map.items():

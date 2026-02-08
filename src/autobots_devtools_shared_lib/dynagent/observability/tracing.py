@@ -38,12 +38,13 @@ def init_tracing() -> bool:
             host=settings.langfuse_host,
         )
 
-        logger.info("Langfuse tracing initialized successfully")
-        return True
-
     except Exception as e:
         logger.warning(f"Failed to initialize Langfuse tracing: {e}")
         return False
+
+    else:
+        logger.info("Langfuse tracing initialized successfully")
+        return True
 
 
 def get_langfuse_handler() -> CallbackHandler | None:

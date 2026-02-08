@@ -77,7 +77,7 @@ def test_get_schema_path_map_section_agents_have_expected_paths():
         assert schema_map.get(agent) == path, f"{agent} schema path mismatch"
 
 
-def test_get_tool_map_resolves_per_agent(bro_registered):  # noqa: ARG001
+def test_get_tool_map_resolves_per_agent(bro_registered):
     """With BRO registered, every agent's listed tools resolve to real tool objects."""
     tool_map = get_tool_map()
     # Coordinator should have its listed tools (including BRO ones)
