@@ -153,6 +153,7 @@ make test-cov
 ```
 
 Tests are organized into:
+
 - **Unit tests** (`tests/unit/`): Test individual functions and classes
 - **Integration tests** (`tests/integration/`): Test component interactions
 - **E2E tests** (`tests/e2e/`): Test complete workflows
@@ -180,7 +181,10 @@ MIT
 
 ## Authors
 
-- Pralhad <pralhad@example.com>
+- Pra1had 
+  - Email: <pralhad.kamath@pratishthanventures.com>
+  - [Github:pra1had](https://github.com/pra1had)
+  
 
 ## Questions?
 

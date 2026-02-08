@@ -25,6 +25,7 @@ class AgentConfig:
     dynamic: bool = False
     batch_enabled: bool = False
     is_default: bool = False
+    max_concurrency: int | None = None
 
     @classmethod
     def from_dict(cls, agent_id: str, data: dict[str, Any]) -> "AgentConfig":
@@ -39,6 +40,7 @@ class AgentConfig:
             dynamic=data.get("dynamic", False),
             batch_enabled=data.get("batch_enabled", False),
             is_default=data.get("is_default", False),
+            max_concurrency=data.get("max_concurrency"),
         )
 
 
@@ -54,6 +56,7 @@ def _reset_agent_config() -> None:
 def get_config_dir() -> Path:
     """Get the configuration directory from environment variable."""
     config_dir = os.getenv("DYNAGENT_CONFIG_ROOT_DIR")
+    logger.info(f"Using config directory: {config_dir}")
     if not config_dir:
         raise OSError("DYNAGENT_CONFIG_ROOT_DIR environment variable is not set")
     return Path(config_dir)
@@ -129,7 +132,9 @@ def get_tool_map() -> dict[str, list[Any]]:
                 resolved.append(tool_by_name[tool_name])
                 logger.info(f"Agent '{name}': adding resolved tool '{tool_name}'")
             else:
-                logger.warning(f"get_tool_map: unresolved tool '{tool_name}' for agent '{name}'")
+                logger.warning(
+                    f"get_tool_map: unresolved tool '{tool_name}' for agent '{name}'"
+                )
         result[name] = resolved
     return result
 

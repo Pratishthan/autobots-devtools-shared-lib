@@ -7,6 +7,7 @@ from typing import Any, cast
 from langchain.agents import create_agent
 from langchain.agents.middleware import AgentMiddleware, SummarizationMiddleware
 from langgraph.checkpoint.memory import InMemorySaver
+from langgraph.graph.state import CompiledStateGraph
 
 from autobots_devtools_shared_lib.dynagent.agents.agent_meta import AgentMeta
 from autobots_devtools_shared_lib.dynagent.agents.middleware import (
@@ -22,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 def create_base_agent(
     checkpointer: Any = None, sync_mode: bool = False, agent_name: str | None = None
-) -> Any:
+) -> CompiledStateGraph:
     """Create the dynagent base agent with middleware.
 
     Args:
