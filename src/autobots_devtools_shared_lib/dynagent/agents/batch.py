@@ -155,18 +155,16 @@ def batch_invoker(
     )
 
     valid_agents = get_agent_list()
-    agent_cfg = load_agents_config()[agent_name]
 
     if agent_name not in valid_agents:
-        raise ValueError(
-            f"Unknown agent: {agent_name}. Valid agents: {', '.join(valid_agents)}"
-        )
+        raise ValueError(f"Unknown agent: {agent_name}. Valid agents: {', '.join(valid_agents)}")
     if not records:
         raise ValueError("records must not be empty")
 
     if batch_id is None:
         batch_id = str(uuid.uuid4())
 
+    agent_cfg = load_agents_config()[agent_name]
     max_concurrency: int = (
         agent_cfg.max_concurrency
         if agent_cfg.max_concurrency and agent_cfg.max_concurrency > 0
@@ -181,13 +179,9 @@ def batch_invoker(
 
     # Extract metadata with defaults
     app_name = (
-        trace_metadata.get("app_name", "batch_invoker")
-        if trace_metadata
-        else "batch_invoker"
+        trace_metadata.get("app_name", "batch_invoker") if trace_metadata else "batch_invoker"
     )
-    user_id = (
-        trace_metadata.get("user_id", agent_name) if trace_metadata else agent_name
-    )
+    user_id = trace_metadata.get("user_id", agent_name) if trace_metadata else agent_name
     tags = trace_metadata.get("tags", []) if trace_metadata else []
 
     # --- Execute with observability wrapper ---
@@ -243,18 +237,12 @@ def batch_invoker(
                 results: list[RecordResult] = []
                 for idx, output in enumerate(raw_outputs):
                     if isinstance(output, BaseException):
-                        results.append(
-                            RecordResult(index=idx, success=False, error=str(output))
-                        )
+                        results.append(RecordResult(index=idx, success=False, error=str(output)))
                     else:
                         content = _extract_last_ai_content(output)
-                        results.append(
-                            RecordResult(index=idx, success=True, output=content)
-                        )
+                        results.append(RecordResult(index=idx, success=True, output=content))
 
-                result = BatchResult(
-                    agent_name=agent_name, total=len(records), results=results
-                )
+                result = BatchResult(agent_name=agent_name, total=len(records), results=results)
 
                 # Update span with results
                 if span is not None:

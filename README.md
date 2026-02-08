@@ -181,10 +181,10 @@ MIT
 
 ## Authors
 
-- Pra1had 
+- Pra1had
   - Email: <pralhad.kamath@pratishthanventures.com>
   - [Github:pra1had](https://github.com/pra1had)
-  
+
 
 ## Questions?
 

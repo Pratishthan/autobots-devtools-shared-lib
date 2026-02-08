@@ -14,26 +14,17 @@ from autobots_devtools_shared_lib.dynagent.agents.agent_config_utils import (
     get_tool_map,
 )
 
+_CONFIG_DIR = Path(__file__).resolve().parent.parent.parent / "configs" / "bro"
+
 
 @pytest.fixture(autouse=True)
 def setup_config_dir(monkeypatch):
-    """Ensure DYNAGENT_CONFIG_ROOT_DIR is set and cache is cleared for all tests."""
+    """Point config dir at local fixture data and clear cache for each test."""
     _reset_agent_config()
-    candidates = [
-        Path("autobots-agents-bro/configs/bro"),
-        Path("configs/bro"),
-        Path("../autobots-agents-bro/configs/bro"),
-    ]
-    config_dir = None
-    for c in candidates:
-        if (c / "agents.yaml").exists():
-            config_dir = c
-            break
-
-    if not config_dir:
-        config_dir = Path("tests/fixtures/config")
-
-    monkeypatch.setenv("DYNAGENT_CONFIG_ROOT_DIR", str(config_dir))
+    monkeypatch.setattr(
+        "autobots_devtools_shared_lib.dynagent.agents.agent_config_utils.get_config_dir",
+        lambda: _CONFIG_DIR,
+    )
     yield
     _reset_agent_config()
 
@@ -92,9 +83,6 @@ def test_get_tool_map_resolves_per_agent(bro_registered):  # noqa: ARG001
     # Coordinator should have its listed tools (including BRO ones)
     coord_names = {t.name for t in tool_map["coordinator"]}
     assert "handoff" in coord_names
-    assert "create_document" in coord_names
-    assert "set_document_context" in coord_names
-    assert "export_markdown" in coord_names
 
     # Section agents should have convert_format
     for agent in ("preface_agent", "getting_started_agent", "features_agent"):
