@@ -56,9 +56,8 @@ def local_file_server(tmp_path):
     _install_fake_logging_config()
     # Ensure fserver_client module is loaded so patch path resolves
     # Patch server root so all operations use tmp_path
-    import local_file_server.app as app_module
-
     import autobots_devtools_shared_lib.dynagent.tools.fserver_client  # noqa: F401
+    import local_file_server.app as app_module
 
     with patch.object(app_module, "FILE_SERVER_ROOT", tmp_path):
         app = app_module.app
