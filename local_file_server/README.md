@@ -41,7 +41,7 @@ With the server running and `FILE_SERVER_HOST=localhost` (or unset, since localh
 
 ```python
 from autobots_devtools_shared_lib.dynagent.workspace import Workspace
-from autobots_devtools_shared_lib.dynagent.tools.fserver_client import (
+from autobots_devtools_shared_lib.common.tools.fserver_client_tools import (
     list_files,
     read_file,
     write_file,

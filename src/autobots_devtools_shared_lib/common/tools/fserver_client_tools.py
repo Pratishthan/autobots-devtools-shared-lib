@@ -9,6 +9,7 @@ from autobots_devtools_shared_lib.common.utils.fserver_client_utils import (
     list_files,
     move_file,
     read_file,
+    write_file,
 )
 
 logger = get_logger(__name__)
@@ -44,3 +45,9 @@ def move_file_tool(source_path: str, destination_path: str, workspace_context: s
 def create_download_link_tool(file_name: str, workspace_context: str = "{}") -> str:
     """Create a download link for the file."""
     return create_download_link(file_name, workspace_context)
+
+
+@tool
+def write_file_tool(file_name: str, content: str, workspace_context: str = "{}") -> str:
+    """Write content to a file."""
+    return write_file(file_name, content, workspace_context)
