@@ -1,7 +1,7 @@
 # ABOUTME: Observability module for bro-chat.
 # ABOUTME: Provides Langfuse integration for LLM tracing and monitoring.
 
-from autobots_devtools_shared_lib.dynagent.observability.logging_utils import (
+from autobots_devtools_shared_lib.common.observability.logging_utils import (
     ConversationFilter,
     get_agent_logger,
     get_logger,
@@ -9,7 +9,7 @@ from autobots_devtools_shared_lib.dynagent.observability.logging_utils import (
     set_log_level,
     setup_logging,
 )
-from autobots_devtools_shared_lib.dynagent.observability.tracing import (
+from autobots_devtools_shared_lib.common.observability.tracing import (
     get_langfuse_handler,
     init_tracing,
 )

@@ -2,9 +2,9 @@ import json
 
 from langchain_core.messages import AnyMessage
 
+from autobots_devtools_shared_lib.common.observability.logging_utils import get_logger
 from autobots_devtools_shared_lib.dynagent.agents.agent_meta import AgentMeta
 from autobots_devtools_shared_lib.dynagent.llm.llm import lm
-from autobots_devtools_shared_lib.dynagent.observability.logging_utils import get_logger
 from autobots_devtools_shared_lib.dynagent.services.structured_converter import (
     StructuredOutputConverter,
 )

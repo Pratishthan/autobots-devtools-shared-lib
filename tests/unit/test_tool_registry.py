@@ -22,6 +22,11 @@ EXPECTED_DEFAULT_NAMES = {
     "set_context",
     "update_context",
     "clear_context",
+    "list_files_tool",
+    "get_disk_usage_tool",
+    "read_file_tool",
+    "move_file_tool",
+    "create_download_link_tool",
 }
 
 BRO_TOOL_NAMES = {

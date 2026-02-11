@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 from langchain_core.runnables import RunnableConfig
 from langfuse import propagate_attributes
 
-from autobots_devtools_shared_lib.dynagent.observability.tracing import (
+from autobots_devtools_shared_lib.common.observability.tracing import (
     flush_tracing,
     get_langfuse_client,
     get_langfuse_handler,

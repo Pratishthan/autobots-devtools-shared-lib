@@ -2,14 +2,14 @@
 
 import base64
 import json
-import logging
 import os
 
 import httpx
-from langchain.tools import tool
+
+from autobots_devtools_shared_lib.common.observability.logging_utils import get_logger
 
 # Set up logging
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 # File server configuration (set FILE_SERVER_HOST for your environment, e.g. in .env)
 FILE_SERVER_HOST = os.getenv("FILE_SERVER_HOST", "localhost")
 FILE_SERVER_PORT = os.getenv("FILE_SERVER_PORT", "9002")
@@ -27,7 +27,6 @@ def _parse_workspace_context(workspace_context: str) -> dict:
         return {}
 
 
-@tool
 def list_files(base_path: str = "", workspace_context: str = "{}") -> str:
     """
     List all files in the specified directory or workspace.
@@ -64,7 +63,6 @@ def list_files(base_path: str = "", workspace_context: str = "{}") -> str:
         return f"Error listing files: {e!s}"
 
 
-@tool
 def get_disk_usage() -> str:
     """
     Get disk usage statistics for the file server.
@@ -92,7 +90,6 @@ def get_disk_usage() -> str:
         return f"Error getting disk usage: {e!s}"
 
 
-@tool
 def read_file(file_name: str, workspace_context: str = "{}") -> str:
     """
     Read the content of a file.
@@ -133,7 +130,6 @@ def read_file(file_name: str, workspace_context: str = "{}") -> str:
         return f"Error reading file: {e!s}"
 
 
-@tool
 def write_file(file_name: str, content: str, workspace_context: str = "{}") -> str:
     """
     Write content to a file.
@@ -174,7 +170,6 @@ def write_file(file_name: str, content: str, workspace_context: str = "{}") -> s
         return f"Error writing file: {e!s}"
 
 
-@tool
 def move_file(source_path: str, destination_path: str, workspace_context: str = "{}") -> str:
     """
     Move a file from source to destination.
@@ -219,7 +214,6 @@ def move_file(source_path: str, destination_path: str, workspace_context: str = 
         return f"Error moving file: {e!s}"
 
 
-@tool
 def create_download_link(file_name: str, workspace_context: str = "{}") -> str:
     """
     Create a download link for the file.

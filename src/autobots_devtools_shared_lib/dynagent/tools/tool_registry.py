@@ -3,13 +3,20 @@
 
 from typing import Any
 
-from autobots_devtools_shared_lib.dynagent.tools.context_tools import (
+from autobots_devtools_shared_lib.common.tools.context_tools import (
     clear_context,
     get_context,
     set_context,
     update_context,
 )
-from autobots_devtools_shared_lib.dynagent.tools.format_tools import output_format_converter_tool
+from autobots_devtools_shared_lib.common.tools.format_tools import output_format_converter_tool
+from autobots_devtools_shared_lib.common.tools.fserver_client_tools import (
+    create_download_link_tool,
+    get_disk_usage_tool,
+    list_files_tool,
+    move_file_tool,
+    read_file_tool,
+)
 from autobots_devtools_shared_lib.dynagent.tools.state_tools import (
     get_agent_list,
     handoff,
@@ -37,6 +44,11 @@ def get_default_tools() -> list[Any]:
         set_context,
         update_context,
         clear_context,
+        list_files_tool,
+        get_disk_usage_tool,
+        read_file_tool,
+        move_file_tool,
+        create_download_link_tool,
     ]
 
 
