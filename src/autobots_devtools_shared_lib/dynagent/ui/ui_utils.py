@@ -2,7 +2,6 @@
 # ABOUTME: No imports from any use-case package (e.g. bro_chat); safe for reuse.
 
 import json
-import logging
 from collections import deque
 from collections.abc import Callable
 from dataclasses import asdict, is_dataclass
@@ -11,7 +10,9 @@ from typing import Any
 import chainlit as cl
 from langchain_core.runnables import RunnableConfig
 
-logger = logging.getLogger(__name__)
+from autobots_devtools_shared_lib.common.observability.logging_utils import get_logger
+
+logger = get_logger(__name__)
 
 
 # ---------------------------------------------------------------------------

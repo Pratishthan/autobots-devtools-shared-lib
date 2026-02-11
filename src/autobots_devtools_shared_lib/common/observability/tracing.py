@@ -1,15 +1,15 @@
 # ABOUTME: Langfuse tracing integration for bro-chat.
 # ABOUTME: Sets up LLM observability using Langfuse's decorator-based API.
 
-import logging
 from typing import Any
 
 from langfuse import Langfuse
 from langfuse.langchain import CallbackHandler
 
+from autobots_devtools_shared_lib.common.observability.logging_utils import get_logger
 from autobots_devtools_shared_lib.dynagent.config.settings import get_settings
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 _langfuse_client: Langfuse | None = None
 

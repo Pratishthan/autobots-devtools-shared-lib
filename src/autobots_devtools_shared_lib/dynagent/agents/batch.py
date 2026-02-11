@@ -1,7 +1,6 @@
 # ABOUTME: Batch processing interface for the dynagent layer.
 # ABOUTME: Wraps prompts into parallel agent invocations with per-record results.
 
-import logging
 import uuid
 from contextlib import nullcontext
 from dataclasses import dataclass, field
@@ -11,13 +10,14 @@ from dotenv import load_dotenv
 from langchain_core.runnables import RunnableConfig
 from langfuse import propagate_attributes
 
+from autobots_devtools_shared_lib.common.observability.logging_utils import get_logger
 from autobots_devtools_shared_lib.common.observability.tracing import (
     flush_tracing,
     get_langfuse_client,
     get_langfuse_handler,
 )
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 load_dotenv()
 

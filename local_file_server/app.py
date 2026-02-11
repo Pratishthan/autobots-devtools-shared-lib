@@ -7,7 +7,6 @@ Or: make file-server (from autobots-devtools-shared-lib)
 """
 
 import base64
-import logging
 import os
 import shutil
 from pathlib import Path
@@ -18,8 +17,10 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import Response
 from pydantic import BaseModel
 
+from autobots_devtools_shared_lib.common.observability.logging_utils import get_logger
+
 load_dotenv()
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 FILE_SERVER_ROOT = Path(os.getenv("FILE_SERVER_ROOT", ".")).resolve()
 app = FastAPI(
     title="Local File Server",
