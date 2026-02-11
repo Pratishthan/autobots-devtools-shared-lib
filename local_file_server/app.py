@@ -7,17 +7,20 @@ Or: make file-server (from autobots-devtools-shared-lib)
 """
 
 import base64
+import logging
 import os
 import shutil
 from pathlib import Path
 from typing import Any
 
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import Response
 from pydantic import BaseModel
 
+load_dotenv()
+logger = logging.getLogger(__name__)
 FILE_SERVER_ROOT = Path(os.getenv("FILE_SERVER_ROOT", ".")).resolve()
-
 app = FastAPI(
     title="Local File Server",
     description="Test server for fserver_client tools (listFiles, readFile, writeFile, moveFile, createDownloadLink).",
@@ -59,13 +62,23 @@ class MoveFileBody(BaseModel):
     jira_number: str | None = None
 
 
-def _safe_path(relative: str) -> Path:
-    """Resolve path under FILE_SERVER_ROOT; reject path traversal."""
+def _workspace_root(user_name: str | None, repo_name: str | None, jira_number: str | None) -> Path:
+    """FILE_SERVER_ROOT is the canvas root. When user_name, repo_name, jira_number are set, append <user_name>/<repo_name>-<jira_number>."""
+    base = FILE_SERVER_ROOT
+    if not (user_name and repo_name and jira_number):
+        return base
+    workspace_dir = f"{repo_name}-{jira_number}"
+    return (base / user_name.strip() / workspace_dir).resolve()
+
+
+def _safe_path(relative: str, base: Path | None = None) -> Path:
+    """Resolve path under base (default FILE_SERVER_ROOT); reject path traversal."""
+    root = base if base is not None else FILE_SERVER_ROOT
     if not relative or relative.strip() == "":
-        return FILE_SERVER_ROOT
-    p = (FILE_SERVER_ROOT / relative.strip().lstrip("/")).resolve()
+        return root
+    p = (root / relative.strip().lstrip("/")).resolve()
     try:
-        p.resolve().relative_to(FILE_SERVER_ROOT)
+        p.relative_to(root)
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid path: outside root") from None
     return p
@@ -87,8 +100,9 @@ def health() -> dict[str, Any]:
 
 @app.post("/listFiles")
 def list_files(body: ListFilesBody) -> dict[str, Any]:
-    """List files under path (and optional workspace filters; filters ignored here)."""
-    base = _safe_path(body.path) if body.path else FILE_SERVER_ROOT
+    """List files under path. When user_name, repo_name, jira_number are set, path is under <user_name>/<repo_name>-<jira_number>/."""
+    ws_root = _workspace_root(body.user_name, body.repo_name, body.jira_number)
+    base = _safe_path(body.path, ws_root) if body.path else ws_root
     if not base.exists():
         raise HTTPException(status_code=404, detail="Path not found")
     if not base.is_dir():
@@ -107,8 +121,9 @@ def list_files(body: ListFilesBody) -> dict[str, Any]:
 
 @app.post("/readFile")
 def read_file(body: ReadFileBody) -> Response:
-    """Return file content as raw bytes (client decodes UTF-8 or base64)."""
-    path = _safe_path(body.fileName)
+    """Return file content as raw bytes. Path resolved under workspace when user_name, repo_name, jira_number set."""
+    ws_root = _workspace_root(body.user_name, body.repo_name, body.jira_number)
+    path = _safe_path(body.fileName, ws_root)
     if not path.exists():
         raise HTTPException(status_code=404, detail="File not found")
     if not path.is_file():
@@ -119,8 +134,9 @@ def read_file(body: ReadFileBody) -> Response:
 
 @app.post("/writeFile")
 def write_file(body: WriteFileBody) -> dict[str, Any]:
-    """Write base64-encoded content to file."""
-    path = _safe_path(body.file_name)
+    """Write base64-encoded content to file. Path resolved under workspace when user_name, repo_name, jira_number set."""
+    ws_root = _workspace_root(body.user_name, body.repo_name, body.jira_number)
+    path = _safe_path(body.file_name, ws_root)
     path.parent.mkdir(parents=True, exist_ok=True)
     raw = base64.b64decode(body.file_content.encode("utf-8"))
     path.write_bytes(raw)
@@ -130,9 +146,10 @@ def write_file(body: WriteFileBody) -> dict[str, Any]:
 
 @app.post("/moveFile")
 def move_file(body: MoveFileBody) -> dict[str, Any]:
-    """Move file from source_path to destination_path."""
-    src = _safe_path(body.source_path)
-    dst = _safe_path(body.destination_path)
+    """Move file from source_path to destination_path. Paths resolved under workspace when user_name, repo_name, jira_number set."""
+    ws_root = _workspace_root(body.user_name, body.repo_name, body.jira_number)
+    src = _safe_path(body.source_path, ws_root)
+    dst = _safe_path(body.destination_path, ws_root)
     if not src.exists():
         raise HTTPException(status_code=404, detail="Source file not found")
     if not src.is_file():
@@ -149,8 +166,9 @@ def move_file(body: MoveFileBody) -> dict[str, Any]:
 
 @app.post("/createDownloadLink")
 def create_download_link(body: ReadFileBody) -> Response:
-    """Return a simple download link (file path) as text for local testing."""
-    path = _safe_path(body.fileName)
+    """Return a simple download link (file path) as text for local testing. Path resolved under workspace when user_name, repo_name, jira_number set."""
+    ws_root = _workspace_root(body.user_name, body.repo_name, body.jira_number)
+    path = _safe_path(body.fileName, ws_root)
     if not path.exists():
         raise HTTPException(status_code=404, detail="File not found")
     if not path.is_file():
