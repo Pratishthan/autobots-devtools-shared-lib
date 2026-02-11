@@ -64,5 +64,5 @@ def test_all_schema_files_exist_on_disk():
     for agent, path in meta.schema_path_map.items():
         if path is None:
             continue
-        schema_file = get_settings().schema_base / path
+        schema_file = get_settings().dynagent_config_root_dir / "schemas" / path
         assert schema_file.exists(), f"Schema file missing for {agent}: {schema_file}"

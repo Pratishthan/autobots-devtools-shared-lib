@@ -26,6 +26,10 @@ class Settings(BaseSettings):
     schema_base: Path = Field(
         default=Path("schemas"), description="Base directory for JSON schemas"
     )
+    dynagent_config_root_dir: Path = Field(
+        default=Path("configs"),
+        description="Base directory for agent configuration files",
+    )
 
     # Langfuse observability settings
     langfuse_public_key: str = Field(default="", description="Langfuse public key")

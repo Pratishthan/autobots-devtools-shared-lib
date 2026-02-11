@@ -110,7 +110,7 @@ class StructuredOutputConverter:
             return None, error_msg
 
         # Load JSON schema from file
-        schema_file = get_settings().schema_base / schema_path
+        schema_file = get_settings().dynagent_config_root_dir / "schemas" / schema_path
         if not schema_file.exists():
             error_msg = f"Schema file not found: {schema_file}"
             logger.error(error_msg)
