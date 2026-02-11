@@ -18,11 +18,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import Response
 from pydantic import BaseModel
 
-# Load .env so FILE_SERVER_ROOT is set when running via uvicorn/make file-server.
-# Try repo root (parent of local_file_server) then cwd.
-_env_dir = Path(__file__).resolve().parent.parent
-load_dotenv(_env_dir / ".env")
-load_dotenv()  # cwd as fallback
+load_dotenv()
 logger = logging.getLogger(__name__)
 FILE_SERVER_ROOT = Path(os.getenv("FILE_SERVER_ROOT", ".")).resolve()
 app = FastAPI(
