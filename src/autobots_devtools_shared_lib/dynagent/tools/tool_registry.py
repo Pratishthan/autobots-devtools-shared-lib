@@ -9,7 +9,7 @@ from autobots_devtools_shared_lib.dynagent.tools.context_tools import (
     set_context,
     update_context,
 )
-from autobots_devtools_shared_lib.dynagent.tools.format_tools import output_format_converter
+from autobots_devtools_shared_lib.dynagent.tools.format_tools import output_format_converter_tool
 from autobots_devtools_shared_lib.dynagent.tools.state_tools import (
     get_agent_list,
     handoff,
@@ -32,7 +32,7 @@ def get_default_tools() -> list[Any]:
         get_agent_list,
         write_file,
         read_file,
-        output_format_converter,
+        output_format_converter_tool,
         get_context,
         set_context,
         update_context,

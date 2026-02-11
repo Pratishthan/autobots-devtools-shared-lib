@@ -16,7 +16,7 @@ EXPECTED_DEFAULT_NAMES = {
     "get_agent_list",
     "write_file",
     "read_file",
-    "output_format_converter",
+    "output_format_converter_tool",
     # Context tools (session-level state)
     "get_context",
     "set_context",
