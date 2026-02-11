@@ -1,4 +1,4 @@
-.PHONY: help install install-dev install-hooks test test-cov lint format check-format type-check clean all-checks build publish
+.PHONY: help install install-dev install-hooks test test-cov lint format check-format type-check clean all-checks build publish file-server
 
 # Default target
 help:
@@ -19,6 +19,7 @@ help:
 	@echo "  make build            - Build the package"
 	@echo "  make publish          - Publish package to PyPI"
 	@echo "  make update-deps      - Update dependencies"
+	@echo "  make file-server      - Run local file server on port 9002 (for testing fserver_client)"
 
 # Use system/global poetry and tools from parent venv
 VENV = ../.venv
@@ -118,3 +119,8 @@ show-outdated:
 export-requirements:
 	$(POETRY) export -f requirements.txt --output requirements.txt --without-hashes
 	$(POETRY) export -f requirements.txt --output requirements-dev.txt --with dev --without-hashes
+
+# Run local file server (install deps first: pip install -r local_file_server/requirements-file-server.txt)
+FILE_SERVER_PORT ?= 9002
+file-server:
+	$(PYTHON) -m uvicorn local_file_server.app:app --reload --host 0.0.0.0 --port $(FILE_SERVER_PORT)
