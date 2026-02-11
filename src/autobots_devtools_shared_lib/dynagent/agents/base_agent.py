@@ -1,7 +1,6 @@
 # ABOUTME: Factory for the dynagent base agent.
 # ABOUTME: Assembles model, middleware stack, and tool set into a runnable agent.
 
-import logging
 from typing import Any, cast
 
 from langchain.agents import create_agent
@@ -16,9 +15,10 @@ from autobots_devtools_shared_lib.dynagent.agents.middleware import (
 )
 from autobots_devtools_shared_lib.dynagent.llm.llm import lm
 from autobots_devtools_shared_lib.dynagent.models.state import Dynagent
+from autobots_devtools_shared_lib.dynagent.observability import get_agent_logger
 from autobots_devtools_shared_lib.dynagent.tools.tool_registry import get_all_tools
 
-logger = logging.getLogger(__name__)
+logger = get_agent_logger(__name__)
 
 
 def create_base_agent(

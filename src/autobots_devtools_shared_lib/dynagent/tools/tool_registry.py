@@ -3,9 +3,13 @@
 
 from typing import Any
 
-from autobots_devtools_shared_lib.dynagent.tools.format_tools import (
-    output_format_converter,
+from autobots_devtools_shared_lib.dynagent.tools.context_tools import (
+    clear_context,
+    get_context,
+    set_context,
+    update_context,
 )
+from autobots_devtools_shared_lib.dynagent.tools.format_tools import output_format_converter
 from autobots_devtools_shared_lib.dynagent.tools.state_tools import (
     get_agent_list,
     handoff,
@@ -22,8 +26,18 @@ _USECASE_TOOLS: list[Any] = []
 
 
 def get_default_tools() -> list[Any]:
-    """Return the 5 built-in dynagent-layer tools."""
-    return [handoff, get_agent_list, write_file, read_file, output_format_converter]
+    """Return the built-in dynagent-layer tools."""
+    return [
+        handoff,
+        get_agent_list,
+        write_file,
+        read_file,
+        output_format_converter,
+        get_context,
+        set_context,
+        update_context,
+        clear_context,
+    ]
 
 
 # --- Usecase registration (called once per use-case at startup) ---
