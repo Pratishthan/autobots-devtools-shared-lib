@@ -12,15 +12,14 @@ from autobots_devtools_shared_lib.dynagent.services.structured_converter import 
 logger = get_logger(__name__)
 
 
-def output_format_converter(
-    agent_name: str, messages: list[AnyMessage], model_name: str = "gemini-2.0-flash"
-) -> str:
+def output_format_converter(agent_name: str, messages: list[AnyMessage]) -> str:
     """Convert conversation history to structured output.
 
     Uses the current agent's schema for extraction.
 
     Args:
-        model_name: Reserved for future model selection. Currently uses the default LM.
+        agent_name: Name of the current agent (used to find schema).
+        messages: Full conversation history as list of messages.
     """
     meta = AgentMeta.instance()
     schema_path = meta.schema_path_map.get(agent_name)
@@ -28,7 +27,7 @@ def output_format_converter(
     if not schema_path:
         return f"Error: no output schema configured for agent '{agent_name}'"
 
-    logger.info(f"convert_format: agent={agent_name}, schema={schema_path}, model={model_name}")
+    logger.info(f"convert_format: agent={agent_name}, schema={schema_path}")
 
     converter = StructuredOutputConverter(lm())
     result, error = converter.convert(messages, schema_path, agent_name)
