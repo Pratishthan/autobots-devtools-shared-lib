@@ -1,6 +1,6 @@
 [project]
 name = "autobots-devtools-shared-lib"
-version = "0.1.3"
+version = "0.1.4"
 description = "Shared library functions to be used for all autobots projects"
 readme = "README.md"
 authors = [

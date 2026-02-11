@@ -17,6 +17,11 @@ EXPECTED_DEFAULT_NAMES = {
     "write_file",
     "read_file",
     "output_format_converter",
+    # Context tools (session-level state)
+    "get_context",
+    "set_context",
+    "update_context",
+    "clear_context",
 }
 
 BRO_TOOL_NAMES = {
@@ -51,7 +56,8 @@ def test_get_default_tools_returns_list():
 
 def test_get_default_tools_count():
     tools = get_default_tools()
-    assert len(tools) == 5
+    # Keep this assertion in sync with EXPECTED_DEFAULT_NAMES above.
+    assert len(tools) == len(EXPECTED_DEFAULT_NAMES)
 
 
 def test_get_default_tools_has_expected_names():
