@@ -1,10 +1,11 @@
 # ABOUTME: Generic Chainlit entry point for dynagent use cases with zero custom UI.
 # ABOUTME: No tracing, no commands, no OAuth — just agent streaming via ui_utils.
 
-import logging
 from typing import TYPE_CHECKING, Any
 
 import chainlit as cl
+
+from autobots_devtools_shared_lib.common.observability.logging_utils import get_logger
 
 if TYPE_CHECKING:
     from langchain_core.runnables import RunnableConfig
@@ -12,8 +13,7 @@ if TYPE_CHECKING:
 from autobots_devtools_shared_lib.dynagent.agents.base_agent import create_base_agent
 from autobots_devtools_shared_lib.dynagent.ui.ui_utils import stream_agent_events
 
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
+logger = get_logger(__name__)
 
 
 @cl.on_chat_start

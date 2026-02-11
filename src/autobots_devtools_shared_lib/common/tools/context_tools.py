@@ -1,12 +1,12 @@
-import logging
 from typing import Any
 
 from langchain.tools import ToolRuntime, tool
 
+from autobots_devtools_shared_lib.common.observability.logging_utils import get_logger
 from autobots_devtools_shared_lib.dynagent.models.state import Dynagent
 from autobots_devtools_shared_lib.dynagent.services import get_context_store
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 def _get_session_id(runtime: ToolRuntime[None, Dynagent]) -> str:

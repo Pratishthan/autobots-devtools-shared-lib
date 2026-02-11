@@ -1,4 +1,3 @@
-import logging
 from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
@@ -6,7 +5,9 @@ from typing import Any, Protocol, cast, runtime_checkable
 
 import yaml
 
-logger = logging.getLogger(__name__)
+from autobots_devtools_shared_lib.common.observability.logging_utils import get_logger
+
+logger = get_logger(__name__)
 
 
 @runtime_checkable

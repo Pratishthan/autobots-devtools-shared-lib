@@ -1,17 +1,17 @@
 # ABOUTME: State management tools for the dynagent workflow.
 # ABOUTME: Provides command helpers, workspace file I/O, and handoff logic.
 
-import logging
 from typing import Any
 
 from langchain.messages import ToolMessage
 from langchain.tools import ToolRuntime, tool
 from langgraph.types import Command
 
+from autobots_devtools_shared_lib.common.observability.logging_utils import get_logger
 from autobots_devtools_shared_lib.dynagent.config.settings import get_settings
 from autobots_devtools_shared_lib.dynagent.models.state import Dynagent
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 # --- Command helpers ---

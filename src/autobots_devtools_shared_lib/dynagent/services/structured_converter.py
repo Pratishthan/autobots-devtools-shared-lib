@@ -2,7 +2,6 @@
 # ABOUTME: Filters messages by agent and uses LLM to extract structured data.
 
 import json
-import logging
 from collections.abc import Sequence
 from typing import Any
 
@@ -10,9 +9,10 @@ from langchain.messages import ToolMessage
 from langchain_core.messages import BaseMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
 
+from autobots_devtools_shared_lib.common.observability.logging_utils import get_logger
 from autobots_devtools_shared_lib.dynagent.config.settings import get_settings
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class StructuredOutputConverter:

@@ -1,7 +1,6 @@
 # ABOUTME: Configuration utility functions for loading agent definitions.
 # ABOUTME: Reads agents.yaml and provides typed accessors for prompts, tools, schemas.
 
-import logging
 import os
 from dataclasses import dataclass
 from pathlib import Path
@@ -9,7 +8,9 @@ from typing import Any
 
 import yaml
 
-logger = logging.getLogger(__name__)
+from autobots_devtools_shared_lib.common.observability.logging_utils import get_logger
+
+logger = get_logger(__name__)
 
 
 @dataclass
