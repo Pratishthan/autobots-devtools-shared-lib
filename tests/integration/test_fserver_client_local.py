@@ -36,13 +36,13 @@ class _TestClientWrapper:
 def local_file_server(tmp_path):
     """Run the local file server app in-process via TestClient and patch fserver_client to use it."""
     # Patch server root so all operations use tmp_path
-    import local_file_server.app as app_module
     from fastapi.testclient import TestClient
 
     import autobots_devtools_shared_lib.common.tools.fserver_client_tools  # noqa: F401
+    from autobots_devtools_shared_lib.common.servers.fileserver.app import app
 
-    with patch.object(app_module, "FILE_SERVER_ROOT", tmp_path):
-        app = app_module.app
+    with patch("autobots_devtools_shared_lib.common.servers.fileserver.app.config") as mock_config:
+        mock_config.root = tmp_path
         test_client = TestClient(app, base_url="http://testserver")
         wrapper = _TestClientWrapper(test_client)
         mock_client_instance = MagicMock()
