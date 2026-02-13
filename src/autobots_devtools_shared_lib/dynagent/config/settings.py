@@ -3,7 +3,7 @@
 
 from pathlib import Path
 
-from pydantic import Field
+from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -23,9 +23,22 @@ class Settings(BaseSettings):
     # Workspace settings
     # TODO: Remove these settings
     workspace_base: Path = Field(default=Path("workspace"), description="Workspace base directory")
-    schema_base: Path = Field(
-        default=Path("schemas"), description="Base directory for JSON schemas"
+
+    dynagent_config_root_dir: Path = Field(
+        default=Path("configs"),
+        description="Base directory for agent configuration files",
     )
+    schema_base: Path = Field(
+        default=Path("schemas"),
+        description="Base directory for JSON schemas (defaults to config_dir/schemas if not set)",
+    )
+
+    @model_validator(mode="after")
+    def _schema_base_under_config_root(self) -> "Settings":
+        # If schema_base is still the default "schemas", resolve under config root
+        if self.schema_base == Path("schemas"):
+            object.__setattr__(self, "schema_base", self.dynagent_config_root_dir / "schemas")
+        return self
 
     # Langfuse observability settings
     langfuse_public_key: str = Field(default="", description="Langfuse public key")
