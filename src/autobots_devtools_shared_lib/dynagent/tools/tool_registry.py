@@ -16,13 +16,9 @@ from autobots_devtools_shared_lib.common.tools.fserver_client_tools import (
     list_files_tool,
     move_file_tool,
     read_file_tool,
+    write_file_tool,
 )
-from autobots_devtools_shared_lib.dynagent.tools.state_tools import (
-    get_agent_list,
-    handoff,
-    read_file,
-    write_file,
-)
+from autobots_devtools_shared_lib.dynagent.tools.state_tools import get_agent_list, handoff
 
 # --- Module-level usecase storage (populated by register_* at startup) ---
 
@@ -37,17 +33,16 @@ def get_default_tools() -> list[Any]:
     return [
         handoff,
         get_agent_list,
-        write_file,
-        read_file,
         output_format_converter_tool,
         get_context,
         set_context,
         update_context,
         clear_context,
-        list_files_tool,
         get_disk_usage_tool,
         read_file_tool,
         move_file_tool,
+        write_file_tool,
+        list_files_tool,
         create_download_link_tool,
     ]
 

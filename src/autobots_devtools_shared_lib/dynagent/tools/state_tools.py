@@ -74,9 +74,7 @@ def _do_read_file(session_id: str, filename: str) -> str:
 
 def _validate_handoff(next_agent: str) -> str | None:
     """Validate agent name against config. Returns error string or None."""
-    from autobots_devtools_shared_lib.dynagent.agents.agent_config_utils import (
-        get_agent_list,
-    )
+    from autobots_devtools_shared_lib.dynagent.agents.agent_config_utils import get_agent_list
 
     valid = get_agent_list()
     if next_agent not in valid:
@@ -112,17 +110,3 @@ def handoff(runtime: ToolRuntime[None, Dynagent], next_agent: str) -> Command:
         runtime.tool_call_id or "unknown",
         next_agent,
     )
-
-
-@tool
-def write_file(runtime: ToolRuntime[None, Dynagent], filename: str, content: str) -> str:
-    """Write a file to the session workspace."""
-    session_id = runtime.state.get("session_id", "default")
-    return _do_write_file(session_id, filename, content)
-
-
-@tool
-def read_file(runtime: ToolRuntime[None, Dynagent], filename: str) -> str:
-    """Read a file from the session workspace."""
-    session_id = runtime.state.get("session_id", "default")
-    return _do_read_file(session_id, filename)

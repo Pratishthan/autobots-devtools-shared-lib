@@ -14,16 +14,15 @@ from autobots_devtools_shared_lib.dynagent.tools.tool_registry import (
 EXPECTED_DEFAULT_NAMES = {
     "handoff",
     "get_agent_list",
-    "write_file",
-    "read_file",
     "output_format_converter_tool",
     # Context tools (session-level state)
     "get_context",
     "set_context",
     "update_context",
     "clear_context",
-    "list_files_tool",
     "get_disk_usage_tool",
+    "list_files_tool",
+    "write_file_tool",
     "read_file_tool",
     "move_file_tool",
     "create_download_link_tool",
