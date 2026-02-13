@@ -1,7 +1,6 @@
 # ABOUTME: Service for converting conversation history to structured output.
 # ABOUTME: Filters messages by agent and uses LLM to extract structured data.
 
-import json
 from collections.abc import Sequence
 from typing import Any
 
@@ -10,7 +9,6 @@ from langchain_core.messages import BaseMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 from autobots_devtools_shared_lib.common.observability.logging_utils import get_logger
-from autobots_devtools_shared_lib.dynagent.config.settings import get_settings
 
 logger = get_logger(__name__)
 
@@ -89,13 +87,13 @@ class StructuredOutputConverter:
         )
 
     def convert(
-        self, messages: Sequence[BaseMessage], schema_path: str, current_agent: str
+        self, messages: Sequence[BaseMessage], json_schema: dict, current_agent: str
     ) -> tuple[Any | None, str | None]:
         """Convert messages to structured output.
 
         Args:
             messages: Conversation history to convert.
-            schema_path: Path to JSON schema (e.g., "vision-agent/01-preface.json").
+            json_schema: Parsed JSON schema dictionary.
             current_agent: Current agent name for filtering messages.
 
         Returns:
@@ -109,27 +107,12 @@ class StructuredOutputConverter:
             logger.warning(error_msg)
             return None, error_msg
 
-        # Load JSON schema from file
-        schema_file = get_settings().dynagent_config_root_dir / "schemas" / schema_path
-        if not schema_file.exists():
-            error_msg = f"Schema file not found: {schema_file}"
-            logger.error(error_msg)
-            return None, error_msg
-
-        try:
-            with schema_file.open() as f:
-                json_schema = json.load(f)
-        except Exception as e:
-            error_msg = f"Failed to load schema file {schema_file}: {e!s}"
-            logger.exception(error_msg)
-            return None, error_msg
-
         # Create conversion prompt
         conversion_prompt = self._create_conversion_prompt(filtered_messages)
 
         # Use structured output to convert
         try:
-            schema_title = json_schema.get("title", schema_path)
+            schema_title = json_schema.get("title", "structured output")
             logger.info(f"Converting conversation to {schema_title} for agent {current_agent}")
             structured_llm = self.model.with_structured_output(json_schema, method="json_schema")
             result = structured_llm.invoke(conversion_prompt)

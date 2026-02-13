@@ -1,6 +1,7 @@
 # ABOUTME: Configuration utility functions for loading agent definitions.
 # ABOUTME: Reads agents.yaml and provides typed accessors for prompts, tools, schemas.
 
+import json
 import os
 from dataclasses import dataclass
 from pathlib import Path
@@ -100,6 +101,41 @@ def load_prompt(name: str) -> str:
         return f"Error reading prompt: {e}"
 
 
+def load_schema(name: str) -> dict:
+    """Read and parse a JSON schema file by name from the schemas/ directory.
+
+    Args:
+        name: Schema filename (e.g., "joke-output.json", "01-preface.json")
+
+    Returns:
+        Parsed JSON schema as dictionary
+
+    Raises:
+        FileNotFoundError: If schema file doesn't exist
+        ValueError: If JSON is invalid
+    """
+    config_dir = get_config_dir()
+    schema_dir = Path(config_dir) / "schemas"
+    schema_file = schema_dir / name
+
+    if not schema_file.exists():
+        error_msg = f"Schema file not found: {schema_file}"
+        logger.error(error_msg)
+        raise FileNotFoundError(error_msg)
+
+    try:
+        with Path.open(schema_file) as f:
+            return json.load(f)
+    except json.JSONDecodeError as e:
+        error_msg = f"Invalid JSON in schema {schema_file}: {e}"
+        logger.exception(error_msg)
+        raise ValueError(error_msg) from e
+    except Exception as e:
+        error_msg = f"Error reading schema {name} from {schema_dir}: {e}"
+        logger.exception(error_msg)
+        raise
+
+
 def get_agent_list() -> list[str]:
     """Return list of agent names from config."""
     return list(load_agents_config().keys())
@@ -113,6 +149,31 @@ def get_prompt_map() -> dict[str, str]:
 def get_schema_path_map() -> dict[str, str | None]:
     """Return {agent_name: raw_schema_path_or_None}."""
     return {name: cfg.output_schema for name, cfg in load_agents_config().items()}
+
+
+def get_schema_map() -> dict[str, dict | None]:
+    """Return {agent_name: parsed_schema_dict_or_None} loaded from schema files.
+
+    Reads all schema files referenced in agents.yaml at startup.
+    Agents without output_schema get None.
+
+    Returns:
+        Dictionary mapping agent names to parsed schema dicts
+
+    Raises:
+        FileNotFoundError: If a referenced schema file is missing
+        ValueError: If a schema file contains invalid JSON
+    """
+    result = {}
+    for agent_name, cfg in load_agents_config().items():
+        if cfg.output_schema is None:
+            result[agent_name] = None
+        else:
+            logger.info(f"Loading schema '{cfg.output_schema}' for agent '{agent_name}'")
+            result[agent_name] = load_schema(cfg.output_schema)
+
+    logger.info(f"Loaded {sum(1 for v in result.values() if v is not None)} schemas")
+    return result
 
 
 def get_tool_map() -> dict[str, list[Any]]:

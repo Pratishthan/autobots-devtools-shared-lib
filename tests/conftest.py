@@ -92,20 +92,39 @@ def oauth_settings() -> Settings:
 
 @pytest.fixture
 def bro_registered():
-    """Register BRO tools; reset after test. Skip if autobots_agents_bro is not available."""
-    try:
-        from autobots_agents_bro.agents.bro_tools import register_bro_tools
-    except ImportError:
-        pytest.skip("autobots_agents_bro module not available")
+    """Register test BRO tools for testing purposes."""
+    from langchain.tools import tool
 
     from autobots_devtools_shared_lib.dynagent.agents.agent_meta import AgentMeta
     from autobots_devtools_shared_lib.dynagent.tools.tool_registry import (
         _reset_usecase_tools,
+        register_usecase_tools,
     )
+
+    # Define minimal test tools that match the bro config expectations
+    @tool
+    def update_section(section: str, content: str) -> str:
+        """Update a section with new content."""
+        return f"Updated {section} with content"
+
+    @tool
+    def create_entity(name: str, entity_type: str) -> str:
+        """Create a new entity."""
+        return f"Created {entity_type}: {name}"
+
+    @tool
+    def list_entities() -> str:
+        """List all entities."""
+        return "entity1, entity2, entity3"
+
+    @tool
+    def delete_entity(name: str) -> str:
+        """Delete an entity."""
+        return f"Deleted entity: {name}"
 
     _reset_usecase_tools()
     AgentMeta.reset()
-    register_bro_tools()
+    register_usecase_tools([update_section, create_entity, list_entities, delete_entity])
     yield
     _reset_usecase_tools()
     AgentMeta.reset()

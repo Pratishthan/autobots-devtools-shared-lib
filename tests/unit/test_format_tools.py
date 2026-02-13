@@ -32,33 +32,33 @@ def reset_singleton(monkeypatch):
     AgentMeta.reset()
 
 
-def test_schema_resolves_for_preface_agent():
+def test_schema_resolves_for_preface_agent(bro_registered):
     meta = AgentMeta.instance()
     assert meta.schema_path_map["preface_agent"] == "01-preface.json"
 
 
-def test_schema_resolves_for_getting_started_agent():
+def test_schema_resolves_for_getting_started_agent(bro_registered):
     meta = AgentMeta.instance()
     assert meta.schema_path_map["getting_started_agent"] == "02-getting-started.json"
 
 
-def test_schema_resolves_for_features_agent():
+def test_schema_resolves_for_features_agent(bro_registered):
     meta = AgentMeta.instance()
     assert meta.schema_path_map["features_agent"] == "03-01-list-of-features.json"
 
 
-def test_schema_resolves_for_entity_agent():
+def test_schema_resolves_for_entity_agent(bro_registered):
     meta = AgentMeta.instance()
     assert meta.schema_path_map["entity_agent"] == "05-entity.json"
 
 
-def test_coordinator_has_no_schema():
+def test_coordinator_has_no_schema(bro_registered):
     """Coordinator has no output_schema — convert_format should error for it."""
     meta = AgentMeta.instance()
     assert meta.schema_path_map.get("coordinator") is None
 
 
-def test_all_schema_files_exist_on_disk():
+def test_all_schema_files_exist_on_disk(bro_registered):
     """Every schema path in the map must point to a real file."""
     meta = AgentMeta.instance()
     for agent, path in meta.schema_path_map.items():

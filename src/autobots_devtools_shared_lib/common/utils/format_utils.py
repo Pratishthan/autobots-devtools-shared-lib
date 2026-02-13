@@ -22,15 +22,15 @@ def output_format_converter(agent_name: str, messages: list[AnyMessage]) -> str:
         messages: Full conversation history as list of messages.
     """
     meta = AgentMeta.instance()
-    schema_path = meta.schema_path_map.get(agent_name)
+    schema = meta.schema_map.get(agent_name)
 
-    if not schema_path:
+    if schema is None:
         return f"Error: no output schema configured for agent '{agent_name}'"
 
-    logger.info(f"convert_format: agent={agent_name}, schema={schema_path}")
+    logger.info(f"convert_format: agent={agent_name}, schema={schema}, #messages={len(messages)}")
 
     converter = StructuredOutputConverter(lm())
-    result, error = converter.convert(messages, schema_path, agent_name)
+    result, error = converter.convert(messages, schema, agent_name)
 
     if error or result is None:
         return f"Error: conversion failed — {error or 'unknown error'}"

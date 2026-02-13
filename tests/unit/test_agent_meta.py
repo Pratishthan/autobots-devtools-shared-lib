@@ -3,6 +3,7 @@
 
 import pytest
 
+from autobots_devtools_shared_lib.dynagent.agents.agent_config_utils import get_agent_list
 from autobots_devtools_shared_lib.dynagent.agents.agent_meta import AgentMeta
 
 EXPECTED_AGENTS = {
@@ -22,37 +23,37 @@ def reset_singleton():
     AgentMeta.reset()
 
 
-def test_singleton_returns_same_instance():
+def test_singleton_returns_same_instance(bro_registered):
     a = AgentMeta.instance()
     b = AgentMeta.instance()
     assert a is b
 
 
-def test_reset_clears_singleton():
+def test_reset_clears_singleton(bro_registered):
     a = AgentMeta.instance()
     AgentMeta.reset()
     b = AgentMeta.instance()
     assert a is not b
 
 
-def test_prompt_map_has_all_agents():
+def test_prompt_map_has_all_agents(bro_registered):
     meta = AgentMeta.instance()
     assert set(meta.prompt_map.keys()) == EXPECTED_AGENTS
 
 
-def test_prompt_map_values_are_non_empty_strings():
+def test_prompt_map_values_are_non_empty_strings(bro_registered):
     meta = AgentMeta.instance()
     for name, prompt in meta.prompt_map.items():
         assert isinstance(prompt, str)
         assert len(prompt) > 0, f"{name} has empty prompt"
 
 
-def test_schema_path_map_coordinator_is_none():
+def test_schema_path_map_coordinator_is_none(bro_registered):
     meta = AgentMeta.instance()
     assert meta.schema_path_map.get("coordinator") is None
 
 
-def test_schema_path_map_section_agents_populated():
+def test_schema_path_map_section_agents_populated(bro_registered):
     meta = AgentMeta.instance()
     for agent in (
         "preface_agent",
@@ -63,7 +64,7 @@ def test_schema_path_map_section_agents_populated():
         assert meta.schema_path_map.get(agent) is not None, f"{agent} schema_path_map is None"
 
 
-def test_tool_map_has_all_agents():
+def test_tool_map_has_all_agents(bro_registered):
     meta = AgentMeta.instance()
     assert set(meta.tool_map.keys()) == EXPECTED_AGENTS
 
@@ -74,3 +75,31 @@ def test_tool_map_values_are_non_empty_lists(bro_registered):
     for name, tools in meta.tool_map.items():
         assert isinstance(tools, list), f"{name} tool_map value is not a list"
         assert len(tools) > 0, f"{name} has no tools"
+
+
+def test_schema_map_has_all_agents(bro_registered):
+    """schema_map should have entries for all agents."""
+    meta = AgentMeta.instance()
+    agent_list = get_agent_list()
+    assert set(meta.schema_map.keys()) == set(agent_list)
+
+
+def test_schema_map_values_are_dicts_or_none(bro_registered):
+    """schema_map values should be dicts (parsed schemas) or None."""
+    meta = AgentMeta.instance()
+
+    for agent_name, schema in meta.schema_map.items():
+        if schema is None:
+            continue
+        assert isinstance(schema, dict), f"{agent_name} schema is not a dict"
+        assert "type" in schema, f"{agent_name} schema missing 'type' field"
+
+
+def test_schema_map_matches_schema_path_map_structure(bro_registered):
+    """Agents with schema paths should have schemas, others should have None."""
+    meta = AgentMeta.instance()
+
+    for agent_name in get_agent_list():
+        has_path = meta.schema_path_map.get(agent_name) is not None
+        has_schema = meta.schema_map.get(agent_name) is not None
+        assert has_path == has_schema, f"{agent_name}: schema_path_map and schema_map inconsistent"
