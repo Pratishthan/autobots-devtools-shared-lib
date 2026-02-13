@@ -4,9 +4,9 @@
 from collections.abc import Sequence
 from typing import Any
 
+from langchain.chat_models import BaseChatModel
 from langchain.messages import ToolMessage
 from langchain_core.messages import BaseMessage
-from langchain_google_genai import ChatGoogleGenerativeAI
 
 from autobots_devtools_shared_lib.common.observability.logging_utils import get_logger
 
@@ -16,7 +16,7 @@ logger = get_logger(__name__)
 class StructuredOutputConverter:
     """Convert conversation history to structured output using LLM."""
 
-    def __init__(self, model: ChatGoogleGenerativeAI):
+    def __init__(self, model: BaseChatModel):
         """Initialize with LLM model for conversion.
 
         Args:

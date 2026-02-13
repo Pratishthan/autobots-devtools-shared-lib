@@ -1,10 +1,18 @@
 # ABOUTME: Pydantic settings for dynagent configuration.
 # ABOUTME: Loads LLM, workspace, and observability settings from environment variables.
 
+from enum import StrEnum
 from pathlib import Path
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class LLMProvider(StrEnum):
+    """Supported LLM providers."""
+
+    GEMINI = "gemini"
+    ANTHROPIC = "anthropic"
 
 
 class Settings(BaseSettings):
@@ -17,6 +25,9 @@ class Settings(BaseSettings):
     )
 
     # LLM settings
+    llm_provider: LLMProvider = Field(
+        default=LLMProvider.GEMINI, description="LLM provider (gemini or anthropic)"
+    )
     llm_model: str = Field(default="gemini-2.0-flash", description="LLM model name")
     llm_temperature: float = Field(default=0, description="LLM temperature")
 

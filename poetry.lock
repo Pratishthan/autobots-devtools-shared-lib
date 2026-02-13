@@ -1860,6 +1860,23 @@ together = ["langchain-together"]
 xai = ["langchain-xai"]
 
 [[package]]
+name = "langchain-anthropic"
+version = "1.3.1"
+description = "Integration package connecting Claude (Anthropic) APIs and LangChain"
+optional = false
+python-versions = "<4.0.0,>=3.10.0"
+groups = ["main"]
+files = [
+    {file = "langchain_anthropic-1.3.1-py3-none-any.whl", hash = "sha256:1fc28cf8037c30597ee6172fc2ff9e345efe8149a8c2a39897b1eebba2948322"},
+    {file = "langchain_anthropic-1.3.1.tar.gz", hash = "sha256:4f3d7a4a7729ab1aeaf62d32c87d4d227c1b5421668ca9e3734562b383470b07"},
+]
+
+[package.dependencies]
+anthropic = ">=0.75.0,<1.0.0"
+langchain-core = ">=1.2.6,<2.0.0"
+pydantic = ">=2.7.4,<3.0.0"
+
+[[package]]
 name = "langchain-core"
 version = "1.2.8"
 description = "Building applications with LLMs through composability"
@@ -5795,4 +5812,4 @@ file-server-otel = ["opentelemetry-api", "opentelemetry-exporter-otlp-proto-http
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<4.0.0"
-content-hash = "18df4f4db265c8a7cefdef6b21ab5606f7b1afa908e20d09c9f302a6ad71acea"
+content-hash = "3d892febe72e1fe450ea164067b423a86d77ad86c70a25a4271d1d4dfa5c7a39"
