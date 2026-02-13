@@ -6,7 +6,6 @@ from typing import Any
 
 from langchain_core.runnables import RunnableConfig
 from langfuse import propagate_attributes
-from langgraph.graph.state import CompiledStateGraph
 
 from autobots_devtools_shared_lib.common.observability.logging_utils import get_logger
 from autobots_devtools_shared_lib.common.observability.trace_metadata import TraceMetadata
@@ -20,7 +19,7 @@ logger = get_logger(__name__)
 
 
 def invoke_agent(
-    agent: CompiledStateGraph,
+    agent_name: str,
     input_state: dict[str, Any],
     config: RunnableConfig,
     enable_tracing: bool = True,
@@ -33,7 +32,7 @@ def invoke_agent(
     workflows where agents are invoked programmatically (no UI rendering).
 
     Args:
-        agent: A LangGraph CompiledStateGraph to invoke.
+        agent_name: Name of the agent to invoke (must exist in agents.yaml).
         input_state: Input state dict (must include "messages" key at minimum).
         config: LangChain RunnableConfig (thread_id, callbacks, etc.).
         enable_tracing: Whether to enable Langfuse tracing (default True,
@@ -47,25 +46,36 @@ def invoke_agent(
         - "structured_response": Structured output (if agent produced one)
         - Any other state keys the agent maintains
 
+    Raises:
+        ValueError: If agent_name is unknown.
+
     Example:
-        >>> from autobots_devtools_shared_lib.dynagent.agents.base_agent import create_base_agent
-        >>> agent = create_base_agent("joke_agent")
         >>> result = invoke_agent(
-        ...     agent=agent,
+        ...     agent_name="joke_agent",
         ...     input_state={"messages": [{"role": "user", "content": "Tell me a joke"}]},
         ...     config={"configurable": {"thread_id": "test-123"}},
         ... )
         >>> print(result["structured_response"])
     """
+    # Validate agent exists
+    from autobots_devtools_shared_lib.dynagent.agents.agent_config_utils import get_agent_list
+
+    valid_agents = get_agent_list()
+    if agent_name not in valid_agents:
+        raise ValueError(f"Unknown agent: {agent_name}. Valid agents: {', '.join(valid_agents)}")
     # Use provided metadata or create default
     if trace_metadata is None:
-        trace_metadata = TraceMetadata.create()
+        trace_metadata = TraceMetadata.create(
+            app_name=f"{agent_name}-invoke",
+        )
         if "session_id" in input_state:
             trace_metadata.session_id = input_state["session_id"]
 
-    # Ensure input_state has session_id for agent context
+    # Ensure input_state has session_id and agent_name for agent context
     if "session_id" not in input_state:
         input_state["session_id"] = trace_metadata.session_id
+    if "agent_name" not in input_state:
+        input_state["agent_name"] = agent_name
 
     # Auto-create Langfuse handler if tracing enabled
     if enable_tracing:
@@ -92,8 +102,9 @@ def invoke_agent(
         ):
             span_ctx = (
                 client.start_as_current_span(
-                    name=f"{trace_metadata.app_name}-invoke",
+                    name=f"{trace_metadata.app_name}-{agent_name}",
                     input={
+                        "agent_name": agent_name,
                         "message_count": len(input_state.get("messages", [])),
                     },
                     metadata=trace_metadata.to_dict(),
@@ -103,7 +114,20 @@ def invoke_agent(
             )
 
             with span_ctx as span:
-                logger.info(f"Invoking agent (sync) with session_id={trace_metadata.session_id}")
+                # Create agent
+                from langgraph.checkpoint.memory import InMemorySaver
+
+                from autobots_devtools_shared_lib.dynagent.agents.base_agent import (
+                    create_base_agent,
+                )
+
+                agent = create_base_agent(
+                    checkpointer=InMemorySaver(), sync_mode=True, initial_agent_name=agent_name
+                )
+
+                logger.info(
+                    f"Invoking agent '{agent_name}' (sync) with session_id={trace_metadata.session_id}"
+                )
                 result = agent.invoke(input_state, config=config)
 
                 # Update span with results
@@ -128,7 +152,7 @@ def invoke_agent(
 
 
 async def ainvoke_agent(
-    agent: CompiledStateGraph,
+    agent_name: str,
     input_state: dict[str, Any],
     config: RunnableConfig,
     enable_tracing: bool = True,
@@ -142,7 +166,7 @@ async def ainvoke_agent(
     invoked programmatically (no UI rendering).
 
     Args:
-        agent: A LangGraph CompiledStateGraph to invoke.
+        agent_name: Name of the agent to invoke (must exist in agents.yaml).
         input_state: Input state dict (must include "messages" key at minimum).
         config: LangChain RunnableConfig (thread_id, callbacks, etc.).
         enable_tracing: Whether to enable Langfuse tracing (default True,
@@ -156,25 +180,36 @@ async def ainvoke_agent(
         - "structured_response": Structured output (if agent produced one)
         - Any other state keys the agent maintains
 
+    Raises:
+        ValueError: If agent_name is unknown.
+
     Example:
-        >>> from autobots_devtools_shared_lib.dynagent.agents.base_agent import create_base_agent
-        >>> agent = create_base_agent("joke_agent")
         >>> result = await ainvoke_agent(
-        ...     agent=agent,
+        ...     agent_name="joke_agent",
         ...     input_state={"messages": [{"role": "user", "content": "Tell me a joke"}]},
         ...     config={"configurable": {"thread_id": "test-123"}},
         ... )
         >>> print(result["structured_response"])
     """
+    # Validate agent exists
+    from autobots_devtools_shared_lib.dynagent.agents.agent_config_utils import get_agent_list
+
+    valid_agents = get_agent_list()
+    if agent_name not in valid_agents:
+        raise ValueError(f"Unknown agent: {agent_name}. Valid agents: {', '.join(valid_agents)}")
     # Use provided metadata or create default
     if trace_metadata is None:
-        trace_metadata = TraceMetadata.create()
+        trace_metadata = TraceMetadata.create(
+            app_name=f"{agent_name}-ainvoke",
+        )
         if "session_id" in input_state:
             trace_metadata.session_id = input_state["session_id"]
 
-    # Ensure input_state has session_id for agent context
+    # Ensure input_state has session_id and agent_name for agent context
     if "session_id" not in input_state:
         input_state["session_id"] = trace_metadata.session_id
+    if "agent_name" not in input_state:
+        input_state["agent_name"] = agent_name
 
     # Auto-create Langfuse handler if tracing enabled
     if enable_tracing:
@@ -201,8 +236,9 @@ async def ainvoke_agent(
         ):
             span_ctx = (
                 client.start_as_current_span(
-                    name=f"{trace_metadata.app_name}-ainvoke",
+                    name=f"{trace_metadata.app_name}-{agent_name}",
                     input={
+                        "agent_name": agent_name,
                         "message_count": len(input_state.get("messages", [])),
                     },
                     metadata=trace_metadata.to_dict(),
@@ -212,7 +248,20 @@ async def ainvoke_agent(
             )
 
             with span_ctx as span:
-                logger.info(f"Invoking agent (async) with session_id={trace_metadata.session_id}")
+                # Create agent
+                from langgraph.checkpoint.memory import InMemorySaver
+
+                from autobots_devtools_shared_lib.dynagent.agents.base_agent import (
+                    create_base_agent,
+                )
+
+                agent = create_base_agent(
+                    checkpointer=InMemorySaver(), sync_mode=False, initial_agent_name=agent_name
+                )
+
+                logger.info(
+                    f"Invoking agent '{agent_name}' (async) with session_id={trace_metadata.session_id}"
+                )
                 result = await agent.ainvoke(input_state, config=config)
 
                 # Update span with results

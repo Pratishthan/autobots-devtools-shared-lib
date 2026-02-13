@@ -4,7 +4,6 @@
 import pytest
 
 from autobots_devtools_shared_lib.common.observability.trace_metadata import TraceMetadata
-from autobots_devtools_shared_lib.dynagent.agents.base_agent import create_base_agent
 from autobots_devtools_shared_lib.dynagent.agents.invocation_utils import (
     ainvoke_agent,
     invoke_agent,
@@ -15,12 +14,10 @@ from tests.conftest import requires_google_api
 @requires_google_api
 def test_invoke_agent_basic():
     """Test basic sync invocation with real agent."""
-    agent = create_base_agent("coordinator")
-
     input_state = {"messages": [{"role": "user", "content": "Hello, what can you help with?"}]}
     config = {"configurable": {"thread_id": "test-invoke-basic"}}
 
-    result = invoke_agent(agent, input_state, config)
+    result = invoke_agent("coordinator", input_state, config)
 
     assert "messages" in result
     assert len(result["messages"]) > 1  # At least user message + AI response
@@ -34,12 +31,10 @@ def test_invoke_agent_basic():
 @requires_google_api
 def test_invoke_agent_with_tracing_disabled():
     """Test sync invocation with tracing disabled."""
-    agent = create_base_agent("coordinator")
-
     input_state = {"messages": [{"role": "user", "content": "Tell me about this system."}]}
     config = {"configurable": {"thread_id": "test-invoke-no-trace"}}
 
-    result = invoke_agent(agent, input_state, config, enable_tracing=False)
+    result = invoke_agent("coordinator", input_state, config, enable_tracing=False)
 
     assert "messages" in result
     ai_messages = [m for m in result["messages"] if m.get("role") in ["ai", "assistant"]]
@@ -49,8 +44,6 @@ def test_invoke_agent_with_tracing_disabled():
 @requires_google_api
 def test_invoke_agent_with_custom_metadata():
     """Test sync invocation with custom TraceMetadata."""
-    agent = create_base_agent("coordinator")
-
     metadata = TraceMetadata(
         session_id="integration-test-session",
         app_name="test-invocation",
@@ -61,7 +54,7 @@ def test_invoke_agent_with_custom_metadata():
     input_state = {"messages": [{"role": "user", "content": "What agents are available?"}]}
     config = {"configurable": {"thread_id": "test-invoke-metadata"}}
 
-    result = invoke_agent(agent, input_state, config, trace_metadata=metadata)
+    result = invoke_agent("coordinator", input_state, config, trace_metadata=metadata)
 
     assert "messages" in result
     assert "session_id" in result
@@ -71,15 +64,13 @@ def test_invoke_agent_with_custom_metadata():
 @requires_google_api
 def test_invoke_agent_preserves_session_id():
     """Test that session_id in input_state is preserved."""
-    agent = create_base_agent("coordinator")
-
     input_state = {
         "messages": [{"role": "user", "content": "Hello"}],
         "session_id": "my-custom-session-123",
     }
     config = {"configurable": {"thread_id": "test-invoke-session"}}
 
-    result = invoke_agent(agent, input_state, config, enable_tracing=False)
+    result = invoke_agent("coordinator", input_state, config, enable_tracing=False)
 
     assert result["session_id"] == "my-custom-session-123"
 
@@ -87,12 +78,10 @@ def test_invoke_agent_preserves_session_id():
 @requires_google_api
 def test_invoke_agent_different_agent():
     """Test invocation with different agent (preface_agent)."""
-    agent = create_base_agent("preface_agent")
-
     input_state = {"messages": [{"role": "user", "content": "What is the preface section about?"}]}
     config = {"configurable": {"thread_id": "test-invoke-preface"}}
 
-    result = invoke_agent(agent, input_state, config, enable_tracing=False)
+    result = invoke_agent("preface_agent", input_state, config, enable_tracing=False)
 
     assert "messages" in result
     ai_messages = [m for m in result["messages"] if m.get("role") in ["ai", "assistant"]]
@@ -108,12 +97,10 @@ def test_invoke_agent_different_agent():
 @pytest.mark.asyncio
 async def test_ainvoke_agent_basic():
     """Test basic async invocation with real agent."""
-    agent = create_base_agent("coordinator")
-
     input_state = {"messages": [{"role": "user", "content": "Hello, what can you help with?"}]}
     config = {"configurable": {"thread_id": "test-ainvoke-basic"}}
 
-    result = await ainvoke_agent(agent, input_state, config)
+    result = await ainvoke_agent("coordinator", input_state, config)
 
     assert "messages" in result
     assert len(result["messages"]) > 1
@@ -128,12 +115,10 @@ async def test_ainvoke_agent_basic():
 @pytest.mark.asyncio
 async def test_ainvoke_agent_with_tracing_disabled():
     """Test async invocation with tracing disabled."""
-    agent = create_base_agent("coordinator")
-
     input_state = {"messages": [{"role": "user", "content": "Tell me about this system."}]}
     config = {"configurable": {"thread_id": "test-ainvoke-no-trace"}}
 
-    result = await ainvoke_agent(agent, input_state, config, enable_tracing=False)
+    result = await ainvoke_agent("coordinator", input_state, config, enable_tracing=False)
 
     assert "messages" in result
     ai_messages = [m for m in result["messages"] if m.get("role") in ["ai", "assistant"]]
@@ -144,8 +129,6 @@ async def test_ainvoke_agent_with_tracing_disabled():
 @pytest.mark.asyncio
 async def test_ainvoke_agent_with_custom_metadata():
     """Test async invocation with custom TraceMetadata."""
-    agent = create_base_agent("coordinator")
-
     metadata = TraceMetadata(
         session_id="integration-test-session-async",
         app_name="test-invocation-async",
@@ -156,7 +139,7 @@ async def test_ainvoke_agent_with_custom_metadata():
     input_state = {"messages": [{"role": "user", "content": "What agents are available?"}]}
     config = {"configurable": {"thread_id": "test-ainvoke-metadata"}}
 
-    result = await ainvoke_agent(agent, input_state, config, trace_metadata=metadata)
+    result = await ainvoke_agent("coordinator", input_state, config, trace_metadata=metadata)
 
     assert "messages" in result
     assert "session_id" in result
@@ -167,15 +150,13 @@ async def test_ainvoke_agent_with_custom_metadata():
 @pytest.mark.asyncio
 async def test_ainvoke_agent_preserves_session_id():
     """Test that session_id in input_state is preserved (async)."""
-    agent = create_base_agent("coordinator")
-
     input_state = {
         "messages": [{"role": "user", "content": "Hello"}],
         "session_id": "my-custom-session-async-456",
     }
     config = {"configurable": {"thread_id": "test-ainvoke-session"}}
 
-    result = await ainvoke_agent(agent, input_state, config, enable_tracing=False)
+    result = await ainvoke_agent("coordinator", input_state, config, enable_tracing=False)
 
     assert result["session_id"] == "my-custom-session-async-456"
 
@@ -184,12 +165,10 @@ async def test_ainvoke_agent_preserves_session_id():
 @pytest.mark.asyncio
 async def test_ainvoke_agent_different_agent():
     """Test async invocation with different agent (preface_agent)."""
-    agent = create_base_agent("preface_agent")
-
     input_state = {"messages": [{"role": "user", "content": "What is the preface section about?"}]}
     config = {"configurable": {"thread_id": "test-ainvoke-preface"}}
 
-    result = await ainvoke_agent(agent, input_state, config, enable_tracing=False)
+    result = await ainvoke_agent("preface_agent", input_state, config, enable_tracing=False)
 
     assert "messages" in result
     ai_messages = [m for m in result["messages"] if m.get("role") in ["ai", "assistant"]]
@@ -205,16 +184,14 @@ async def test_ainvoke_agent_different_agent():
 @pytest.mark.asyncio
 async def test_sync_and_async_produce_similar_results():
     """Test that sync and async versions produce similar response structures."""
-    agent = create_base_agent("coordinator")
-
     input_state = {"messages": [{"role": "user", "content": "List the available agents."}]}
     config_sync = {"configurable": {"thread_id": "test-sync-result"}}
     config_async = {"configurable": {"thread_id": "test-async-result"}}
 
     # Run both versions
-    sync_result = invoke_agent(agent, input_state.copy(), config_sync, enable_tracing=False)
+    sync_result = invoke_agent("coordinator", input_state.copy(), config_sync, enable_tracing=False)
     async_result = await ainvoke_agent(
-        agent, input_state.copy(), config_async, enable_tracing=False
+        "coordinator", input_state.copy(), config_async, enable_tracing=False
     )
 
     # Both should have the same structure
