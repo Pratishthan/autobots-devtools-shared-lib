@@ -7,7 +7,6 @@ from langfuse import Langfuse
 from langfuse.langchain import CallbackHandler
 
 from autobots_devtools_shared_lib.common.observability.logging_utils import get_logger
-from autobots_devtools_shared_lib.dynagent.config.settings import get_settings
 
 logger = get_logger(__name__)
 
@@ -24,6 +23,8 @@ def init_tracing() -> bool:
         True if tracing was initialized successfully, False otherwise.
     """
     global _langfuse_client
+
+    from autobots_devtools_shared_lib.dynagent.config.settings import get_settings
 
     settings = get_settings()
 
@@ -56,6 +57,8 @@ def get_langfuse_handler() -> CallbackHandler | None:
     """
     if _langfuse_client is None:
         return None
+
+    from autobots_devtools_shared_lib.dynagent.config.settings import get_settings
 
     settings = get_settings()
     return CallbackHandler(public_key=settings.langfuse_public_key)
