@@ -1,3 +1,0 @@
-# Install to run the local file server: pip install -r local_file_server/requirements-file-server.txt
-fastapi>=0.115.0
-uvicorn[standard]>=0.32.0
