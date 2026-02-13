@@ -9,6 +9,7 @@ from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.graph.state import CompiledStateGraph
 
 from autobots_devtools_shared_lib.common.observability import get_agent_logger
+from autobots_devtools_shared_lib.dynagent.agents.agent_config_utils import get_default_agent
 from autobots_devtools_shared_lib.dynagent.agents.agent_meta import AgentMeta
 from autobots_devtools_shared_lib.dynagent.agents.middleware import (
     inject_agent_async,
@@ -22,7 +23,7 @@ logger = get_agent_logger(__name__)
 
 
 def create_base_agent(
-    checkpointer: Any = None, sync_mode: bool = False, agent_name: str | None = None
+    checkpointer: Any = None, sync_mode: bool = False, initial_agent_name: str | None = None
 ) -> CompiledStateGraph:
     """Create the dynagent base agent with middleware.
 
@@ -48,9 +49,12 @@ def create_base_agent(
 
     _middleware = inject_agent_sync if sync_mode else inject_agent_async
 
+    if initial_agent_name is None:
+        initial_agent_name = get_default_agent()
+
     return create_agent(
         model,
-        name=agent_name or "dynagent",
+        name=initial_agent_name or "dynagent",
         tools=all_tools,
         state_schema=Dynagent,
         middleware=cast(

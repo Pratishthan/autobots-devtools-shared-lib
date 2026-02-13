@@ -2,7 +2,6 @@
 # ABOUTME: No imports from any use-case package (e.g. bro_chat); safe for reuse.
 
 import json
-import uuid
 from collections import deque
 from collections.abc import Callable
 from contextlib import nullcontext
@@ -12,8 +11,10 @@ from typing import Any
 import chainlit as cl
 from langchain_core.runnables import RunnableConfig
 from langfuse import propagate_attributes
+from langgraph.graph.state import CompiledStateGraph
 
 from autobots_devtools_shared_lib.common.observability.logging_utils import get_logger
+from autobots_devtools_shared_lib.common.observability.trace_metadata import TraceMetadata
 from autobots_devtools_shared_lib.common.observability.tracing import (
     flush_tracing,
     get_langfuse_client,
@@ -99,13 +100,12 @@ def _extract_output_type(step_name: str | None) -> str | None:
 
 
 async def stream_agent_events(
-    agent: Any,
+    agent: CompiledStateGraph,
     input_state: dict[str, Any],
     config: RunnableConfig,
     on_structured_output: Callable[[dict[str, Any], str | None], str] | None = None,
     enable_tracing: bool = True,
-    session_id: str | None = None,
-    trace_metadata: dict[str, Any] | None = None,
+    trace_metadata: TraceMetadata | None = None,
 ) -> None:
     """Stream events from a LangGraph agent and render them in Chainlit.
 
@@ -123,13 +123,18 @@ async def stream_agent_events(
             ``(data: dict, output_type: str | None) -> str``.
         enable_tracing: Whether to enable Langfuse tracing (default True, gracefully
             degrades if not configured).
-        session_id: Optional session ID for correlation (auto-generated if None).
-        trace_metadata: Optional metadata dict with keys: app_name, user_id, tags, etc.
-            Defaults: app_name="stream_agent_events", user_id="ui_agent", tags=[].
+        trace_metadata: Optional TraceMetadata instance with session_id, app_name,
+            user_id, and tags. If None, uses defaults.
     """
-    # Generate session_id if not provided
-    if session_id is None:
-        session_id = str(uuid.uuid4())
+    # Use provided metadata or create default
+    if trace_metadata is None:
+        trace_metadata = TraceMetadata.create()
+        if "session_id" in input_state:
+            trace_metadata.session_id = input_state["session_id"]
+
+    # Ensure input_state has session_id for agent context
+    if "session_id" not in input_state:
+        input_state["session_id"] = trace_metadata.session_id
 
     # Auto-create Langfuse handler if tracing enabled and not already in config callbacks
     if enable_tracing:
@@ -145,33 +150,22 @@ async def stream_agent_events(
             ):
                 config["callbacks"] = [*existing_callbacks, langfuse_handler]
 
-    # Extract metadata with defaults
-    app_name = (
-        trace_metadata.get("app_name", "stream_agent_events")
-        if trace_metadata
-        else "stream_agent_events"
-    )
-    user_id = trace_metadata.get("user_id", "ui_agent") if trace_metadata else "ui_agent"
-    tags = trace_metadata.get("tags", []) if trace_metadata else []
-
     # --- Execute with observability wrapper ---
     try:
         client = get_langfuse_client() if enable_tracing else None
-        agent_name = input_state.get("agent_name", "unknown")
 
         with propagate_attributes(
-            user_id=user_id,
-            session_id=session_id,
-            tags=tags,
+            user_id=trace_metadata.user_id,
+            session_id=trace_metadata.session_id,
+            tags=trace_metadata.tags,
         ):
             span_ctx = (
                 client.start_as_current_span(
-                    name=f"{app_name}-{agent_name}-stream",
+                    name=f"{trace_metadata.app_name}-stream",
                     input={
-                        "agent_name": agent_name,
                         "message_count": len(input_state.get("messages", [])),
                     },
-                    metadata={"session_id": session_id, **(trace_metadata or {})},
+                    metadata=trace_metadata.to_dict(),
                 )
                 if client is not None
                 else nullcontext()
@@ -193,7 +187,8 @@ async def stream_agent_events(
 
                     # --- token streaming ----------------------------------------------
                     if kind == "on_chat_model_stream":
-                        content = event.get("data", {}).get("chunk", {}).content
+                        chunk = event.get("data", {}).get("chunk")
+                        content = chunk.content if chunk and hasattr(chunk, "content") else None
                         if content:
                             # Handle content as list or string
                             if isinstance(content, list):
