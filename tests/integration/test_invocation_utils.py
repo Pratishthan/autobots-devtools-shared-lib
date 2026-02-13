@@ -2,6 +2,7 @@
 # ABOUTME: bro_registered_integration (autouse) in conftest handles tool registration.
 
 import pytest
+from langchain_core.messages import AIMessage, HumanMessage
 
 from autobots_devtools_shared_lib.common.observability.trace_metadata import TraceMetadata
 from autobots_devtools_shared_lib.dynagent.agents.invocation_utils import (
@@ -21,10 +22,10 @@ def test_invoke_agent_basic():
 
     assert "messages" in result
     assert len(result["messages"]) > 1  # At least user message + AI response
-    assert result["messages"][0]["role"] == "user"
+    assert isinstance(result["messages"][0], HumanMessage)
 
     # Check that we have an AI response
-    ai_messages = [m for m in result["messages"] if m.get("role") in ["ai", "assistant"]]
+    ai_messages = [m for m in result["messages"] if isinstance(m, AIMessage)]
     assert len(ai_messages) > 0
 
 
@@ -37,7 +38,7 @@ def test_invoke_agent_with_tracing_disabled():
     result = invoke_agent("coordinator", input_state, config, enable_tracing=False)
 
     assert "messages" in result
-    ai_messages = [m for m in result["messages"] if m.get("role") in ["ai", "assistant"]]
+    ai_messages = [m for m in result["messages"] if isinstance(m, AIMessage)]
     assert len(ai_messages) > 0
 
 
@@ -84,7 +85,7 @@ def test_invoke_agent_different_agent():
     result = invoke_agent("preface_agent", input_state, config, enable_tracing=False)
 
     assert "messages" in result
-    ai_messages = [m for m in result["messages"] if m.get("role") in ["ai", "assistant"]]
+    ai_messages = [m for m in result["messages"] if isinstance(m, AIMessage)]
     assert len(ai_messages) > 0
 
 
@@ -104,10 +105,10 @@ async def test_ainvoke_agent_basic():
 
     assert "messages" in result
     assert len(result["messages"]) > 1
-    assert result["messages"][0]["role"] == "user"
+    assert isinstance(result["messages"][0], HumanMessage)
 
     # Check that we have an AI response
-    ai_messages = [m for m in result["messages"] if m.get("role") in ["ai", "assistant"]]
+    ai_messages = [m for m in result["messages"] if isinstance(m, AIMessage)]
     assert len(ai_messages) > 0
 
 
@@ -121,7 +122,7 @@ async def test_ainvoke_agent_with_tracing_disabled():
     result = await ainvoke_agent("coordinator", input_state, config, enable_tracing=False)
 
     assert "messages" in result
-    ai_messages = [m for m in result["messages"] if m.get("role") in ["ai", "assistant"]]
+    ai_messages = [m for m in result["messages"] if isinstance(m, AIMessage)]
     assert len(ai_messages) > 0
 
 
@@ -171,7 +172,7 @@ async def test_ainvoke_agent_different_agent():
     result = await ainvoke_agent("preface_agent", input_state, config, enable_tracing=False)
 
     assert "messages" in result
-    ai_messages = [m for m in result["messages"] if m.get("role") in ["ai", "assistant"]]
+    ai_messages = [m for m in result["messages"] if isinstance(m, AIMessage)]
     assert len(ai_messages) > 0
 
 
@@ -201,7 +202,7 @@ async def test_sync_and_async_produce_similar_results():
     assert len(async_result["messages"]) > 1
 
     # Both should have AI responses
-    sync_ai = [m for m in sync_result["messages"] if m.get("role") in ["ai", "assistant"]]
-    async_ai = [m for m in async_result["messages"] if m.get("role") in ["ai", "assistant"]]
+    sync_ai = [m for m in sync_result["messages"] if isinstance(m, AIMessage)]
+    async_ai = [m for m in async_result["messages"] if isinstance(m, AIMessage)]
     assert len(sync_ai) > 0
     assert len(async_ai) > 0
