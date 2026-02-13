@@ -1,7 +1,6 @@
 # ABOUTME: Unit tests for agent configuration utility functions.
 # ABOUTME: Validates config loading helpers produce correct shapes from agents.yaml.
 
-import logging
 from pathlib import Path
 
 import pytest
@@ -98,22 +97,15 @@ def test_get_tool_map_resolves_per_agent(bro_registered):
     assert "delete_entity" in entity_names
 
 
-def test_get_tool_map_warns_on_unresolved(caplog):
-    """Without BRO registration, BRO tools are unresolved → warning logged."""
-    from autobots_devtools_shared_lib.dynagent.tools.tool_registry import (
-        _reset_usecase_tools,
-    )
+def test_get_tool_map_raises_on_unresolved():
+    """Without BRO registration, BRO tools are unresolved → ValueError raised."""
+    from autobots_devtools_shared_lib.dynagent.tools.tool_registry import _reset_usecase_tools
 
     _reset_usecase_tools()
-    with caplog.at_level(logging.WARNING):
-        tool_map = get_tool_map()
 
-    # BRO tools like create_document should be absent from coordinator
-    coord_names = {t.name for t in tool_map["coordinator"]}
-    assert "create_document" not in coord_names
-
-    # And a warning should have been logged
-    assert any("unresolved tool" in r.message for r in caplog.records)
+    # Should raise ValueError when encountering unresolved tools
+    with pytest.raises(ValueError, match=r"Unresolved tool .* for agent"):
+        get_tool_map()
 
     # Cleanup
     _reset_usecase_tools()

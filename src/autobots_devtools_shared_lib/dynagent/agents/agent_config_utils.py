@@ -180,7 +180,10 @@ def get_tool_map() -> dict[str, list[Any]]:
     """Return {agent_name: [tool_objects]}.
 
     Resolves each agent's tool list from agents.yaml against the combined
-    default + usecase tool pool.  Unrecognised tool names are skipped with a warning.
+    default + usecase tool pool.
+
+    Raises:
+        ValueError: If a tool name referenced in agents.yaml cannot be resolved
     """
     from autobots_devtools_shared_lib.dynagent.tools.tool_registry import get_all_tools
 
@@ -194,7 +197,9 @@ def get_tool_map() -> dict[str, list[Any]]:
                 resolved.append(tool_by_name[tool_name])
                 logger.info(f"Agent '{name}': adding resolved tool '{tool_name}'")
             else:
-                logger.warning(f"get_tool_map: unresolved tool '{tool_name}' for agent '{name}'")
+                error_msg = f"Unresolved tool '{tool_name}' for agent '{name}'. Available tools: {sorted(tool_by_name.keys())}"
+                logger.error(error_msg)
+                raise ValueError(error_msg)
         result[name] = resolved
     return result
 
