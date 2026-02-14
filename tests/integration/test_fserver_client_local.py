@@ -43,6 +43,7 @@ def local_file_server(tmp_path):
 
     with patch("autobots_devtools_shared_lib.common.servers.fileserver.app.config") as mock_config:
         mock_config.root = tmp_path
+        mock_config.max_file_size_mb = 0  # 0 = no limit
         test_client = TestClient(app, base_url="http://testserver")
         wrapper = _TestClientWrapper(test_client)
         mock_client_instance = MagicMock()
