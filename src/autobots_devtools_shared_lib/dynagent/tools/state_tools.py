@@ -8,7 +8,7 @@ from langchain.tools import ToolRuntime, tool
 from langgraph.types import Command
 
 from autobots_devtools_shared_lib.common.observability.logging_utils import get_logger
-from autobots_devtools_shared_lib.dynagent.config.settings import get_settings
+from autobots_devtools_shared_lib.dynagent.config.dynagent_settings import get_dynagent_settings
 from autobots_devtools_shared_lib.dynagent.models.state import Dynagent
 
 logger = get_logger(__name__)
@@ -52,7 +52,7 @@ def transition_cmd(message: str, tool_call_id: str, new_agent: str, **updates: A
 
 def _do_write_file(session_id: str, filename: str, content: str) -> str:
     """Core write logic."""
-    workspace_base = get_settings().workspace_base
+    workspace_base = get_dynagent_settings().workspace_base
     path = workspace_base / session_id / filename
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content)
@@ -62,7 +62,7 @@ def _do_write_file(session_id: str, filename: str, content: str) -> str:
 
 def _do_read_file(session_id: str, filename: str) -> str:
     """Core read logic."""
-    workspace_base = get_settings().workspace_base
+    workspace_base = get_dynagent_settings().workspace_base
     path = workspace_base / session_id / filename
     if not path.exists():
         return f"Error: file not found: workspace/{session_id}/{filename}"

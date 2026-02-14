@@ -45,3 +45,28 @@ New signature:
      enable_tracing: bool = True,
      trace_metadata: TraceMetadata | None = None,
  ) -> BatchResult:`
+
+---
+
+# 14-Feb
+
+## Dynagent settings rename and LLM parameters
+
+**Impact: shared-lib and all use cases (e.g. Jarvis).**
+
+1. **Module and API renames (already applied in codebase)**
+   - `config/settings.py` → `config/dynagent_settings.py`
+   - `get_settings()` → `get_dynagent_settings()`
+   - `set_settings()` → `set_dynagent_settings()`
+   - Backward compatibility: `Settings` remains an alias for `DynagentSettings`.
+
+2. **DynagentSettings: all LLM parameters**
+   - Added to `DynagentSettings`: `google_api_key`, `anthropic_api_key` (env: `GOOGLE_API_KEY`, `ANTHROPIC_API_KEY`).
+   - Existing: `llm_provider`, `llm_model`, `llm_temperature` (env: `LLM_PROVIDER`, `LLM_MODEL`, `LLM_TEMPERATURE`).
+   - `dynagent.llm.lm()` now passes the appropriate API key from settings into the LLM client.
+
+3. **Use-case cleanup (Jarvis)**
+   - Removed `google_api_key` from Jarvis `Settings`; it is inherited from `DynagentSettings`. `GOOGLE_API_KEY` is still set in `.env` and read by dynagent.
+
+4. **Tests**
+   - Shared-lib: `tests/unit/test_settings.py` renamed to `tests/unit/test_dynagent_settings.py`; test class `TestSettings` → `TestDynagentSettings` where relevant.

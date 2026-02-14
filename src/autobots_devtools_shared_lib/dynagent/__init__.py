@@ -19,7 +19,12 @@ from autobots_devtools_shared_lib.dynagent.agents.invocation_utils import (
     ainvoke_agent,
     invoke_agent,
 )
-from autobots_devtools_shared_lib.dynagent.config.settings import LLMProvider
+from autobots_devtools_shared_lib.dynagent.config.dynagent_settings import (
+    DynagentSettings,
+    LLMProvider,
+    get_dynagent_settings,
+    set_dynagent_settings,
+)
 from autobots_devtools_shared_lib.dynagent.llm.llm import lm
 from autobots_devtools_shared_lib.dynagent.models.state import Dynagent
 from autobots_devtools_shared_lib.dynagent.tools.tool_registry import (
@@ -30,13 +35,16 @@ __all__ = [
     "AgentMeta",
     "BatchResult",
     "Dynagent",
+    "DynagentSettings",
     "LLMProvider",
     "RecordResult",
     "ainvoke_agent",
     "batch_invoker",
     "create_base_agent",
     "get_batch_enabled_agents",
+    "get_dynagent_settings",
     "invoke_agent",
     "lm",
     "register_usecase_tools",
+    "set_dynagent_settings",
 ]

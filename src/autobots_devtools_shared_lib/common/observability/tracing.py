@@ -17,16 +17,18 @@ def init_tracing() -> bool:
     """
     Initialize Langfuse tracing.
 
-    Reads configuration from environment via get_settings().
+    Reads configuration from environment via get_dynagent_settings().
 
     Returns:
         True if tracing was initialized successfully, False otherwise.
     """
     global _langfuse_client
 
-    from autobots_devtools_shared_lib.dynagent.config.settings import get_settings
+    from autobots_devtools_shared_lib.dynagent.config.dynagent_settings import (
+        get_dynagent_settings,
+    )
 
-    settings = get_settings()
+    settings = get_dynagent_settings()
 
     if not settings.is_langfuse_configured():
         logger.info("Langfuse not configured, tracing disabled")
@@ -58,9 +60,11 @@ def get_langfuse_handler() -> CallbackHandler | None:
     if _langfuse_client is None:
         return None
 
-    from autobots_devtools_shared_lib.dynagent.config.settings import get_settings
+    from autobots_devtools_shared_lib.dynagent.config.dynagent_settings import (
+        get_dynagent_settings,
+    )
 
-    settings = get_settings()
+    settings = get_dynagent_settings()
     return CallbackHandler(public_key=settings.langfuse_public_key)
 
 

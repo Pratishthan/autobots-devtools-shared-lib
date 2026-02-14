@@ -9,7 +9,9 @@ from autobots_devtools_shared_lib.dynagent.agents.agent_config_utils import (
     _reset_agent_config,
 )
 from autobots_devtools_shared_lib.dynagent.agents.agent_meta import AgentMeta
-from autobots_devtools_shared_lib.dynagent.config.settings import get_settings
+from autobots_devtools_shared_lib.dynagent.config.dynagent_settings import (
+    get_dynagent_settings,
+)
 
 
 @pytest.fixture(autouse=True)
@@ -64,5 +66,5 @@ def test_all_schema_files_exist_on_disk(bro_registered):
     for agent, path in meta.schema_path_map.items():
         if path is None:
             continue
-        schema_file = get_settings().dynagent_config_root_dir / "schemas" / path
+        schema_file = get_dynagent_settings().dynagent_config_root_dir / "schemas" / path
         assert schema_file.exists(), f"Schema file missing for {agent}: {schema_file}"

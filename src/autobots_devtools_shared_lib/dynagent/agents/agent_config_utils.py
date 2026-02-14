@@ -2,7 +2,6 @@
 # ABOUTME: Reads agents.yaml and provides typed accessors for prompts, tools, schemas.
 
 import json
-import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -10,6 +9,7 @@ from typing import Any
 import yaml
 
 from autobots_devtools_shared_lib.common.observability.logging_utils import get_logger
+from autobots_devtools_shared_lib.dynagent.config.dynagent_settings import get_dynagent_settings
 
 logger = get_logger(__name__)
 
@@ -56,12 +56,10 @@ def _reset_agent_config() -> None:
 
 
 def get_config_dir() -> Path:
-    """Get the configuration directory from environment variable."""
-    config_dir = os.getenv("DYNAGENT_CONFIG_ROOT_DIR")
+    """Get the configuration directory from dynagent settings (env: DYNAGENT_CONFIG_ROOT_DIR)."""
+    config_dir = get_dynagent_settings().dynagent_config_root_dir
     logger.info(f"Using config directory: {config_dir}")
-    if not config_dir:
-        raise OSError("DYNAGENT_CONFIG_ROOT_DIR environment variable is not set")
-    return Path(config_dir)
+    return config_dir
 
 
 # NOTE: Call get_config_dir() instead of using a global CONFIG_DIR to allow
