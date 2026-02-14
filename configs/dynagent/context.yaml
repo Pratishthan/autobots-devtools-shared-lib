@@ -1,0 +1,12 @@
+context:
+  # Backend to use for dynagent context persistence.
+  # Supported values:
+  # - "memory": in-process, non-persistent store (default when file is absent)
+  # - "redis": Redis-backed store (requires redis.url)
+  backend: memory
+
+  # Redis configuration (used only when backend is "redis").
+  # url: redis://user:pass@host:port/db
+  redis:
+    url: ""
+    prefix: dynagent_ctx

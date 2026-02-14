@@ -1,7 +1,6 @@
 # ABOUTME: Unit tests for StructuredOutputConverter service.
 # ABOUTME: Tests message filtering, conversion success/failure, and error handling.
 
-import json
 from unittest.mock import Mock
 
 import pytest
@@ -13,17 +12,18 @@ from autobots_devtools_shared_lib.dynagent.services.structured_converter import 
 )
 
 
-@pytest.fixture(autouse=True)
-def schema_dir(tmp_path, monkeypatch):
-    """Create a tmp schema directory with a minimal schema and set SCHEMA_BASE."""
-    schema = {
-        "title": "Preface",
+@pytest.fixture
+def sample_schema():
+    """Return a sample schema dict (not a file path)."""
+    return {
+        "title": "Test Schema",
         "type": "object",
-        "properties": {"audience": {"type": "string"}},
+        "properties": {
+            "audience": {"type": "string"},
+            "purpose": {"type": "string"},
+        },
         "required": ["audience"],
     }
-    (tmp_path / "01-preface.json").write_text(json.dumps(schema))
-    monkeypatch.setenv("SCHEMA_BASE", str(tmp_path))
 
 
 @pytest.fixture
@@ -105,7 +105,7 @@ def test_create_conversion_prompt(converter):
     assert "AI: This is a test" in prompt
 
 
-def test_convert_missing_required_fields(converter, mock_model):
+def test_convert_missing_required_fields(converter, mock_model, sample_schema):
     """Test conversion handles validation errors for missing fields."""
     # Mock the structured output chain to raise an exception
     mock_structured_llm = Mock()
@@ -118,7 +118,7 @@ def test_convert_missing_required_fields(converter, mock_model):
         AIMessage(content="It's a thing"),
     ]
 
-    result, error = converter.convert(messages, "01-preface.json", "preface_agent")
+    result, error = converter.convert(messages, sample_schema, "preface_agent")
 
     assert result is None
     assert error is not None
@@ -126,25 +126,11 @@ def test_convert_missing_required_fields(converter, mock_model):
     assert "Missing required field" in error
 
 
-def test_convert_invalid_schema(converter):
-    """Test conversion handles unknown schema gracefully."""
-    messages = [
-        HumanMessage(content="Test message"),
-        AIMessage(content="Test response"),
-    ]
-
-    result, error = converter.convert(messages, "99-unknown.json", "unknown_agent")
-
-    assert result is None
-    assert error is not None
-    assert "Schema file not found" in error
-
-
-def test_convert_no_messages(converter):
+def test_convert_no_messages(converter, sample_schema):
     """Test conversion handles empty message list."""
     messages = []
 
-    result, error = converter.convert(messages, "01-preface.json", "preface_agent")
+    result, error = converter.convert(messages, sample_schema, "preface_agent")
 
     assert result is None
     assert error is not None

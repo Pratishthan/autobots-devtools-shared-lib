@@ -1,17 +1,17 @@
 # ABOUTME: State management tools for the dynagent workflow.
 # ABOUTME: Provides command helpers, workspace file I/O, and handoff logic.
 
-import logging
 from typing import Any
 
 from langchain.messages import ToolMessage
 from langchain.tools import ToolRuntime, tool
 from langgraph.types import Command
 
-from autobots_devtools_shared_lib.dynagent.config.settings import get_settings
+from autobots_devtools_shared_lib.common.observability.logging_utils import get_logger
+from autobots_devtools_shared_lib.dynagent.config.dynagent_settings import get_dynagent_settings
 from autobots_devtools_shared_lib.dynagent.models.state import Dynagent
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 # --- Command helpers ---
@@ -52,7 +52,7 @@ def transition_cmd(message: str, tool_call_id: str, new_agent: str, **updates: A
 
 def _do_write_file(session_id: str, filename: str, content: str) -> str:
     """Core write logic."""
-    workspace_base = get_settings().workspace_base
+    workspace_base = get_dynagent_settings().workspace_base
     path = workspace_base / session_id / filename
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content)
@@ -62,7 +62,7 @@ def _do_write_file(session_id: str, filename: str, content: str) -> str:
 
 def _do_read_file(session_id: str, filename: str) -> str:
     """Core read logic."""
-    workspace_base = get_settings().workspace_base
+    workspace_base = get_dynagent_settings().workspace_base
     path = workspace_base / session_id / filename
     if not path.exists():
         return f"Error: file not found: workspace/{session_id}/{filename}"
@@ -74,9 +74,7 @@ def _do_read_file(session_id: str, filename: str) -> str:
 
 def _validate_handoff(next_agent: str) -> str | None:
     """Validate agent name against config. Returns error string or None."""
-    from autobots_devtools_shared_lib.dynagent.agents.agent_config_utils import (
-        get_agent_list,
-    )
+    from autobots_devtools_shared_lib.dynagent.agents.agent_config_utils import get_agent_list
 
     valid = get_agent_list()
     if next_agent not in valid:
@@ -112,17 +110,3 @@ def handoff(runtime: ToolRuntime[None, Dynagent], next_agent: str) -> Command:
         runtime.tool_call_id or "unknown",
         next_agent,
     )
-
-
-@tool
-def write_file(runtime: ToolRuntime[None, Dynagent], filename: str, content: str) -> str:
-    """Write a file to the session workspace."""
-    session_id = runtime.state.get("session_id", "default")
-    return _do_write_file(session_id, filename, content)
-
-
-@tool
-def read_file(runtime: ToolRuntime[None, Dynagent], filename: str) -> str:
-    """Read a file from the session workspace."""
-    session_id = runtime.state.get("session_id", "default")
-    return _do_read_file(session_id, filename)

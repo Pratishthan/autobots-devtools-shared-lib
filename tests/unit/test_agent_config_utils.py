@@ -1,7 +1,6 @@
 # ABOUTME: Unit tests for agent configuration utility functions.
 # ABOUTME: Validates config loading helpers produce correct shapes from agents.yaml.
 
-import logging
 from pathlib import Path
 
 import pytest
@@ -10,8 +9,10 @@ from autobots_devtools_shared_lib.dynagent.agents.agent_config_utils import (
     _reset_agent_config,
     get_agent_list,
     get_prompt_map,
+    get_schema_map,
     get_schema_path_map,
     get_tool_map,
+    load_schema,
 )
 
 _CONFIG_DIR = Path(__file__).resolve().parent.parent.parent / "configs" / "bro"
@@ -96,22 +97,74 @@ def test_get_tool_map_resolves_per_agent(bro_registered):
     assert "delete_entity" in entity_names
 
 
-def test_get_tool_map_warns_on_unresolved(caplog):
-    """Without BRO registration, BRO tools are unresolved → warning logged."""
-    from autobots_devtools_shared_lib.dynagent.tools.tool_registry import (
-        _reset_usecase_tools,
-    )
+def test_get_tool_map_raises_on_unresolved():
+    """Without BRO registration, BRO tools are unresolved → ValueError raised."""
+    from autobots_devtools_shared_lib.dynagent.tools.tool_registry import _reset_usecase_tools
 
     _reset_usecase_tools()
-    with caplog.at_level(logging.WARNING):
-        tool_map = get_tool_map()
 
-    # BRO tools like create_document should be absent from coordinator
-    coord_names = {t.name for t in tool_map["coordinator"]}
-    assert "create_document" not in coord_names
-
-    # And a warning should have been logged
-    assert any("unresolved tool" in r.message for r in caplog.records)
+    # Should raise ValueError when encountering unresolved tools
+    with pytest.raises(ValueError, match=r"Unresolved tool .* for agent"):
+        get_tool_map()
 
     # Cleanup
     _reset_usecase_tools()
+
+
+def test_get_schema_map_coordinator_is_none():
+    """Coordinator has no output_schema, should get None in schema_map."""
+    schema_map = get_schema_map()
+    assert schema_map.get("coordinator") is None
+
+
+def test_get_schema_map_section_agents_have_parsed_schemas():
+    """Section agents should have parsed schema dicts, not paths."""
+    schema_map = get_schema_map()
+
+    agents_with_schemas = [
+        "preface_agent",
+        "getting_started_agent",
+        "features_agent",
+        "entity_agent",
+    ]
+
+    for agent in agents_with_schemas:
+        schema = schema_map.get(agent)
+        assert schema is not None, f"{agent} schema is None"
+        assert isinstance(schema, dict), f"{agent} schema is not a dict"
+        assert "type" in schema, f"{agent} schema missing 'type' field"
+
+
+def test_get_schema_map_all_agents_present():
+    """schema_map should have entries for all agents."""
+    schema_map = get_schema_map()
+    agent_list = get_agent_list()
+    assert set(schema_map.keys()) == set(agent_list)
+
+
+def test_load_schema_missing_file_raises_error(tmp_path, monkeypatch):
+    """load_schema should raise FileNotFoundError for missing files."""
+    # Point to tmp dir with no schemas
+    monkeypatch.setenv("DYNAGENT_CONFIG_ROOT_DIR", str(tmp_path))
+    (tmp_path / "agents.yaml").write_text("agents: {}")
+    _reset_agent_config()
+
+    with pytest.raises(FileNotFoundError, match="Schema file not found"):
+        load_schema("missing.json")
+
+
+def test_load_schema_invalid_json_raises_error(tmp_path, monkeypatch):
+    """load_schema should raise ValueError for invalid JSON."""
+    # Create schema directory and bad JSON file
+    schema_dir = tmp_path / "schemas"
+    schema_dir.mkdir()
+    (schema_dir / "bad.json").write_text("{invalid json")
+
+    # Patch get_config_dir to return tmp_path
+    monkeypatch.setattr(
+        "autobots_devtools_shared_lib.dynagent.agents.agent_config_utils.get_config_dir",
+        lambda: tmp_path,
+    )
+
+    with pytest.raises(ValueError, match="Invalid JSON"):
+        load_schema("bad.json")

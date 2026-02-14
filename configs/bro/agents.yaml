@@ -3,10 +3,7 @@ agents:
     prompt: coordinator
     tools:
       - handoff
-    section: null
     output_schema: null
-    approach: null
-    dynamic: false
     batch_enabled: false
     max_concurrency: 2
 
@@ -14,9 +11,7 @@ agents:
     prompt: preface_agent
     tools:
       - update_section
-    section: preface
     output_schema: 01-preface.json
-    approach: null
     dynamic: false
     batch_enabled: false
 
@@ -24,9 +19,7 @@ agents:
     prompt: getting_started_agent
     tools:
       - update_section
-    section: getting_started
     output_schema: 02-getting-started.json
-    approach: null
     dynamic: false
     batch_enabled: false
 
@@ -34,9 +27,7 @@ agents:
     prompt: features_agent
     tools:
       - update_section
-    section: features
     output_schema: 03-01-list-of-features.json
-    approach: null
     dynamic: false
     batch_enabled: false
 
@@ -46,8 +37,6 @@ agents:
       - create_entity
       - list_entities
       - delete_entity
-    section: entity
     output_schema: 05-entity.json
-    approach: null
     dynamic: false
     batch_enabled: false

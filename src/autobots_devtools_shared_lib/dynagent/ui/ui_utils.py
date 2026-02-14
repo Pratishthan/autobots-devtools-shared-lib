@@ -2,16 +2,26 @@
 # ABOUTME: No imports from any use-case package (e.g. bro_chat); safe for reuse.
 
 import json
-import logging
 from collections import deque
 from collections.abc import Callable
+from contextlib import nullcontext
 from dataclasses import asdict, is_dataclass
 from typing import Any
 
 import chainlit as cl
 from langchain_core.runnables import RunnableConfig
+from langfuse import propagate_attributes
+from langgraph.graph.state import CompiledStateGraph
 
-logger = logging.getLogger(__name__)
+from autobots_devtools_shared_lib.common.observability.logging_utils import get_logger
+from autobots_devtools_shared_lib.common.observability.trace_metadata import TraceMetadata
+from autobots_devtools_shared_lib.common.observability.tracing import (
+    flush_tracing,
+    get_langfuse_client,
+    get_langfuse_handler,
+)
+
+logger = get_logger(__name__)
 
 
 # ---------------------------------------------------------------------------
@@ -90,10 +100,12 @@ def _extract_output_type(step_name: str | None) -> str | None:
 
 
 async def stream_agent_events(
-    agent: Any,
+    agent: CompiledStateGraph,
     input_state: dict[str, Any],
     config: RunnableConfig,
     on_structured_output: Callable[[dict[str, Any], str | None], str] | None = None,
+    enable_tracing: bool = True,
+    trace_metadata: TraceMetadata | None = None,
 ) -> None:
     """Stream events from a LangGraph agent and render them in Chainlit.
 
@@ -109,109 +121,179 @@ async def stream_agent_events(
         config: LangChain ``RunnableConfig`` (thread_id, callbacks, etc.).
         on_structured_output: Optional formatter callback.  Signature:
             ``(data: dict, output_type: str | None) -> str``.
+        enable_tracing: Whether to enable Langfuse tracing (default True, gracefully
+            degrades if not configured).
+        trace_metadata: Optional TraceMetadata instance with session_id, app_name,
+            user_id, and tags. If None, uses defaults.
     """
-    msg = cl.Message(content="")
-    tool_steps: dict[str, cl.Step] = {}
-    tool_step_queue: deque[str] = deque(maxlen=3)
+    # Use provided metadata or create default
+    if trace_metadata is None:
+        trace_metadata = TraceMetadata.create()
+        if "session_id" in input_state:
+            trace_metadata.session_id = input_state["session_id"]
 
-    await msg.send()
+    # Ensure input_state has session_id for agent context
+    if "session_id" not in input_state:
+        input_state["session_id"] = trace_metadata.session_id
 
-    async for event in agent.astream_events(
-        input_state,
-        config=RunnableConfig(**config),
-        version="v2",
-    ):
-        kind = event["event"]
+    # Auto-create Langfuse handler if tracing enabled and not already in config callbacks
+    if enable_tracing:
+        langfuse_handler = get_langfuse_handler()
 
-        # --- token streaming ----------------------------------------------
-        if kind == "on_chat_model_stream":
-            content = event.get("data", {}).get("chunk", {}).content
-            if content:
-                # Handle content as list or string
-                if isinstance(content, list):
-                    for block in content:
-                        if isinstance(block, str):
-                            await msg.stream_token(block)
-                        elif hasattr(block, "text"):
-                            await msg.stream_token(block.text)
-                        elif isinstance(block, dict) and "text" in block:
-                            await msg.stream_token(block["text"])
-                else:
-                    await msg.stream_token(content)
+        if langfuse_handler:
+            existing_callbacks = config.get("callbacks")
 
-        # --- tool start ----------------------------------------------------
-        elif kind == "on_tool_start":
-            tool_name = event.get("name", "unknown")
-            tool_input = event["data"].get("input", {})
-            run_id = event.get("run_id")
+            if existing_callbacks is None:
+                config["callbacks"] = [langfuse_handler]
+            elif (
+                isinstance(existing_callbacks, list) and langfuse_handler not in existing_callbacks
+            ):
+                config["callbacks"] = [*existing_callbacks, langfuse_handler]
 
-            # Remove oldest step if we're at max capacity
-            if len(tool_step_queue) >= 3:
-                old_run_id = tool_step_queue.popleft()
-                if old_run_id in tool_steps:
-                    old_step = tool_steps[old_run_id]
-                    await old_step.remove()
-                    del tool_steps[old_run_id]
+    # --- Execute with observability wrapper ---
+    try:
+        client = get_langfuse_client() if enable_tracing else None
 
-            async with cl.Step(name=f"🛠️ {tool_name}", type="tool") as step:
-                step.input = tool_input
-                tool_steps[run_id] = step
-                tool_step_queue.append(run_id)
+        with propagate_attributes(
+            user_id=trace_metadata.user_id,
+            session_id=trace_metadata.session_id,
+            tags=trace_metadata.tags,
+        ):
+            span_ctx = (
+                client.start_as_current_span(
+                    name=f"{trace_metadata.app_name}-stream",
+                    input={
+                        "message_count": len(input_state.get("messages", [])),
+                    },
+                    metadata=trace_metadata.to_dict(),
+                )
+                if client is not None
+                else nullcontext()
+            )
+            with span_ctx as span:
+                msg = cl.Message(content="")
+                tool_steps: dict[str, cl.Step] = {}
+                tool_step_queue: deque[str] = deque(maxlen=3)
+                structured_response_count = 0
 
-        # --- tool end ------------------------------------------------------
-        elif kind == "on_tool_end":
-            run_id = event.get("run_id")
-            output = event["data"].get("output", "")
+                await msg.send()
 
-            if run_id in tool_steps:
-                step = tool_steps[run_id]
-                step.output = str(output)[:1000]  # Limit output length
-                await step.update()
+                async for event in agent.astream_events(
+                    input_state,
+                    config=RunnableConfig(**config),
+                    version="v2",
+                ):
+                    kind = event["event"]
 
-        # --- chain end (structured output) ---------------------------------
-        elif kind == "on_chain_end":
-            data = event.get("data", {})
-            output = data.get("output", {})
+                    # --- token streaming ----------------------------------------------
+                    if kind == "on_chat_model_stream":
+                        chunk = event.get("data", {}).get("chunk")
+                        content = chunk.content if chunk and hasattr(chunk, "content") else None
+                        if content:
+                            # Handle content as list or string
+                            if isinstance(content, list):
+                                for block in content:
+                                    if isinstance(block, str):
+                                        await msg.stream_token(block)
+                                    elif hasattr(block, "text"):
+                                        await msg.stream_token(block.text)
+                                    elif isinstance(block, dict) and "text" in block:
+                                        await msg.stream_token(block["text"])
+                            else:
+                                await msg.stream_token(content)
 
-            if output:
-                if isinstance(output, dict):
-                    structured = output.get("structured_response", None)
-                    if structured:
-                        structured_dict: dict[str, Any]
-                        if is_dataclass(structured) and not isinstance(structured, type):
-                            structured_dict = asdict(structured)
-                        elif isinstance(structured, dict):
-                            structured_dict = structured
+                    # --- tool start ----------------------------------------------------
+                    elif kind == "on_tool_start":
+                        tool_name = event.get("name", "unknown")
+                        tool_input = event["data"].get("input", {})
+                        run_id = event.get("run_id")
+
+                        # Remove oldest step if we're at max capacity
+                        if len(tool_step_queue) >= 3:
+                            old_run_id = tool_step_queue.popleft()
+                            if old_run_id in tool_steps:
+                                old_step = tool_steps[old_run_id]
+                                await old_step.remove()
+                                del tool_steps[old_run_id]
+
+                        async with cl.Step(name=f"🛠️ {tool_name}", type="tool") as step:
+                            step.input = tool_input
+                            tool_steps[run_id] = step
+                            tool_step_queue.append(run_id)
+
+                    # --- tool end ------------------------------------------------------
+                    elif kind == "on_tool_end":
+                        run_id = event.get("run_id")
+                        output = event["data"].get("output", "")
+
+                        if run_id in tool_steps:
+                            step = tool_steps[run_id]
+                            step.output = str(output)[:1000]  # Limit output length
+                            await step.update()
+
+                    # --- chain end (structured output) ---------------------------------
+                    elif kind == "on_chain_end":
+                        data = event.get("data", {})
+                        output = data.get("output", {})
+
+                        if output:
+                            if isinstance(output, dict):
+                                structured = output.get("structured_response", None)
+                                if structured:
+                                    structured_response_count += 1
+                                    structured_dict: dict[str, Any]
+                                    if is_dataclass(structured) and not isinstance(
+                                        structured, type
+                                    ):
+                                        structured_dict = asdict(structured)
+                                    elif isinstance(structured, dict):
+                                        structured_dict = structured
+                                    else:
+                                        # Fallback: skip if not dict or dataclass
+                                        logger.warning(
+                                            f"Unexpected structured response type: {type(structured)}"
+                                        )
+                                        continue
+
+                                    # Log JSON for debugging
+                                    json_str = json.dumps(structured_dict, indent=2)
+                                    logger.info(f"Structured response (JSON): {json_str}")
+
+                                    # Extract output type from agent_name if available
+                                    current_step = output.get("agent_name")
+                                    output_type = (
+                                        _extract_output_type(current_step) if current_step else None
+                                    )
+
+                                    # Convert to Markdown
+                                    if on_structured_output:
+                                        markdown = on_structured_output(
+                                            structured_dict, output_type
+                                        )
+                                    else:
+                                        markdown = structured_to_markdown(structured_dict)
+
+                                    # Send as a separate message for clean formatting
+                                    await cl.Message(content=markdown, author="Assistant").send()
+                                else:
+                                    logger.debug("No structured response found in output.")
+                            elif isinstance(output, list):
+                                # Iterate through list items
+                                for item in output:
+                                    logger.info(f"Output item: {item}")
                         else:
-                            # Fallback: skip if not dict or dataclass
-                            logger.warning(
-                                f"Unexpected structured response type: {type(structured)}"
-                            )
-                            continue
+                            logger.warning("No output found in chain end event.")
 
-                        # Log JSON for debugging
-                        json_str = json.dumps(structured_dict, indent=2)
-                        logger.info(f"Structured response (JSON): {json_str}")
+                await msg.update()
 
-                        # Extract output type from agent_name if available
-                        current_step = output.get("agent_name")
-                        output_type = _extract_output_type(current_step) if current_step else None
-
-                        # Convert to Markdown
-                        if on_structured_output:
-                            markdown = on_structured_output(structured_dict, output_type)
-                        else:
-                            markdown = structured_to_markdown(structured_dict)
-
-                        # Send as a separate message for clean formatting
-                        await cl.Message(content=markdown, author="Assistant").send()
-                    else:
-                        logger.debug("No structured response found in output.")
-                elif isinstance(output, list):
-                    # Iterate through list items
-                    for item in output:
-                        logger.info(f"Output item: {item}")
-            else:
-                logger.warning("No output found in chain end event.")
-
-    await msg.update()
+                # Update span with results
+                if span is not None:
+                    span.update(
+                        output={
+                            "structured_responses": structured_response_count,
+                            "message_length": len(msg.content) if msg.content else 0,
+                        }
+                    )
+    finally:
+        if enable_tracing:
+            flush_tracing()

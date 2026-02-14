@@ -1,15 +1,17 @@
 # ABOUTME: Configuration utility functions for loading agent definitions.
 # ABOUTME: Reads agents.yaml and provides typed accessors for prompts, tools, schemas.
 
-import logging
-import os
+import json
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 import yaml
 
-logger = logging.getLogger(__name__)
+from autobots_devtools_shared_lib.common.observability.logging_utils import get_logger
+from autobots_devtools_shared_lib.dynagent.config.dynagent_settings import get_dynagent_settings
+
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -54,12 +56,10 @@ def _reset_agent_config() -> None:
 
 
 def get_config_dir() -> Path:
-    """Get the configuration directory from environment variable."""
-    config_dir = os.getenv("DYNAGENT_CONFIG_ROOT_DIR")
+    """Get the configuration directory from dynagent settings (env: DYNAGENT_CONFIG_ROOT_DIR)."""
+    config_dir = get_dynagent_settings().dynagent_config_root_dir
     logger.info(f"Using config directory: {config_dir}")
-    if not config_dir:
-        raise OSError("DYNAGENT_CONFIG_ROOT_DIR environment variable is not set")
-    return Path(config_dir)
+    return config_dir
 
 
 # NOTE: Call get_config_dir() instead of using a global CONFIG_DIR to allow
@@ -99,6 +99,41 @@ def load_prompt(name: str) -> str:
         return f"Error reading prompt: {e}"
 
 
+def load_schema(name: str) -> dict:
+    """Read and parse a JSON schema file by name from the schemas/ directory.
+
+    Args:
+        name: Schema filename (e.g., "joke-output.json", "01-preface.json")
+
+    Returns:
+        Parsed JSON schema as dictionary
+
+    Raises:
+        FileNotFoundError: If schema file doesn't exist
+        ValueError: If JSON is invalid
+    """
+    config_dir = get_config_dir()
+    schema_dir = Path(config_dir) / "schemas"
+    schema_file = schema_dir / name
+
+    if not schema_file.exists():
+        error_msg = f"Schema file not found: {schema_file}"
+        logger.error(error_msg)
+        raise FileNotFoundError(error_msg)
+
+    try:
+        with Path.open(schema_file) as f:
+            return json.load(f)
+    except json.JSONDecodeError as e:
+        error_msg = f"Invalid JSON in schema {schema_file}: {e}"
+        logger.exception(error_msg)
+        raise ValueError(error_msg) from e
+    except Exception as e:
+        error_msg = f"Error reading schema {name} from {schema_dir}: {e}"
+        logger.exception(error_msg)
+        raise
+
+
 def get_agent_list() -> list[str]:
     """Return list of agent names from config."""
     return list(load_agents_config().keys())
@@ -114,11 +149,39 @@ def get_schema_path_map() -> dict[str, str | None]:
     return {name: cfg.output_schema for name, cfg in load_agents_config().items()}
 
 
+def get_schema_map() -> dict[str, dict | None]:
+    """Return {agent_name: parsed_schema_dict_or_None} loaded from schema files.
+
+    Reads all schema files referenced in agents.yaml at startup.
+    Agents without output_schema get None.
+
+    Returns:
+        Dictionary mapping agent names to parsed schema dicts
+
+    Raises:
+        FileNotFoundError: If a referenced schema file is missing
+        ValueError: If a schema file contains invalid JSON
+    """
+    result = {}
+    for agent_name, cfg in load_agents_config().items():
+        if cfg.output_schema is None:
+            result[agent_name] = None
+        else:
+            logger.info(f"Loading schema '{cfg.output_schema}' for agent '{agent_name}'")
+            result[agent_name] = load_schema(cfg.output_schema)
+
+    logger.info(f"Loaded {sum(1 for v in result.values() if v is not None)} schemas")
+    return result
+
+
 def get_tool_map() -> dict[str, list[Any]]:
     """Return {agent_name: [tool_objects]}.
 
     Resolves each agent's tool list from agents.yaml against the combined
-    default + usecase tool pool.  Unrecognised tool names are skipped with a warning.
+    default + usecase tool pool.
+
+    Raises:
+        ValueError: If a tool name referenced in agents.yaml cannot be resolved
     """
     from autobots_devtools_shared_lib.dynagent.tools.tool_registry import get_all_tools
 
@@ -132,7 +195,9 @@ def get_tool_map() -> dict[str, list[Any]]:
                 resolved.append(tool_by_name[tool_name])
                 logger.info(f"Agent '{name}': adding resolved tool '{tool_name}'")
             else:
-                logger.warning(f"get_tool_map: unresolved tool '{tool_name}' for agent '{name}'")
+                error_msg = f"Unresolved tool '{tool_name}' for agent '{name}'. Available tools: {sorted(tool_by_name.keys())}"
+                logger.error(error_msg)
+                raise ValueError(error_msg)
         result[name] = resolved
     return result
 

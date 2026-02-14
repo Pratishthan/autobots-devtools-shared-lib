@@ -1,7 +1,6 @@
 # ABOUTME: Batch processing interface for the dynagent layer.
 # ABOUTME: Wraps prompts into parallel agent invocations with per-record results.
 
-import logging
 import uuid
 from contextlib import nullcontext
 from dataclasses import dataclass, field
@@ -11,13 +10,15 @@ from dotenv import load_dotenv
 from langchain_core.runnables import RunnableConfig
 from langfuse import propagate_attributes
 
-from autobots_devtools_shared_lib.dynagent.observability.tracing import (
+from autobots_devtools_shared_lib.common.observability.logging_utils import get_logger
+from autobots_devtools_shared_lib.common.observability.trace_metadata import TraceMetadata
+from autobots_devtools_shared_lib.common.observability.tracing import (
     flush_tracing,
     get_langfuse_client,
     get_langfuse_handler,
 )
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 load_dotenv()
 
@@ -128,8 +129,7 @@ def batch_invoker(
     records: list[str],
     callbacks: list[Any] | None = None,
     enable_tracing: bool = True,
-    batch_id: str | None = None,
-    trace_metadata: dict[str, Any] | None = None,
+    trace_metadata: TraceMetadata | None = None,
 ) -> BatchResult:
     """Run a list of prompts through the dynagent in parallel.
 
@@ -139,9 +139,8 @@ def batch_invoker(
         callbacks: Optional list of callback handlers (e.g., Langfuse) for tracing.
         enable_tracing: Whether to enable Langfuse tracing (default True, gracefully
             degrades if not configured).
-        batch_id: Optional batch ID for correlation (auto-generated if None).
-        trace_metadata: Optional metadata dict with keys: app_name, user_id, tags, etc.
-            Defaults: app_name="batch_invoker", user_id=agent_name, tags=[].
+        trace_metadata: Optional TraceMetadata instance with session_id, app_name,
+            user_id, and tags. If None, uses defaults with auto-generated session_id.
 
     Returns:
         BatchResult with per-record success/failure details.
@@ -161,8 +160,12 @@ def batch_invoker(
     if not records:
         raise ValueError("records must not be empty")
 
-    if batch_id is None:
-        batch_id = str(uuid.uuid4())
+    # Use provided metadata or create default
+    if trace_metadata is None:
+        trace_metadata = TraceMetadata.create(
+            app_name=f"{agent_name}-batch_invoker",
+            user_id="unknown_user",
+        )
 
     agent_cfg = load_agents_config()[agent_name]
     max_concurrency: int = (
@@ -177,30 +180,23 @@ def batch_invoker(
         if langfuse_handler:
             callbacks = [langfuse_handler]
 
-    # Extract metadata with defaults
-    app_name = (
-        trace_metadata.get("app_name", "batch_invoker") if trace_metadata else "batch_invoker"
-    )
-    user_id = trace_metadata.get("user_id", agent_name) if trace_metadata else agent_name
-    tags = trace_metadata.get("tags", []) if trace_metadata else []
-
     # --- Execute with observability wrapper ---
     try:
         client = get_langfuse_client() if enable_tracing else None
 
         with propagate_attributes(
-            user_id=user_id,
-            session_id=batch_id,
-            tags=tags,
+            user_id=trace_metadata.user_id,
+            session_id=trace_metadata.session_id,
+            tags=trace_metadata.tags,
         ):
             span_ctx = (
                 client.start_as_current_span(
-                    name=f"{app_name}-{agent_name}-batch",
+                    name=f"{trace_metadata.app_name}-{agent_name}-batch",
                     input={
                         "agent_name": agent_name,
                         "record_count": len(records),
                     },
-                    metadata={"batch_id": batch_id, **(trace_metadata or {})},
+                    metadata=trace_metadata.to_dict(),
                 )
                 if client is not None
                 else nullcontext()
@@ -214,7 +210,7 @@ def batch_invoker(
                 )
 
                 agent = create_base_agent(
-                    checkpointer=InMemorySaver(), sync_mode=True, agent_name=agent_name
+                    checkpointer=InMemorySaver(), sync_mode=True, initial_agent_name=agent_name
                 )
 
                 # --- Build inputs & configs ---

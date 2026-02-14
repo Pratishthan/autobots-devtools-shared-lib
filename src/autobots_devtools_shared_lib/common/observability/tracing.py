@@ -1,15 +1,14 @@
 # ABOUTME: Langfuse tracing integration for bro-chat.
 # ABOUTME: Sets up LLM observability using Langfuse's decorator-based API.
 
-import logging
 from typing import Any
 
 from langfuse import Langfuse
 from langfuse.langchain import CallbackHandler
 
-from autobots_devtools_shared_lib.dynagent.config.settings import get_settings
+from autobots_devtools_shared_lib.common.observability.logging_utils import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 _langfuse_client: Langfuse | None = None
 
@@ -18,14 +17,18 @@ def init_tracing() -> bool:
     """
     Initialize Langfuse tracing.
 
-    Reads configuration from environment via get_settings().
+    Reads configuration from environment via get_dynagent_settings().
 
     Returns:
         True if tracing was initialized successfully, False otherwise.
     """
     global _langfuse_client
 
-    settings = get_settings()
+    from autobots_devtools_shared_lib.dynagent.config.dynagent_settings import (
+        get_dynagent_settings,
+    )
+
+    settings = get_dynagent_settings()
 
     if not settings.is_langfuse_configured():
         logger.info("Langfuse not configured, tracing disabled")
@@ -57,7 +60,11 @@ def get_langfuse_handler() -> CallbackHandler | None:
     if _langfuse_client is None:
         return None
 
-    settings = get_settings()
+    from autobots_devtools_shared_lib.dynagent.config.dynagent_settings import (
+        get_dynagent_settings,
+    )
+
+    settings = get_dynagent_settings()
     return CallbackHandler(public_key=settings.langfuse_public_key)
 
 

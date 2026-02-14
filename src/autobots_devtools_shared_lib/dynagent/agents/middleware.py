@@ -1,16 +1,16 @@
 # ABOUTME: Middleware that injects agent-specific prompts and tools on every LLM call.
 # ABOUTME: Reads current agent_name from state and overrides via AgentMeta.
 
-import logging
 from collections import defaultdict
 from collections.abc import Awaitable, Callable
 
 from langchain.agents.middleware import ModelRequest, ModelResponse, wrap_model_call
 from langchain.messages import SystemMessage
 
+from autobots_devtools_shared_lib.common.observability.logging_utils import get_logger
 from autobots_devtools_shared_lib.dynagent.agents.agent_meta import AgentMeta
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 @wrap_model_call  # type: ignore[arg-type]

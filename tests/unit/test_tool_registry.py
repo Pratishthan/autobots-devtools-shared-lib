@@ -14,9 +14,18 @@ from autobots_devtools_shared_lib.dynagent.tools.tool_registry import (
 EXPECTED_DEFAULT_NAMES = {
     "handoff",
     "get_agent_list",
-    "write_file",
-    "read_file",
-    "output_format_converter",
+    "output_format_converter_tool",
+    # Context tools (session-level state)
+    "get_context",
+    "set_context",
+    "update_context",
+    "clear_context",
+    "get_disk_usage_tool",
+    "list_files_tool",
+    "write_file_tool",
+    "read_file_tool",
+    "move_file_tool",
+    "create_download_link_tool",
 }
 
 BRO_TOOL_NAMES = {
@@ -51,7 +60,8 @@ def test_get_default_tools_returns_list():
 
 def test_get_default_tools_count():
     tools = get_default_tools()
-    assert len(tools) == 5
+    # Keep this assertion in sync with EXPECTED_DEFAULT_NAMES above.
+    assert len(tools) == len(EXPECTED_DEFAULT_NAMES)
 
 
 def test_get_default_tools_has_expected_names():
