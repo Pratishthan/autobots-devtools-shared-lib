@@ -3,11 +3,6 @@ import json
 from langchain_core.messages import AnyMessage
 
 from autobots_devtools_shared_lib.common.observability.logging_utils import get_logger
-from autobots_devtools_shared_lib.dynagent.agents.agent_meta import AgentMeta
-from autobots_devtools_shared_lib.dynagent.llm.llm import lm
-from autobots_devtools_shared_lib.dynagent.services.structured_converter import (
-    StructuredOutputConverter,
-)
 
 logger = get_logger(__name__)
 
@@ -21,6 +16,12 @@ def output_format_converter(agent_name: str, messages: list[AnyMessage]) -> str:
         agent_name: Name of the current agent (used to find schema).
         messages: Full conversation history as list of messages.
     """
+    from autobots_devtools_shared_lib.dynagent.agents.agent_meta import AgentMeta
+    from autobots_devtools_shared_lib.dynagent.llm.llm import lm
+    from autobots_devtools_shared_lib.dynagent.services.structured_converter import (
+        StructuredOutputConverter,
+    )
+
     meta = AgentMeta.instance()
     schema = meta.schema_map.get(agent_name)
 

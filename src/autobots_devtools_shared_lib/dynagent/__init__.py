@@ -5,9 +5,8 @@
 # UI streaming helpers live in dynagent.ui to avoid pulling Chainlit for
 # batch/invoke-only use.
 
-from autobots_devtools_shared_lib.dynagent.agents.agent_config_utils import (
-    get_batch_enabled_agents,
-)
+from autobots_devtools_shared_lib.common.utils.format_utils import output_format_converter
+from autobots_devtools_shared_lib.dynagent.agents.agent_config_utils import get_batch_enabled_agents
 from autobots_devtools_shared_lib.dynagent.agents.agent_meta import AgentMeta
 from autobots_devtools_shared_lib.dynagent.agents.base_agent import create_base_agent
 from autobots_devtools_shared_lib.dynagent.agents.batch import (
@@ -27,9 +26,7 @@ from autobots_devtools_shared_lib.dynagent.config.dynagent_settings import (
 )
 from autobots_devtools_shared_lib.dynagent.llm.llm import lm
 from autobots_devtools_shared_lib.dynagent.models.state import Dynagent
-from autobots_devtools_shared_lib.dynagent.tools.tool_registry import (
-    register_usecase_tools,
-)
+from autobots_devtools_shared_lib.dynagent.tools.tool_registry import register_usecase_tools
 
 __all__ = [
     "AgentMeta",
@@ -45,6 +42,7 @@ __all__ = [
     "get_dynagent_settings",
     "invoke_agent",
     "lm",
+    "output_format_converter",
     "register_usecase_tools",
     "set_dynagent_settings",
 ]
