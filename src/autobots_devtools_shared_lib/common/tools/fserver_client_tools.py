@@ -38,7 +38,7 @@ def _check_result(result: str, operation: str) -> None:
 
 @tool
 def list_files_tool(
-    runtime: ToolRuntime[None, Dynagent] | None = None,
+    runtime: ToolRuntime[None, Dynagent],
     base_path: str = "",
     workspace_context: str = "{}",
 ) -> str:
@@ -80,7 +80,7 @@ def get_disk_usage_tool() -> str:
 
 @tool
 def read_file_tool(
-    runtime: ToolRuntime[None, Dynagent] | None = None,
+    runtime: ToolRuntime[None, Dynagent],
     file_name: str = "",
     workspace_context: str = "{}",
 ) -> str:
@@ -104,7 +104,7 @@ def read_file_tool(
 
 @tool
 def move_file_tool(
-    runtime: ToolRuntime[None, Dynagent] | None = None,
+    runtime: ToolRuntime[None, Dynagent],
     source_path: str = "",
     destination_path: str = "",
     workspace_context: str = "{}",
@@ -137,7 +137,7 @@ def move_file_tool(
 
 @tool
 def create_download_link_tool(
-    runtime: ToolRuntime[None, Dynagent] | None = None,
+    runtime: ToolRuntime[None, Dynagent],
     file_name: str = "",
     workspace_context: str = "{}",
 ) -> str:
@@ -161,7 +161,7 @@ def create_download_link_tool(
 
 @tool
 def write_file_tool(
-    runtime: ToolRuntime[None, Dynagent] | None = None,
+    runtime: ToolRuntime[None, Dynagent],
     file_name: str = "",
     content: str = "",
     workspace_context: str = "{}",
