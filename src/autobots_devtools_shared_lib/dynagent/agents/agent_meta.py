@@ -5,26 +5,25 @@ from __future__ import annotations
 
 from typing import Any
 
-from autobots_devtools_shared_lib.dynagent.agents.agent_config_utils import (
-    get_default_agent,
-    get_prompt_map,
-    get_schema_map,
-    get_schema_path_map,
-    get_tool_map,
-)
+import autobots_devtools_shared_lib.dynagent.agents.agent_config_utils as _agent_config
 
 
 class AgentMeta:
     """Lazy singleton for agent configuration."""
 
     _instance: AgentMeta | None = None
+    prompt_map: dict[str, str]
+    tool_map: dict[str, list[Any]]
+    schema_path_map: dict[str, str | None]
+    schema_map: dict[str, dict | None]
+    default_agent: str | None
 
-    def __init__(self):
-        self.prompt_map: dict[str, str] = get_prompt_map()
-        self.tool_map: dict[str, list[Any]] = get_tool_map()
-        self.schema_path_map: dict[str, str | None] = get_schema_path_map()
-        self.schema_map: dict[str, dict | None] = get_schema_map()
-        self.default_agent: str | None = get_default_agent()
+    def __init__(self) -> None:
+        self.prompt_map = _agent_config.get_prompt_map()
+        self.tool_map = _agent_config.get_tool_map()
+        self.schema_path_map = _agent_config.get_schema_path_map()
+        self.schema_map = _agent_config.get_schema_map()  # pyright: ignore[reportAttributeAccessIssue]
+        self.default_agent = _agent_config.get_default_agent()
 
     @classmethod
     def instance(cls) -> AgentMeta:

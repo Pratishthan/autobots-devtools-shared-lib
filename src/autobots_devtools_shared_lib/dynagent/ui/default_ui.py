@@ -47,7 +47,7 @@ logger = get_logger(__name__)
 @cl.on_chat_start
 async def start():
     """Create the base agent once and store it in the Chainlit session."""
-    agent = create_base_agent(initial_agent_name="coordinator")
+    agent = create_base_agent(initial_agent_name="coordinator")  # pyright: ignore[reportCallIssue]
     cl.user_session.set("agent", agent)
     await cl.Message(content="Hello, how can I help you today?").send()
 
@@ -76,7 +76,7 @@ async def on_message(message: cl.Message):
     # Create trace metadata with session correlation
     trace_metadata = TraceMetadata.create(session_id=cl.context.session.thread_id)
 
-    await stream_agent_events(agent, input_state, config, trace_metadata=trace_metadata)
+    await stream_agent_events(agent, input_state, config, trace_metadata=trace_metadata)  # pyright: ignore[reportCallIssue]
 
 
 @cl.on_stop

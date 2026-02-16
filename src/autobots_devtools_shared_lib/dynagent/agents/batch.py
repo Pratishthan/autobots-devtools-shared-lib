@@ -210,7 +210,9 @@ def batch_invoker(
                 )
 
                 agent = create_base_agent(
-                    checkpointer=InMemorySaver(), sync_mode=True, initial_agent_name=agent_name
+                    checkpointer=InMemorySaver(),
+                    sync_mode=True,
+                    initial_agent_name=agent_name,  # pyright: ignore[reportCallIssue]
                 )
 
                 # --- Build inputs & configs ---

@@ -57,8 +57,8 @@ class TestDynagentSettings:
 
         assert settings.is_langfuse_configured() is False
 
-    def test_llm_api_keys_default_empty(self) -> None:
-        """LLM API key fields should default to empty string."""
+    def test_llm_api_keys_default_empty(self, clean_env: None) -> None:
+        """LLM API key fields should default to empty string when env vars are unset."""
         settings = Settings(_env_file=None)  # type: ignore[call-arg]
         assert settings.google_api_key == ""
         assert settings.anthropic_api_key == ""

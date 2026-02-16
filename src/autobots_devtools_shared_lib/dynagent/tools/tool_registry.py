@@ -4,10 +4,10 @@
 from typing import Any
 
 from autobots_devtools_shared_lib.common.tools.context_tools import (
-    clear_context,
-    get_context,
-    set_context,
-    update_context,
+    clear_context_tool,
+    get_context_tool,
+    set_context_tool,
+    update_context_tool,
 )
 from autobots_devtools_shared_lib.common.tools.format_tools import output_format_converter_tool
 from autobots_devtools_shared_lib.common.tools.fserver_client_tools import (
@@ -34,10 +34,10 @@ def get_default_tools() -> list[Any]:
         handoff,
         get_agent_list,
         output_format_converter_tool,
-        get_context,
-        set_context,
-        update_context,
-        clear_context,
+        get_context_tool,
+        set_context_tool,
+        update_context_tool,
+        clear_context_tool,
         get_disk_usage_tool,
         read_file_tool,
         move_file_tool,
