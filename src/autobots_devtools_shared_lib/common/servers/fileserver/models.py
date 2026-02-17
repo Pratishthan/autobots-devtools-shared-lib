@@ -3,7 +3,7 @@
 import base64
 from typing import Any
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, Field, field_validator
 
 
 def _validate_no_path_traversal(v: str) -> str:
@@ -13,25 +13,22 @@ def _validate_no_path_traversal(v: str) -> str:
     return v.strip() if v else v
 
 
-def _validate_workspace_component(v: str | None) -> str | None:
-    """Reject path separators and '..' in workspace components."""
-    if v is None:
-        return v
-    value = v.strip()
-    if not value:
-        raise ValueError("Workspace component cannot be empty when provided")
-    if ".." in value or "/" in value or "\\" in value:
-        raise ValueError("Workspace components cannot contain path separators or '..'")
-    return value
-
-
 class ListFilesBody(BaseModel):
     path: str | None = None
-    agent_name: str | None = None
-    user_name: str | None = None
-    repo_name: str | None = None
-    jira_number: str | None = None
-    conversation_id: str | None = None
+    workspace_context: dict[str, Any] = Field(
+        default_factory=dict,
+        description=(
+            "Workspace scoping context. Must include `workspace_base_path` to scope file "
+            "operations under `<config.root>/<workspace_base_path>`."
+        ),
+        json_schema_extra={
+            "examples": [{"workspace_base_path": "shruthi/fbp-core-genai-sanity-MER-00001"}]
+        },
+    )
+    conversation_id: str | None = Field(
+        default=None,
+        description="Optional session/conversation ID for trace correlation/logging.",
+    )
 
     @field_validator("path")
     @classmethod
@@ -40,19 +37,23 @@ class ListFilesBody(BaseModel):
             raise ValueError("path cannot contain '..'")
         return v.strip() if v else v
 
-    @field_validator("agent_name", "user_name", "repo_name", "jira_number", mode="before")
-    @classmethod
-    def validate_workspace(cls, v: Any) -> str | None:
-        return _validate_workspace_component(v) if isinstance(v, str) else v
-
 
 class ReadFileBody(BaseModel):
     fileName: str
-    agent_name: str | None = None
-    user_name: str | None = None
-    repo_name: str | None = None
-    jira_number: str | None = None
-    conversation_id: str | None = None
+    workspace_context: dict[str, Any] = Field(
+        default_factory=dict,
+        description=(
+            "Workspace scoping context. Must include `workspace_base_path` to scope file "
+            "operations under `<config.root>/<workspace_base_path>`."
+        ),
+        json_schema_extra={
+            "examples": [{"workspace_base_path": "shruthi/fbp-core-genai-sanity-MER-00001"}]
+        },
+    )
+    conversation_id: str | None = Field(
+        default=None,
+        description="Optional session/conversation ID for trace correlation/logging.",
+    )
 
     @field_validator("fileName")
     @classmethod
@@ -61,20 +62,24 @@ class ReadFileBody(BaseModel):
             raise ValueError("fileName cannot be empty")
         return _validate_no_path_traversal(v)
 
-    @field_validator("agent_name", "user_name", "repo_name", "jira_number", mode="before")
-    @classmethod
-    def validate_workspace(cls, v: Any) -> str | None:
-        return _validate_workspace_component(v) if isinstance(v, str) else v
-
 
 class WriteFileBody(BaseModel):
     file_name: str
     file_content: str  # base64
-    agent_name: str | None = None
-    user_name: str | None = None
-    repo_name: str | None = None
-    jira_number: str | None = None
-    conversation_id: str | None = None
+    workspace_context: dict[str, Any] = Field(
+        default_factory=dict,
+        description=(
+            "Workspace scoping context. Must include `workspace_base_path` to scope file "
+            "operations under `<config.root>/<workspace_base_path>`."
+        ),
+        json_schema_extra={
+            "examples": [{"workspace_base_path": "shruthi/fbp-core-genai-sanity-MER-00001"}]
+        },
+    )
+    conversation_id: str | None = Field(
+        default=None,
+        description="Optional session/conversation ID for trace correlation/logging.",
+    )
 
     @field_validator("file_name")
     @classmethod
@@ -94,20 +99,24 @@ class WriteFileBody(BaseModel):
             raise ValueError("file_content must be valid base64") from err
         return v
 
-    @field_validator("agent_name", "user_name", "repo_name", "jira_number", mode="before")
-    @classmethod
-    def validate_workspace(cls, v: Any) -> str | None:
-        return _validate_workspace_component(v) if isinstance(v, str) else v
-
 
 class MoveFileBody(BaseModel):
     source_path: str
     destination_path: str
-    agent_name: str | None = None
-    user_name: str | None = None
-    repo_name: str | None = None
-    jira_number: str | None = None
-    conversation_id: str | None = None
+    workspace_context: dict[str, Any] = Field(
+        default_factory=dict,
+        description=(
+            "Workspace scoping context. Must include `workspace_base_path` to scope file "
+            "operations under `<config.root>/<workspace_base_path>`."
+        ),
+        json_schema_extra={
+            "examples": [{"workspace_base_path": "shruthi/fbp-core-genai-sanity-MER-00001"}]
+        },
+    )
+    conversation_id: str | None = Field(
+        default=None,
+        description="Optional session/conversation ID for trace correlation/logging.",
+    )
 
     @field_validator("source_path", "destination_path")
     @classmethod
@@ -115,8 +124,3 @@ class MoveFileBody(BaseModel):
         if not v or not v.strip():
             raise ValueError("Path cannot be empty")
         return _validate_no_path_traversal(v)
-
-    @field_validator("agent_name", "user_name", "repo_name", "jira_number", mode="before")
-    @classmethod
-    def validate_workspace(cls, v: Any) -> str | None:
-        return _validate_workspace_component(v) if isinstance(v, str) else v

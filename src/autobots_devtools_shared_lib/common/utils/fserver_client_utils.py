@@ -50,7 +50,7 @@ def list_files(
     try:
         payload = {
             "path": base_path if base_path else None,
-            **_parse_workspace_context(workspace_context),
+            "workspace_context": _parse_workspace_context(workspace_context),
         }
         if session_id:
             payload.setdefault("conversation_id", session_id)
@@ -128,7 +128,11 @@ def read_file(file_name: str, workspace_context: str = "{}", session_id: str | N
     """
     logger.info("Reading file '%s' with workspace_context=%s", file_name, workspace_context)
     try:
-        payload = {"fileName": file_name, **_parse_workspace_context(workspace_context)}
+        payload = {
+            "fileName": file_name,
+            "workspace_context": _parse_workspace_context(workspace_context),
+        }
+        logger.info("Payload: " + str(payload))
         if session_id:
             payload.setdefault("conversation_id", session_id)
 
@@ -186,7 +190,7 @@ def write_file(
         payload = {
             "file_name": file_name,
             "file_content": content_base64,
-            **_parse_workspace_context(workspace_context),
+            "workspace_context": _parse_workspace_context(workspace_context),
         }
         if session_id:
             payload.setdefault("conversation_id", session_id)
@@ -246,7 +250,7 @@ def move_file(
         payload = {
             "source_path": source_path,
             "destination_path": destination_path,
-            **_parse_workspace_context(workspace_context),
+            "workspace_context": _parse_workspace_context(workspace_context),
         }
         if session_id:
             payload.setdefault("conversation_id", session_id)
@@ -296,7 +300,10 @@ def create_download_link(
         "Creating download link for '%s' with workspace_context=%s", file_name, workspace_context
     )
     try:
-        payload = {"fileName": file_name, **_parse_workspace_context(workspace_context)}
+        payload = {
+            "fileName": file_name,
+            "workspace_context": _parse_workspace_context(workspace_context),
+        }
         if session_id:
             payload.setdefault("conversation_id", session_id)
 
