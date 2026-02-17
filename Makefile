@@ -1,4 +1,4 @@
-.PHONY: help install install-dev install-hooks test test-cov lint format check-format type-check clean all-checks build publish file-server
+.PHONY: help install install-dev install-hooks test test-cov lint format check-format type-check clean all-checks build publish
 
 # Default target
 help:
@@ -19,9 +19,6 @@ help:
 	@echo "  make build            - Build the package"
 	@echo "  make publish          - Publish package to PyPI"
 	@echo "  make update-deps      - Update dependencies"
-	@echo "  make install-file-server-otel - Install file-server+OTEL into Make's venv (../.venv)"
-	@echo "  make file-server      - Run file server on port 9002 (for testing fserver_client)"
-	@echo "  make file-server-otel - Run file server with OpenTelemetry (traces to Langfuse; set LANGFUSE_* in .env)"
 
 # Use system/global poetry and tools from parent venv
 VENV = ../.venv
@@ -121,16 +118,3 @@ show-outdated:
 export-requirements:
 	$(POETRY) export -f requirements.txt --output requirements.txt --without-hashes
 	$(POETRY) export -f requirements.txt --output requirements-dev.txt --with dev --without-hashes
-
-# Install file-server + OTEL extras into the venv that Make uses (../.venv)
-install-file-server-otel:
-	$(PYTHON) -m pip install -e ".[file-server,file-server-otel]"
-
-# Run local file server (install deps: pip install -e ".[file-server]" or ".[dev]")
-FILE_SERVER_PORT ?= 9002
-file-server:
-	$(PYTHON) -m uvicorn autobots_devtools_shared_lib.common.servers.fileserver.app:app --reload --host 0.0.0.0 --port $(FILE_SERVER_PORT)
-
-# Run file server with OpenTelemetry (traces to Langfuse). Set LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY in .env
-file-server-otel:
-	OTEL_SERVICE_NAME=devtools $(PYTHON) -m uvicorn autobots_devtools_shared_lib.common.servers.fileserver.app:app --reload --host 0.0.0.0 --port $(FILE_SERVER_PORT)

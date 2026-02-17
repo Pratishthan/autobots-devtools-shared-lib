@@ -32,7 +32,17 @@ def test_dynagent_session_id_is_optional():
     assert "session_id" not in Dynagent.__required_keys__
 
 
-def test_dynagent_only_adds_agent_name_and_session_id():
-    """No BRO-specific fields (component, version, entity_name, etc.) on Dynagent."""
+def test_dynagent_has_user_name():
+    assert "user_name" in Dynagent.__annotations__
+
+
+def test_dynagent_user_name_is_optional():
+    """user_name must be NotRequired (e.g. logged-in user identifier)."""
+    assert "user_name" in Dynagent.__optional_keys__
+    assert "user_name" not in Dynagent.__required_keys__
+
+
+def test_dynagent_only_adds_agent_name_session_id_user_name():
+    """Dynagent extends AgentState with routing/identity keys only."""
     own_fields = set(Dynagent.__annotations__.keys()) - set(AgentState.__annotations__.keys())
-    assert own_fields == {"agent_name", "session_id"}
+    assert own_fields == {"agent_name", "session_id", "user_name"}

@@ -18,20 +18,20 @@ class ContextStore(Protocol):
     Implementations are responsible for persistence and retrieval semantics.
     """
 
-    def get(self, session_id: str) -> dict[str, Any] | None:  # pragma: no cover - Protocol
-        """Return the context for the given session_id, or None if not found."""
+    def get(self, context_key: str) -> dict[str, Any] | None:  # pragma: no cover - Protocol
+        """Return the context for the given context_key, or None if not found."""
 
-    def set(self, session_id: str, data: Mapping[str, Any]) -> None:  # pragma: no cover - Protocol
-        """Replace the context for the given session_id with the provided data."""
+    def set(self, context_key: str, data: Mapping[str, Any]) -> None:  # pragma: no cover - Protocol
+        """Replace the context for the given context_key with the provided data."""
 
     def update(
-        self, session_id: str, patch: Mapping[str, Any]
+        self, context_key: str, patch: Mapping[str, Any]
     ) -> dict[str, Any]:  # pragma: no cover - Protocol
         """Apply a partial update to the context and return the new value."""
         ...
 
-    def delete(self, session_id: str) -> None:  # pragma: no cover - Protocol
-        """Remove any stored context for the given session_id."""
+    def delete(self, context_key: str) -> None:  # pragma: no cover - Protocol
+        """Remove any stored context for the given context_key."""
 
 
 class InMemoryContextStore:
@@ -44,21 +44,21 @@ class InMemoryContextStore:
     def __init__(self) -> None:
         self._store: dict[str, dict[str, Any]] = {}
 
-    def get(self, session_id: str) -> dict[str, Any] | None:
-        return self._store.get(session_id)
+    def get(self, context_key: str) -> dict[str, Any] | None:
+        return self._store.get(context_key)
 
-    def set(self, session_id: str, data: Mapping[str, Any]) -> None:
-        self._store[session_id] = dict(data)
+    def set(self, context_key: str, data: Mapping[str, Any]) -> None:
+        self._store[context_key] = dict(data)
 
-    def update(self, session_id: str, patch: Mapping[str, Any]) -> dict[str, Any]:
-        current = self._store.get(session_id, {})
+    def update(self, context_key: str, patch: Mapping[str, Any]) -> dict[str, Any]:
+        current = self._store.get(context_key, {})
         # Create a shallow copy to avoid mutating the original dict outside this store
         updated = {**current, **dict(patch)}
-        self._store[session_id] = updated
+        self._store[context_key] = updated
         return updated
 
-    def delete(self, session_id: str) -> None:
-        self._store.pop(session_id, None)
+    def delete(self, context_key: str) -> None:
+        self._store.pop(context_key, None)
 
 
 @dataclass(slots=True)
@@ -84,36 +84,36 @@ class RedisContextStore:
         self._redis = redis.Redis.from_url(config.url)
         self._prefix = config.prefix
 
-    def _key(self, session_id: str) -> str:
-        return f"{self._prefix}:{session_id}"
+    def _key(self, context_key: str) -> str:
+        return f"{self._prefix}_{context_key}"
 
-    def get(self, session_id: str) -> dict[str, Any] | None:
+    def get(self, context_key: str) -> dict[str, Any] | None:
         import json
 
-        value = self._redis.get(self._key(session_id))
+        value = self._redis.get(self._key(context_key))
         if value is None:
             return None
         try:
             # Sync redis.Redis.get returns bytes | None; stubs use generic ResponseT
             return json.loads(cast("str | bytes | bytearray", value))
         except Exception:  # pragma: no cover - defensive path
-            logger.exception("Failed to decode context for session_id %s", session_id)
+            logger.exception("Failed to decode context for context_key %s", context_key)
             raise
 
-    def set(self, session_id: str, data: Mapping[str, Any]) -> None:
+    def set(self, context_key: str, data: Mapping[str, Any]) -> None:
         import json
 
         payload = json.dumps(dict(data))
-        self._redis.set(self._key(session_id), payload)
+        self._redis.set(self._key(context_key), payload)
 
-    def update(self, session_id: str, patch: Mapping[str, Any]) -> dict[str, Any]:
-        current = self.get(session_id) or {}
+    def update(self, context_key: str, patch: Mapping[str, Any]) -> dict[str, Any]:
+        current = self.get(context_key) or {}
         updated = {**current, **dict(patch)}
-        self.set(session_id, updated)
+        self.set(context_key, updated)
         return updated
 
-    def delete(self, session_id: str) -> None:
-        self._redis.delete(self._key(session_id))
+    def delete(self, context_key: str) -> None:
+        self._redis.delete(self._key(context_key))
 
 
 @dataclass(slots=True)

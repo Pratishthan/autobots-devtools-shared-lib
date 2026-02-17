@@ -7,6 +7,9 @@ import os
 import httpx
 
 from autobots_devtools_shared_lib.common.observability.logging_utils import get_logger
+from autobots_devtools_shared_lib.common.observability.trace_propagation import (
+    traced_http_call,
+)
 
 # Set up logging
 logger = get_logger(__name__)
@@ -27,13 +30,16 @@ def _parse_workspace_context(workspace_context: str) -> dict:
         return {}
 
 
-def list_files(base_path: str = "", workspace_context: str = "{}") -> str:
+def list_files(
+    base_path: str = "", workspace_context: str = "{}", session_id: str | None = None
+) -> str:
     """
     List all files in the specified directory or workspace.
 
     Args:
         base_path: Optional subdirectory to list from.
         workspace_context: Optional JSON object for workspace/scoping (e.g. {"agent_name": "...", "user_name": "...", "repo_name": "...", "jira_number": "..."}). Merged into the API request as-is.
+        session_id: Optional session ID for trace correlation
 
     Returns:
         JSON string of file paths
@@ -44,11 +50,21 @@ def list_files(base_path: str = "", workspace_context: str = "{}") -> str:
     try:
         payload = {
             "path": base_path if base_path else None,
-            **_parse_workspace_context(workspace_context),
+            "workspace_context": _parse_workspace_context(workspace_context),
         }
+        if session_id:
+            payload.setdefault("conversation_id", session_id)
 
-        with httpx.Client() as client:
-            response = client.post(f"{FILE_SERVER_BASE_URL}/listFiles", json=payload, timeout=30.0)
+        with (
+            traced_http_call("listFiles", session_id=session_id) as trace_headers,
+            httpx.Client() as client,
+        ):
+            response = client.post(
+                f"{FILE_SERVER_BASE_URL}/listFiles",
+                json=payload,
+                headers=trace_headers,
+                timeout=30.0,
+            )
             response.raise_for_status()
             result = response.json()
 
@@ -63,17 +79,25 @@ def list_files(base_path: str = "", workspace_context: str = "{}") -> str:
         return f"Error listing files: {e!s}"
 
 
-def get_disk_usage() -> str:
+def get_disk_usage(session_id: str | None = None) -> str:
     """
     Get disk usage statistics for the file server.
+
+    Args:
+        session_id: Optional session ID for trace correlation
 
     Returns:
         JSON string with disk usage information
     """
     logger.info("Getting disk usage statistics")
     try:
-        with httpx.Client() as client:
-            response = client.get(f"{FILE_SERVER_BASE_URL}/health", timeout=30.0)
+        with (
+            traced_http_call("getDiskUsage", session_id=session_id) as trace_headers,
+            httpx.Client() as client,
+        ):
+            response = client.get(
+                f"{FILE_SERVER_BASE_URL}/health", headers=trace_headers, timeout=30.0
+            )
             response.raise_for_status()
             result = response.json()
 
@@ -90,23 +114,38 @@ def get_disk_usage() -> str:
         return f"Error getting disk usage: {e!s}"
 
 
-def read_file(file_name: str, workspace_context: str = "{}") -> str:
+def read_file(file_name: str, workspace_context: str = "{}", session_id: str | None = None) -> str:
     """
     Read the content of a file.
 
     Args:
         file_name: Relative file path.
         workspace_context: Optional JSON object for workspace/scoping (e.g. {"agent_name": "...", "user_name": "...", "repo_name": "...", "jira_number": "..."}). Merged into the API request as-is.
+        session_id: Optional session ID for trace correlation
 
     Returns:
         File content as string (UTF-8 for text files, base64 for binary files)
     """
     logger.info("Reading file '%s' with workspace_context=%s", file_name, workspace_context)
     try:
-        payload = {"fileName": file_name, **_parse_workspace_context(workspace_context)}
+        payload = {
+            "fileName": file_name,
+            "workspace_context": _parse_workspace_context(workspace_context),
+        }
+        logger.info("Payload: " + str(payload))
+        if session_id:
+            payload.setdefault("conversation_id", session_id)
 
-        with httpx.Client() as client:
-            response = client.post(f"{FILE_SERVER_BASE_URL}/readFile", json=payload, timeout=30.0)
+        with (
+            traced_http_call("readFile", session_id=session_id) as trace_headers,
+            httpx.Client() as client,
+        ):
+            response = client.post(
+                f"{FILE_SERVER_BASE_URL}/readFile",
+                json=payload,
+                headers=trace_headers,
+                timeout=30.0,
+            )
             response.raise_for_status()
             content = response.content
 
@@ -130,7 +169,9 @@ def read_file(file_name: str, workspace_context: str = "{}") -> str:
         return f"Error reading file: {e!s}"
 
 
-def write_file(file_name: str, content: str, workspace_context: str = "{}") -> str:
+def write_file(
+    file_name: str, content: str, workspace_context: str = "{}", session_id: str | None = None
+) -> str:
     """
     Write content to a file.
 
@@ -138,6 +179,7 @@ def write_file(file_name: str, content: str, workspace_context: str = "{}") -> s
         file_name: Relative file path.
         content: File content as string.
         workspace_context: Optional JSON object for workspace/scoping (e.g. {"agent_name": "...", "user_name": "...", "repo_name": "...", "jira_number": "..."}). Merged into the API request as-is.
+        session_id: Optional session ID for trace correlation
 
     Returns:
         Success message with file path and size
@@ -148,11 +190,21 @@ def write_file(file_name: str, content: str, workspace_context: str = "{}") -> s
         payload = {
             "file_name": file_name,
             "file_content": content_base64,
-            **_parse_workspace_context(workspace_context),
+            "workspace_context": _parse_workspace_context(workspace_context),
         }
+        if session_id:
+            payload.setdefault("conversation_id", session_id)
 
-        with httpx.Client() as client:
-            response = client.post(f"{FILE_SERVER_BASE_URL}/writeFile", json=payload, timeout=30.0)
+        with (
+            traced_http_call("writeFile", session_id=session_id) as trace_headers,
+            httpx.Client() as client,
+        ):
+            response = client.post(
+                f"{FILE_SERVER_BASE_URL}/writeFile",
+                json=payload,
+                headers=trace_headers,
+                timeout=30.0,
+            )
             response.raise_for_status()
             result = response.json()
 
@@ -170,7 +222,12 @@ def write_file(file_name: str, content: str, workspace_context: str = "{}") -> s
         return f"Error writing file: {e!s}"
 
 
-def move_file(source_path: str, destination_path: str, workspace_context: str = "{}") -> str:
+def move_file(
+    source_path: str,
+    destination_path: str,
+    workspace_context: str = "{}",
+    session_id: str | None = None,
+) -> str:
     """
     Move a file from source to destination.
 
@@ -178,6 +235,7 @@ def move_file(source_path: str, destination_path: str, workspace_context: str = 
         source_path: Current file path.
         destination_path: New file path.
         workspace_context: Optional JSON object for workspace/scoping (e.g. {"agent_name": "...", "user_name": "...", "repo_name": "...", "jira_number": "..."}). Merged into the API request as-is.
+        session_id: Optional session ID for trace correlation
 
     Returns:
         Success message with file paths and size
@@ -192,11 +250,21 @@ def move_file(source_path: str, destination_path: str, workspace_context: str = 
         payload = {
             "source_path": source_path,
             "destination_path": destination_path,
-            **_parse_workspace_context(workspace_context),
+            "workspace_context": _parse_workspace_context(workspace_context),
         }
+        if session_id:
+            payload.setdefault("conversation_id", session_id)
 
-        with httpx.Client() as client:
-            response = client.post(f"{FILE_SERVER_BASE_URL}/moveFile", json=payload, timeout=30.0)
+        with (
+            traced_http_call("moveFile", session_id=session_id) as trace_headers,
+            httpx.Client() as client,
+        ):
+            response = client.post(
+                f"{FILE_SERVER_BASE_URL}/moveFile",
+                json=payload,
+                headers=trace_headers,
+                timeout=30.0,
+            )
             response.raise_for_status()
             result = response.json()
 
@@ -214,13 +282,16 @@ def move_file(source_path: str, destination_path: str, workspace_context: str = 
         return f"Error moving file: {e!s}"
 
 
-def create_download_link(file_name: str, workspace_context: str = "{}") -> str:
+def create_download_link(
+    file_name: str, workspace_context: str = "{}", session_id: str | None = None
+) -> str:
     """
     Create a download link for the file.
 
     Args:
         file_name: Relative file path.
         workspace_context: Optional JSON object for workspace/scoping (e.g. {"agent_name": "...", "user_name": "...", "repo_name": "...", "jira_number": "..."}). Merged into the API request as-is.
+        session_id: Optional session ID for trace correlation
 
     Returns:
         Creates a download link for the file
@@ -229,11 +300,22 @@ def create_download_link(file_name: str, workspace_context: str = "{}") -> str:
         "Creating download link for '%s' with workspace_context=%s", file_name, workspace_context
     )
     try:
-        payload = {"fileName": file_name, **_parse_workspace_context(workspace_context)}
+        payload = {
+            "fileName": file_name,
+            "workspace_context": _parse_workspace_context(workspace_context),
+        }
+        if session_id:
+            payload.setdefault("conversation_id", session_id)
 
-        with httpx.Client() as client:
+        with (
+            traced_http_call("createDownloadLink", session_id=session_id) as trace_headers,
+            httpx.Client() as client,
+        ):
             response = client.post(
-                f"{FILE_SERVER_BASE_URL}/createDownloadLink", json=payload, timeout=30.0
+                f"{FILE_SERVER_BASE_URL}/createDownloadLink",
+                json=payload,
+                headers=trace_headers,
+                timeout=30.0,
             )
             response.raise_for_status()
             content = response.content

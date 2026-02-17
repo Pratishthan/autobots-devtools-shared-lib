@@ -7,7 +7,7 @@ from pathlib import Path
 
 import pytest
 
-from autobots_devtools_shared_lib.dynagent.config.dynagent_settings import Settings
+from autobots_devtools_shared_lib.dynagent import DynagentSettings as Settings
 
 # Resolve the bro config dir once at import time (relative to shared-lib root).
 _BRO_CONFIG_CANDIDATES = [
@@ -57,10 +57,6 @@ def test_settings() -> Settings:
         langfuse_enabled=False,
         langfuse_public_key="",
         langfuse_secret_key="",
-        oauth_github_client_id="",
-        oauth_github_client_secret="",
-        chainlit_auth_secret="",
-        debug=True,
     )
 
 
@@ -73,7 +69,6 @@ def langfuse_settings() -> Settings:
         langfuse_public_key="test-public-key",
         langfuse_secret_key="test-secret-key",
         langfuse_host="https://test.langfuse.com",
-        debug=True,
     )
 
 
@@ -83,10 +78,6 @@ def oauth_settings() -> Settings:
     return Settings(
         google_api_key=os.environ.get("GOOGLE_API_KEY", "test-google-key"),
         langfuse_enabled=False,
-        oauth_github_client_id="test-client-id",
-        oauth_github_client_secret="test-client-secret",
-        chainlit_auth_secret="test-auth-secret",
-        debug=True,
     )
 
 
@@ -134,6 +125,7 @@ def bro_registered():
 def clean_env() -> Generator[None, None, None]:
     """Temporarily clear environment variables for testing."""
     env_vars = [
+        "ANTHROPIC_API_KEY",
         "GOOGLE_API_KEY",
         "LANGFUSE_PUBLIC_KEY",
         "LANGFUSE_SECRET_KEY",

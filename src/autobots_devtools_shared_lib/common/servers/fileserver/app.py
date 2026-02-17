@@ -71,23 +71,17 @@ if config.enable_cors:
     )
 
 
-def _workspace_root(user_name: str | None, repo_name: str | None, jira_number: str | None) -> Path:
-    """config.root is the canvas root. When user_name, repo_name, jira_number are set, append <user_name>/<repo_name>-<jira_number>."""
+def _path_under_root(workspace_context: dict[str, Any], relative: str | None) -> Path:
+    """Build config.root / workspace_base_path / relative; reject path traversal outside config.root."""
     base = config.root
-    if not (user_name and repo_name and jira_number):
+    workspace_base_path = workspace_context.get("workspace_base_path")
+    if workspace_base_path is not None:
+        base = (base / str(workspace_base_path)).resolve()
+    if not relative or not relative.strip():
         return base
-    workspace_dir = f"{repo_name}-{jira_number}"
-    return (base / user_name.strip() / workspace_dir).resolve()
-
-
-def _safe_path(relative: str, base: Path | None = None) -> Path:
-    """Resolve path under base (default config.root); reject path traversal."""
-    root = base if base is not None else config.root
-    if not relative or relative.strip() == "":
-        return root
-    resolved = (root / relative.strip().lstrip("/")).resolve()
+    resolved = (base / relative.strip().lstrip("/")).resolve()
     try:
-        resolved.relative_to(root)
+        resolved.relative_to(config.root)
     except ValueError as err:
         raise HTTPException(status_code=400, detail="Path escapes workspace root") from err
     return resolved
@@ -114,7 +108,7 @@ def root() -> dict[str, Any]:
 
 @app.get("/health")
 def health() -> dict[str, Any]:
-    """Health check; returns status, disk_usage (for get_disk_usage tool), and file_count."""
+    """Health check; returns status and disk_usage (partition usage for get_disk_usage tool)."""
     logger.info("health called")
     if not config.root.exists():
         logger.warning("health: FILE_SERVER_ROOT does not exist, root=%s", config.root)
@@ -122,34 +116,27 @@ def health() -> dict[str, Any]:
             "status": "degraded",
             "timestamp": datetime.now(UTC).isoformat(),
             "disk_usage": {"root": str(config.root), "size_bytes": 0},
-            "file_count": 0,
         }
-    total = 0
-    file_count = 0
-    for _root, _dirs, files in os.walk(config.root):
-        for f in files:
-            fp = Path(_root) / f
-            if fp.is_file():
-                total += fp.stat().st_size
-                file_count += 1
-    logger.info(
-        "health success, root=%s, size_bytes=%s, file_count=%s", config.root, total, file_count
-    )
+    du = shutil.disk_usage(config.root)
+    logger.info("health success, root=%s", config.root)
     return {
         "status": "healthy",
         "timestamp": datetime.now(UTC).isoformat(),
-        "disk_usage": {"root": str(config.root), "size_bytes": total},
-        "file_count": file_count,
+        "disk_usage": {
+            "root": str(config.root),
+            "size_bytes": du.used,
+            "total_bytes": du.total,
+            "free_bytes": du.free,
+        },
     }
 
 
 @app.post("/listFiles")
 def list_files(body: ListFilesBody) -> dict[str, Any]:
-    """List files under path. When user_name, repo_name, jira_number are set, path is under <user_name>/<repo_name>-<jira_number>/."""
+    """List files under path. When workspace_context is set, path is under that workspace."""
     set_conversation_id(body.conversation_id or "default_conversation_id")
     logger.info("listFiles called path=%s", body.path)
-    ws_root = _workspace_root(body.user_name, body.repo_name, body.jira_number)
-    base = _safe_path(body.path, ws_root) if body.path else ws_root
+    base = _path_under_root(body.workspace_context, body.path)
     if not base.exists():
         logger.warning("listFiles path not found path=%s", base)
         raise HTTPException(status_code=404, detail="Path not found")
@@ -171,11 +158,10 @@ def list_files(body: ListFilesBody) -> dict[str, Any]:
 
 @app.post("/readFile")
 def read_file(body: ReadFileBody) -> Response:
-    """Return file content as raw bytes. Path resolved under workspace when user_name, repo_name, jira_number set."""
+    """Return file content as raw bytes. Path resolved under workspace when workspace_context set."""
     set_conversation_id(body.conversation_id or "default_conversation_id")
     logger.info("readFile called fileName=%s", body.fileName)
-    ws_root = _workspace_root(body.user_name, body.repo_name, body.jira_number)
-    path = _safe_path(body.fileName, ws_root)
+    path = _path_under_root(body.workspace_context, body.fileName)
     if not path.exists():
         logger.warning("readFile file not found fileName=%s", body.fileName)
         raise HTTPException(status_code=404, detail="File not found")
@@ -189,7 +175,7 @@ def read_file(body: ReadFileBody) -> Response:
 
 @app.post("/writeFile")
 def write_file(body: WriteFileBody) -> dict[str, Any]:
-    """Write base64-encoded content to file. Path resolved under workspace when user_name, repo_name, jira_number set."""
+    """Write base64-encoded content to file. Path resolved under workspace when workspace_context set."""
     set_conversation_id(body.conversation_id or "default_conversation_id")
     logger.info("writeFile called file_name=%s", body.file_name)
     try:
@@ -204,8 +190,7 @@ def write_file(body: WriteFileBody) -> dict[str, Any]:
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"File size exceeds limit of {config.max_file_size_mb}MB",
         )
-    ws_root = _workspace_root(body.user_name, body.repo_name, body.jira_number)
-    path = _safe_path(body.file_name, ws_root)
+    path = _path_under_root(body.workspace_context, body.file_name)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(raw)
     rel = path.relative_to(config.root)
@@ -220,16 +205,15 @@ def write_file(body: WriteFileBody) -> dict[str, Any]:
 
 @app.post("/moveFile")
 def move_file(body: MoveFileBody) -> dict[str, Any]:
-    """Move file from source_path to destination_path. Paths resolved under workspace when user_name, repo_name, jira_number set."""
+    """Move file from source_path to destination_path. Paths resolved under workspace when workspace_context set."""
     set_conversation_id(body.conversation_id or "default_conversation_id")
     logger.info(
         "moveFile called source_path=%s destination_path=%s",
         body.source_path,
         body.destination_path,
     )
-    ws_root = _workspace_root(body.user_name, body.repo_name, body.jira_number)
-    src = _safe_path(body.source_path, ws_root)
-    dst = _safe_path(body.destination_path, ws_root)
+    src = _path_under_root(body.workspace_context, body.source_path)
+    dst = _path_under_root(body.workspace_context, body.destination_path)
     if not src.exists():
         logger.warning("moveFile source not found source_path=%s", body.source_path)
         raise HTTPException(status_code=404, detail="Source file not found")
@@ -253,11 +237,10 @@ def move_file(body: MoveFileBody) -> dict[str, Any]:
 
 @app.post("/createDownloadLink")
 def create_download_link(body: ReadFileBody) -> Response:
-    """Return a simple download link (file path) as text for local testing. Path resolved under workspace when user_name, repo_name, jira_number set."""
+    """Return a simple download link (file path) as text for local testing. Path resolved under workspace when workspace_context set."""
     set_conversation_id(body.conversation_id or "default_conversation_id")
     logger.info("createDownloadLink called fileName=%s", body.fileName)
-    ws_root = _workspace_root(body.user_name, body.repo_name, body.jira_number)
-    path = _safe_path(body.fileName, ws_root)
+    path = _path_under_root(body.workspace_context, body.fileName)
     if not path.exists():
         logger.warning("createDownloadLink file not found fileName=%s", body.fileName)
         raise HTTPException(status_code=404, detail="File not found")
