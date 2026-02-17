@@ -29,6 +29,20 @@ def _state_from_runtime(
     return runtime.state if runtime is not None else None
 
 
+def _session_id_from_runtime(runtime: ToolRuntime[None, Dynagent] | None) -> str | None:
+    """Extract session_id from runtime state if available."""
+    if runtime is None:
+        return None
+    state = runtime.state
+    if state is None:
+        return None
+    session_id = state.get("session_id")
+    # Validate it's a non-empty string
+    if not isinstance(session_id, str) or not session_id:
+        return None
+    return session_id
+
+
 def _check_result(result: str, operation: str) -> None:
     """If result is an error message, log and raise ToolException."""
     if result.strip().startswith("Error "):
@@ -49,7 +63,9 @@ def list_files_tool(
             workspace_context, _state_from_runtime(runtime)
         )
         logger.info("[tools] formed workspace_context=%s", workspace_context)
-        result = list_files(base_path, workspace_context)
+        result = list_files(
+            base_path, workspace_context, session_id=_session_id_from_runtime(runtime)
+        )
         _check_result(result, "list_files")
     except ToolException:
         raise
@@ -61,13 +77,13 @@ def list_files_tool(
 
 
 @tool
-def get_disk_usage_tool() -> str:
+def get_disk_usage_tool(runtime: ToolRuntime[None, Dynagent] | None = None) -> str:
     """
     Get disk usage statistics for the file server.
     """
     logger.info("[tools] Getting disk usage")
     try:
-        result = get_disk_usage()
+        result = get_disk_usage(session_id=_session_id_from_runtime(runtime))
         _check_result(result, "get_disk_usage")
     except ToolException:
         raise
@@ -91,7 +107,9 @@ def read_file_tool(
             workspace_context, _state_from_runtime(runtime)
         )
         logger.info("[tools] formed workspace_context=%s", workspace_context)
-        result = read_file(file_name, workspace_context)
+        result = read_file(
+            file_name, workspace_context, session_id=_session_id_from_runtime(runtime)
+        )
         _check_result(result, "read_file")
     except ToolException:
         raise
@@ -120,7 +138,12 @@ def move_file_tool(
             workspace_context, _state_from_runtime(runtime)
         )
         logger.info("[tools] formed workspace_context=%s", workspace_context)
-        result = move_file(source_path, destination_path, workspace_context)
+        result = move_file(
+            source_path,
+            destination_path,
+            workspace_context,
+            session_id=_session_id_from_runtime(runtime),
+        )
         _check_result(result, "move_file")
     except ToolException:
         raise
@@ -148,7 +171,9 @@ def create_download_link_tool(
             workspace_context, _state_from_runtime(runtime)
         )
         logger.info("[tools] formed workspace_context=%s", workspace_context)
-        result = create_download_link(file_name, workspace_context)
+        result = create_download_link(
+            file_name, workspace_context, session_id=_session_id_from_runtime(runtime)
+        )
         _check_result(result, "create_download_link")
     except ToolException:
         raise
@@ -173,7 +198,9 @@ def write_file_tool(
             workspace_context, _state_from_runtime(runtime)
         )
         logger.info("[tools] formed workspace_context=%s", workspace_context)
-        result = write_file(file_name, content, workspace_context)
+        result = write_file(
+            file_name, content, workspace_context, session_id=_session_id_from_runtime(runtime)
+        )
         _check_result(result, "write_file")
     except ToolException:
         raise

@@ -207,6 +207,16 @@ def _set_span_attributes(
             input_data["body"] = req_truncated["content"]
             input_data["body_size"] = req_truncated["size_bytes"]
 
+            # Extract conversation_id and set as langfuse.session.id
+            try:
+                req_json = json.loads(req_body.decode("utf-8"))
+                conversation_id = req_json.get("conversation_id")
+                if conversation_id:
+                    span.set_attribute("langfuse.session.id", str(conversation_id))
+            except (json.JSONDecodeError, UnicodeDecodeError):
+                # Not JSON or invalid UTF-8, skip session linking
+                pass
+
         span.set_attribute("input.value", json.dumps(input_data))
 
         # Build output dict (status + body)
@@ -253,9 +263,11 @@ def instrument_fastapi(app: FastAPI) -> bool:
         from opentelemetry.instrumentation.fastapi import (  # pyright: ignore[reportMissingImports]
             FastAPIInstrumentor,
         )
+        from opentelemetry.propagate import set_global_textmap
         from opentelemetry.sdk.resources import Resource
         from opentelemetry.sdk.trace import TracerProvider
         from opentelemetry.sdk.trace.export import BatchSpanProcessor
+        from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
     except ImportError:
         return False
 
@@ -268,6 +280,9 @@ def instrument_fastapi(app: FastAPI) -> bool:
     exporter = OTLPSpanExporter()
     provider.add_span_processor(BatchSpanProcessor(exporter))
     trace.set_tracer_provider(provider)
+
+    # Set W3C TraceContext propagator to extract incoming traceparent headers
+    set_global_textmap(TraceContextTextMapPropagator())
 
     # Build excluded URLs from config
     excluded_urls = ",".join(config.excluded_paths)
