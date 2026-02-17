@@ -1,35 +1,43 @@
-# Autobots DevTools Shared Library
+# Motivation
 
-Shared library functions to be used for all autobots projects. This library provides common functionality for Chainlit UI integration, LLM tools, Dynagent framework, and observability helpers.
+The author team spent a lot time researching open source frameworks to convert "working" prompts into production ready application. So we embarked on the journey to help you in your **ViberEnt** (read vibrant)- *Vibe Coder for Enterprise* journey.
+
+# Introduction
+
+**Dyn**amic **Agent** (**DynAgent**) framework - the core of the **Autobots DevTools Shared Library** (ADSL) package - provides supporting capabilities for turning your agent AI automation workflows into enterprise grade apps that can run production workloads. You can convert a business process into an LLM assisted UI chatbot and/or unsupervised workflow in an order of **hours**, even lesser if you have your prompts handy. DynAgent handles the heavy lifting for you out of the box: multi LLM, chatbot, observabilit and more, while you to focus on your prompts, output schemas and converting business process into works.
 
 ## Features
 
+- **DynAgent Framework**: Framework for building dynamic AI agents
+- **Multi LLM Support**: Swap LLMs like swapping batteries
 - **Chainlit UI Integration**: Pre-built UI components for Chainlit applications
-- **Dynagent Framework**: Framework for building dynamic AI agents
+- **OAUTH Integration**: Chainlit UI can be
 - **LLM Tools**: Reusable tools for language model integrations
 - **Batch Processing**: Utilities for batch operations
 - **Observability**: Logging and monitoring helpers
+- **Containerization**: Docker images with bundled dependencies
+- **Prompt Versioning**: Prompts as source model
+- **Prompt Evaluation**: Enables tweaking prompts
 
-### Context key resolver
+## Batteries Included
 
-Use-case apps can control how the context store key is derived from agent state by setting a **context key resolver**. Register it at app startup (before creating the agent) so that `get_context`, `set_context`, and `update_context` use your key.
+It also provides a suite of helpers that work seamlessly with the DynAgent framework
 
-Define a resolver that takes the current agent state and returns a string key, then pass it to `set_context_key_resolver`:
+## Helper
 
-```python
-from collections.abc import Mapping
-from typing import Any
+- **File Server** -
+- **Workspace Management** -
+- **Context Management** - with caching and durable storage
+- **Jenkins Integration** -
 
-from autobots_devtools_shared_lib.common.utils.context_utils import set_context_key_resolver
+# Quickstart
 
-def _resolve_bro_context_key(state: Mapping[str, Any]) -> str:
-    user_name = state.get("user_name") or "default"
-    return f"{user_name}"
+Want to see DynAgent in action - head to **[Jarvis](https://github.com/Pratishthan/autobots-agents-jarvis)**
 
-set_context_key_resolver(_resolve_bro_context_key)
-```
 
-Ensure any keys you read from `state` (e.g. `user_name`) are present in the agent state: pass them in `input_state` when invoking the agent and add them to the Dynagent state schema if needed.
+# Contributing
+
+If you are interested in adding more features to DynAgent then follow the next section.
 
 ## Prerequisites
 
@@ -134,7 +142,7 @@ autobots-devtools-shared-lib/
 │       ├── __init__.py
 │       ├── py.typed              # PEP 561 type stub marker
 │       ├── chainlit_ui/          # Chainlit UI components
-│       ├── dynagent/             # Dynagent framework
+│       ├── DynAgent/             # DynAgent framework
 │       ├── llm_tools/            # LLM tool integrations
 │       ├── observability/        # Observability helpers
 │       └── batch_processing/     # Batch processing utilities
@@ -205,7 +213,6 @@ MIT
 - Pra1had
   - Email: <pralhad.kamath@pratishthanventures.com>
   - [Github:pra1had](https://github.com/pra1had)
-
 
 ## Questions?
 
