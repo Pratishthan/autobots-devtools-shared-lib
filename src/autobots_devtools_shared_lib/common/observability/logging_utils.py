@@ -8,33 +8,31 @@ LogLevelLike = int | str
 _logging_configured: bool = False
 
 
-class ConversationFilter(logging.Filter):
+class SessionFilter(logging.Filter):
     """
-    Inject a conversation/thread identifier into every log record.
+    Inject a session identifier into every log record.
 
-    This enables log format strings to include `%(conversation_id)s`
-    for tracing multi-message conversations across threads/tasks.
+    This enables log format strings to include `%(session_id)s`
+    for tracing multi-message sessions across threads/tasks.
     """
 
     def filter(self, record: logging.LogRecord) -> bool:  # type: ignore[override]
-        record.conversation_id = _conversation_id_var.get()
+        record.session_id = _session_id_var.get()
         return True
 
 
-# Thread-safe context for the current conversation/thread id.
-_conversation_id_var: ContextVar[str] = ContextVar(
-    "conversation_id", default="default-conversation-id"
-)
+# Thread-safe context for the current session/thread id.
+_session_id_var: ContextVar[str] = ContextVar("session_id", default="default-session-id")
 
 
-def set_conversation_id(thread_id: str) -> None:
+def set_session_id(session_id: str) -> None:
     """
-    Set the conversation/thread identifier for the current context.
+    Set the session/thread identifier for the current context.
 
     Args:
-        thread_id: Identifier for the current conversation/thread.
+        session_id: Identifier for the current session/thread.
     """
-    _conversation_id_var.set(thread_id)
+    _session_id_var.set(session_id)
 
 
 def _parse_log_level(level: LogLevelLike | None) -> int:
@@ -84,7 +82,7 @@ def setup_logging(
 
     Args:
         level: Explicit log level (int or name like "DEBUG").
-        fmt: Log format string. If omitted, a default including conversation_id is used.
+        fmt: Log format string. If omitted, a default including session_id is used.
         force: If True, reconfigure logging even if it was already configured.
     """
     global _logging_configured
@@ -96,10 +94,8 @@ def setup_logging(
     env_level = os.getenv("LOG_LEVEL")
     effective_level = _parse_log_level(level if level is not None else env_level)
 
-    # Default format includes conversation/thread context
-    log_format = fmt or (
-        "%(asctime)s - %(name)s - [%(conversation_id)s] - %(levelname)s - %(message)s"
-    )
+    # Default format includes session/thread context
+    log_format = fmt or ("%(asctime)s - %(name)s - [%(session_id)s] - %(levelname)s - %(message)s")
 
     root_logger = logging.getLogger()
 
@@ -113,7 +109,7 @@ def setup_logging(
     handler = logging.StreamHandler(sys.stdout)
     handler.setLevel(effective_level)
     handler.setFormatter(logging.Formatter(log_format))
-    handler.addFilter(ConversationFilter())
+    handler.addFilter(SessionFilter())
 
     root_logger.addHandler(handler)
 

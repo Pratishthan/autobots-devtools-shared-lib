@@ -53,7 +53,7 @@ def list_files(
             "workspace_context": _parse_workspace_context(workspace_context),
         }
         if session_id:
-            payload.setdefault("conversation_id", session_id)
+            payload.setdefault("session_id", session_id)
 
         with (
             traced_http_call("listFiles", session_id=session_id) as trace_headers,
@@ -134,7 +134,7 @@ def read_file(file_name: str, workspace_context: str = "{}", session_id: str | N
         }
         logger.info("Payload: " + str(payload))
         if session_id:
-            payload.setdefault("conversation_id", session_id)
+            payload.setdefault("session_id", session_id)
 
         with (
             traced_http_call("readFile", session_id=session_id) as trace_headers,
@@ -193,7 +193,7 @@ def write_file(
             "workspace_context": _parse_workspace_context(workspace_context),
         }
         if session_id:
-            payload.setdefault("conversation_id", session_id)
+            payload.setdefault("session_id", session_id)
 
         with (
             traced_http_call("writeFile", session_id=session_id) as trace_headers,
@@ -253,7 +253,7 @@ def move_file(
             "workspace_context": _parse_workspace_context(workspace_context),
         }
         if session_id:
-            payload.setdefault("conversation_id", session_id)
+            payload.setdefault("session_id", session_id)
 
         with (
             traced_http_call("moveFile", session_id=session_id) as trace_headers,
@@ -305,7 +305,7 @@ def create_download_link(
             "workspace_context": _parse_workspace_context(workspace_context),
         }
         if session_id:
-            payload.setdefault("conversation_id", session_id)
+            payload.setdefault("session_id", session_id)
 
         with (
             traced_http_call("createDownloadLink", session_id=session_id) as trace_headers,

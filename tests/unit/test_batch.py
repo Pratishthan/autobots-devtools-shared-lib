@@ -2,8 +2,12 @@
 # ABOUTME: Covers helpers, result types, and validation without requiring an API key.
 
 import uuid
+from typing import TYPE_CHECKING, cast
 
 import pytest
+
+if TYPE_CHECKING:
+    from langchain_core.runnables import RunnableConfig
 
 from autobots_devtools_shared_lib.dynagent.agents.batch import (
     BatchResult,
@@ -52,6 +56,31 @@ class TestBuildInputs:
             parsed = uuid.UUID(sid)
             assert parsed.version == 4
 
+    def test_input_state_merged_into_each_record(self):
+        input_state = {"user_name": "alice", "custom_key": "custom_value"}
+        result = _build_inputs("coordinator", ["r1", "r2"], input_state=input_state)
+        assert len(result) == 2
+        for inp in result:
+            assert inp["user_name"] == "alice"
+            assert inp["custom_key"] == "custom_value"
+            assert inp["agent_name"] == "coordinator"
+            assert "session_id" in inp
+            assert inp["messages"][0]["content"] in ("r1", "r2")
+
+    def test_input_state_overridden_by_per_record_keys(self):
+        """Per-record messages, agent_name, session_id override base input_state."""
+        input_state = {
+            "agent_name": "other",
+            "messages": [{"role": "user", "content": "base"}],
+            "session_id": "base-session",
+        }
+        result = _build_inputs("coordinator", ["record_content"], input_state=input_state)
+        assert len(result) == 1
+        assert result[0]["agent_name"] == "coordinator"
+        assert result[0]["messages"][0]["content"] == "record_content"
+        assert result[0]["session_id"] != "base-session"
+        assert uuid.UUID(result[0]["session_id"]).version == 4
+
 
 # ---------------------------------------------------------------------------
 # _build_configs
@@ -83,6 +112,36 @@ class TestBuildConfigs:
         for tid in thread_ids:
             parsed = uuid.UUID(tid)
             assert parsed.version == 4
+
+    def test_config_base_merged_into_each(self):
+        base = cast(
+            "RunnableConfig",
+            {"configurable": {"user_id": "u1", "run_name": "batch"}, "metadata": {"tag": "test"}},
+        )
+        configs = _build_configs(2, config=base)
+        assert len(configs) == 2
+        for cfg in configs:
+            configurable = cfg.get("configurable")
+            assert configurable is not None
+            assert configurable["user_id"] == "u1"
+            assert configurable["run_name"] == "batch"
+            assert "thread_id" in configurable
+            assert cfg.get("metadata") == {"tag": "test"}
+            assert cfg.get("max_concurrency") == 1
+
+    def test_config_thread_id_unique_per_run(self):
+        base = cast("RunnableConfig", {"configurable": {"shared": "value"}})
+        configs = _build_configs(3, config=base)
+        thread_ids = []
+        for c in configs:
+            configurable = c.get("configurable")
+            assert configurable is not None
+            thread_ids.append(configurable["thread_id"])
+        assert len(set(thread_ids)) == 3
+        for c in configs:
+            configurable = c.get("configurable")
+            assert configurable is not None
+            assert configurable["shared"] == "value"
 
 
 # ---------------------------------------------------------------------------

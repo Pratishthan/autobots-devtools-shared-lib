@@ -46,14 +46,14 @@ For all 6 HTTP functions (`list_files`, `get_disk_usage`, `read_file`, `write_fi
 - Add optional `session_id: str | None = None` parameter
 - Wrap the `httpx.Client()` call with `traced_http_call(operation, session_id=session_id)`
 - Pass the yielded trace headers to `client.post()/get(..., headers=trace_headers)`
-- For functions with a body payload, set `conversation_id` from `session_id` if not already present (reuses existing `conversation_id` field on the Pydantic models — no model changes needed)
+- For functions with a body payload, set `session_id` from `session_id` if not already present (reuses existing `session_id` field on the Pydantic models — no model changes needed)
 
 Example pattern:
 ```python
 def write_file(file_name: str, content: str, workspace_context: str = "{}", session_id: str | None = None) -> str:
     # ... existing payload construction ...
     if session_id:
-        payload.setdefault("conversation_id", session_id)
+        payload.setdefault("session_id", session_id)
 
     with traced_http_call("writeFile", session_id=session_id) as trace_headers:
         with httpx.Client() as client:
@@ -84,14 +84,14 @@ Two changes in `instrument_fastapi()`:
 - **Explicit W3C propagator:** Add `set_global_textmap(TraceContextTextMapPropagator())` after the `TracerProvider` setup (ensures incoming `traceparent` headers are extracted)
 
 One change in `_set_span_attributes()`:
-- **Session linking:** After parsing the request body, extract `conversation_id` and set `langfuse.session.id` on the current span so the server trace appears in the correct Langfuse session
+- **Session linking:** After parsing the request body, extract `session_id` and set `langfuse.session.id` on the current span so the server trace appears in the correct Langfuse session
 
 ```python
 # In _set_span_attributes(), after building input_data:
 if request_body_parts:
     try:
         req_json = json.loads(b"".join(request_body_parts).decode("utf-8"))
-        sid = req_json.get("conversation_id")
+        sid = req_json.get("session_id")
         if sid:
             span.set_attribute("langfuse.session.id", str(sid))
     except (json.JSONDecodeError, UnicodeDecodeError):
@@ -109,7 +109,7 @@ Agent invocation (Langfuse native, session_id="abc123")
             └─ traced_http_call("writeFile", session_id="abc123")
                  ├─ Creates OTEL CLIENT span (langfuse.session.id="abc123")
                  ├─ Injects traceparent: 00-{trace_id}-{span_id}-01
-                 └─ HTTP POST /writeFile (conversation_id="abc123")
+                 └─ HTTP POST /writeFile (session_id="abc123")
                       └─ FastAPI extracts traceparent → creates child SERVER span
                          └─ ASGI middleware sets langfuse.session.id="abc123"
 ```
