@@ -7,7 +7,26 @@ from autobots_devtools_shared_lib.common.observability.logging_utils import get_
 logger = get_logger(__name__)
 
 
-def output_format_converter(agent_name: str, messages: list[AnyMessage]) -> str:
+def _validate_output(result: dict, schema: dict) -> bool:
+    """Validate the output against the schema.
+
+    Args:
+        result: The output to validate.
+        schema: The schema to validate against.
+    """
+    logger.info(f"validate_output: result={result}, schema={schema}")
+    # Call some FOSS Python library to validate the output against the schema.
+    # validator = Draft7Validator(schema)
+    # errors = list(validator.iter_errors(result))
+    # if errors:
+    #     logger.error(f"validate_output: errors={errors}")
+    #     return False
+    return True
+
+
+def output_format_converter(
+    agent_name: str, messages: list[AnyMessage], validate: bool = False
+) -> str:
     """Convert conversation history to structured output.
 
     Uses the current agent's schema for extraction.
@@ -35,5 +54,8 @@ def output_format_converter(agent_name: str, messages: list[AnyMessage]) -> str:
 
     if error or result is None:
         return f"Error: conversion failed — {error or 'unknown error'}"
+
+    if validate:
+        _validate_output(result, schema)
 
     return json.dumps(result)
