@@ -21,7 +21,8 @@ logger = get_logger(__name__)
 def invoke_agent(
     agent_name: str,
     input_state: dict[str, Any],
-    config: RunnableConfig,
+    checkpointer: Any = None,
+    config: RunnableConfig | None = None,
     enable_tracing: bool = True,
     trace_metadata: TraceMetadata | None = None,
 ) -> dict[str, Any]:
@@ -82,14 +83,14 @@ def invoke_agent(
         langfuse_handler = get_langfuse_handler()
 
         if langfuse_handler:
-            existing_callbacks = config.get("callbacks")
-
-            if existing_callbacks is None:
-                config["callbacks"] = [langfuse_handler]
-            elif (
-                isinstance(existing_callbacks, list) and langfuse_handler not in existing_callbacks
-            ):
-                config["callbacks"] = [*existing_callbacks, langfuse_handler]
+            if config is None:
+                config = {"callbacks": [langfuse_handler]}
+            else:
+                existing = config.get("callbacks")
+                if isinstance(existing, list):
+                    config["callbacks"] = [*existing, langfuse_handler]
+                else:
+                    config["callbacks"] = [langfuse_handler]
 
     # Execute with observability wrapper
     try:
@@ -121,8 +122,11 @@ def invoke_agent(
                     create_base_agent,
                 )
 
+                if checkpointer is None:
+                    checkpointer = InMemorySaver()
+
                 agent = create_base_agent(
-                    checkpointer=InMemorySaver(),
+                    checkpointer=checkpointer,
                     sync_mode=True,
                     initial_agent_name=agent_name,  # pyright: ignore[reportCallIssue]
                 )
@@ -156,7 +160,8 @@ def invoke_agent(
 async def ainvoke_agent(
     agent_name: str,
     input_state: dict[str, Any],
-    config: RunnableConfig,
+    checkpointer: Any = None,
+    config: RunnableConfig | None = None,
     enable_tracing: bool = True,
     trace_metadata: TraceMetadata | None = None,
 ) -> dict[str, Any]:
@@ -218,14 +223,14 @@ async def ainvoke_agent(
         langfuse_handler = get_langfuse_handler()
 
         if langfuse_handler:
-            existing_callbacks = config.get("callbacks")
-
-            if existing_callbacks is None:
-                config["callbacks"] = [langfuse_handler]
-            elif (
-                isinstance(existing_callbacks, list) and langfuse_handler not in existing_callbacks
-            ):
-                config["callbacks"] = [*existing_callbacks, langfuse_handler]
+            if config is None:
+                config = {"callbacks": [langfuse_handler]}
+            else:
+                existing = config.get("callbacks")
+                if isinstance(existing, list):
+                    config["callbacks"] = [*existing, langfuse_handler]
+                else:
+                    config["callbacks"] = [langfuse_handler]
 
     # Execute with observability wrapper
     try:
@@ -257,8 +262,11 @@ async def ainvoke_agent(
                     create_base_agent,
                 )
 
+                if checkpointer is None:
+                    checkpointer = InMemorySaver()
+
                 agent = create_base_agent(
-                    checkpointer=InMemorySaver(),
+                    checkpointer=checkpointer,
                     sync_mode=False,
                     initial_agent_name=agent_name,  # pyright: ignore[reportCallIssue]
                 )

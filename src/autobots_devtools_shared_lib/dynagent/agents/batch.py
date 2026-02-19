@@ -154,6 +154,7 @@ def batch_invoker(
     records: list[str],
     enable_tracing: bool = True,
     trace_metadata: TraceMetadata | None = None,
+    checkpointer: Any = None,
     input_state: dict[str, Any] | None = None,
     config: RunnableConfig | None = None,
 ) -> BatchResult:
@@ -166,6 +167,7 @@ def batch_invoker(
             degrades if not configured).
         trace_metadata: Optional TraceMetadata instance with session_id, app_name,
             user_id, and tags. If None, uses defaults with auto-generated session_id.
+        checkpointer: Optional checkpointer to use for the agent. If None, uses InMemorySaver.
         input_state: Optional base state merged into each record (e.g. user_name, context).
             Per-record keys (messages, agent_name, session_id) override these.
         config: Optional base RunnableConfig merged into each invocation (e.g. configurable,
@@ -241,8 +243,11 @@ def batch_invoker(
                     create_base_agent,
                 )
 
+                if checkpointer is None:
+                    checkpointer = InMemorySaver()
+
                 agent = create_base_agent(
-                    checkpointer=InMemorySaver(),
+                    checkpointer=checkpointer,
                     sync_mode=True,
                     initial_agent_name=agent_name,  # pyright: ignore[reportCallIssue]
                 )
