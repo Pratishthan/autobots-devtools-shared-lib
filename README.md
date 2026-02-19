@@ -1,90 +1,99 @@
-# Motivation
+# Autobots DevTools Shared Library
 
-The author team spent a lot time researching open source frameworks to convert "working" prompts into production ready application. So we embarked on the journey to help you in your **ViberEnt** (read vibrant)- *Vibe Coder for Enterprise* journey.
+**Dyn**amic **Agent** (**Dynagent**) is the core of this library. It turns your prompts and business processes into production-ready, multi-agent applications—chatbots and unsupervised workflows—in hours. You focus on prompts, output schemas, and domain logic; Dynagent handles multi-LLM wiring, UI integration, observability, and batch processing out of the box.
 
-# Introduction
+### Essential features
 
-**Dyn**amic **Agent** (**DynAgent**) framework - the core of the **Autobots DevTools Shared Library** (ADSL) package - provides supporting capabilities for turning your agent AI automation workflows into enterprise grade apps that can run production workloads. You can convert a business process into an LLM assisted UI chatbot and/or unsupervised workflow in an order of **hours**, even lesser if you have your prompts handy. DynAgent handles the heavy lifting for you out of the box: multi LLM, chatbot, observabilit and more, while you to focus on your prompts, output schemas and converting business process into works.
+| Feature | Description |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Dynagent framework** | Build dynamic AI agents with YAML configs, prompts, and tools. Agent handoff and default/coordinator agents for mesh-style flows. |
+| **Multi-LLM support** | Swap LLMs like swapping batteries. Use Gemini, Claude, or others via a single integration layer. |
+| **Chainlit UI** | Pre-built streaming, tool steps, and structured output for Chainlit. OAuth-ready. |
+| **State & context** | Session state and context management with caching and durable storage. Tools receive `ToolRuntime` with shared state across handoffs. |
+| **Batch processing** | Run prompts in parallel for batch-enabled agents. Sync API with `batch_invoker` and `BatchResult`. |
+| **Observability** | Langfuse integration for tracing and monitoring. `TraceMetadata` for session, app, and tags. |
+| **Pythonic** | Native Python and LangChain tools. Type hints, async/sync, pytest—no DSLs. |
+| **Extensible** | File server, workspace management, Jenkins integration, and helpers that plug into the framework. |
+| **Containerization** | Docker images with bundled dependencies for consistent deployment. |
+| **Prompt versioning** | Prompts as source — version-controlled markdown files alongside code. |
+| **Prompt evaluation** | Tooling to tweak and evaluate prompt quality across versions. |
 
-## Features
+### Batteries included
 
-- **DynAgent Framework**: Framework for building dynamic AI agents
-- **Multi LLM Support**: Swap LLMs like swapping batteries
-- **Chainlit UI Integration**: Pre-built UI components for Chainlit applications
-- **OAUTH Integration**: Chainlit UI can be
-- **LLM Tools**: Reusable tools for language model integrations
-- **Batch Processing**: Utilities for batch operations
-- **Observability**: Logging and monitoring helpers
-- **Containerization**: Docker images with bundled dependencies
-- **Prompt Versioning**: Prompts as source model
-- **Prompt Evaluation**: Enables tweaking prompts
+| Helper | Description |
+| ------ | ----------- |
+| **File server** | Serve and manage files within agent sessions. |
+| **Workspace management** | Manage working directories and session artifacts. |
+| **Context management** | Caching and durable storage for session context. |
+| **Jenkins integration** | Trigger and monitor Jenkins pipelines from agents. |
 
-## Batteries Included
+## Quickstart
 
-It also provides a suite of helpers that work seamlessly with the DynAgent framework
+| Guide | Description |
+| ------ | ----------- |
+| **[Try Jarvis](https://github.com/Pratishthan/autobots-agents-jarvis)** | See Dynagent in action with a multi-domain multi-agent demo (Concierge, Customer Support, Sales). |
+| **[Install](#workspace-setup)** | Set up the shared workspace, virtual environment, and install this library. |
+| **[Development](#development)** | Run tests, format, lint, type-check, and use the Makefile from this repo or the workspace root. |
 
-## Helper
+## How-to guides
 
-- **File Server** -
-- **Workspace Management** -
-- **Context Management** - with caching and durable storage
-- **Jenkins Integration** -
+| Guide | Description |
+| ------ | ----------- |
+| **[Workspace setup](#workspace-setup)** | Clone the workspace, create the shared `.venv`, clone this repo, and install dependencies. |
+| **[Development](#development)** | Available `make` targets: test, format, lint, type-check, install, build, clean. |
+| **[Project structure](#project-structure)** | Layout of `autobots_devtools_shared_lib` (dynagent, chainlit_ui, llm_tools, observability, batch). |
+| **[Testing](#testing)** | Unit, integration, and e2e tests. Run with `make test`, `make test-fast`, or `make test-one`. |
+| **[Contributing](#contributing)** | See CONTRIBUTING.md for guidelines and workflow. |
+| **[Publishing](#publishing)** | See PUBLISHING.md for PyPI publishing. |
 
-# Quickstart
+## Advanced
 
-Want to see DynAgent in action - head to **[Jarvis](https://github.com/Pratishthan/autobots-agents-jarvis)**
+| Topic | Description |
+| ------ | ----------- |
+| **[Code quality](#code-quality-standards)** | Type safety (Pyright), pytest, Ruff format/lint, pre-commit hooks. |
+| **[Type checking](#type-checking)** | Pyright in basic mode; type annotations required. |
+| **[Workspace commands](#workspace-level-commands)** | From workspace root: `make test`, `make lint`, `make format`, `make type-check`, `make all-checks` across all repos. |
 
+---
 
-# Contributing
+## Workspace setup
 
-If you are interested in adding more features to DynAgent then follow the next section.
+This library is part of a multi-repository workspace. Use a shared virtual environment at the workspace root.
 
-## Prerequisites
+**Prerequisites:** Python 3.12+, Poetry (e.g. `brew install poetry` on macOS).
 
-- Python 3.12+
-- Poetry (install with `brew install poetry` on macOS)
-
-## Workspace Setup
-
-This library is part of a multi-repository workspace (`ws-multi`). Follow these steps to set up the workspace:
-
-### 1. Clone the Workspace
+### 1. Clone the workspace
 
 ```bash
-# Clone or create the workspace directory
-cd /Users/pralhad/work/src
-git clone <pk-multi-workspace-url> ws-multi
-cd ws-multi
+cd /path/to/your/work
+git clone <workspace-url> ws-jarvis
+cd ws-jarvis
 ```
 
-### 2. Create Shared Virtual Environment
+### 2. Create shared virtual environment
 
 ```bash
-# From the workspace root
 make setup
 ```
 
-This creates a shared `.venv` at the workspace root that all repositories use.
+This creates a shared `.venv` at the workspace root.
 
-### 3. Clone This Repository
+### 3. Clone this repository
 
 ```bash
-# From workspace root
 git clone https://github.com/Pratishthan/autobots-devtools-shared-lib.git
 cd autobots-devtools-shared-lib
 ```
 
-### 4. Install Dependencies
+### 4. Install dependencies
 
 ```bash
-# Install with development dependencies
-make install-dev
-
-# Or install runtime dependencies only
-make install
+make install-dev   # with dev dependencies (recommended)
+# or
+make install       # runtime only
 ```
 
-### 5. Install Pre-commit Hooks
+### 5. Pre-commit hooks
 
 ```bash
 make install-hooks
@@ -92,117 +101,97 @@ make install-hooks
 
 ## Development
 
-### Available Commands
-
-Run these commands from the `autobots-devtools-shared-lib/` directory:
+Run from `autobots-devtools-shared-lib/`:
 
 ```bash
 # Testing
-make test              # Run tests with coverage
-make test-cov          # Run tests with HTML coverage report
-make test-fast         # Run tests without coverage (faster)
+make test              # with coverage
+make test-fast         # no coverage
 make test-one TEST=tests/unit/test_example.py::test_function
 
-# Code Quality
-make format            # Format code with Ruff
-make lint              # Lint with Ruff (auto-fix enabled)
-make check-format      # Check formatting without modifying
-make type-check        # Run Pyright type checker
-make all-checks        # Run all checks (format, type, test)
+# Code quality
+make format            # Ruff format
+make lint              # Ruff lint (auto-fix)
+make check-format      # check only
+make type-check        # Pyright
+make all-checks        # format, type, test
 
-# Dependencies
-make install           # Install runtime dependencies
-make install-dev       # Install with dev dependencies
-make update-deps       # Update dependencies
-
-# Other
-make clean             # Remove cache files and build artifacts
-make build             # Build package
-make help              # Show all available commands
+# Dependencies & build
+make install / make install-dev / make update-deps
+make build
+make clean
+make help
 ```
 
-### Workspace-Level Commands
+### Workspace-level commands
 
-From the workspace root (`/Users/pralhad/work/src/pk-multi/`):
+From the workspace root:
 
 ```bash
-make test           # Run tests across all repos
-make lint           # Lint all repos
-make format         # Format all repos
-make type-check     # Type check all repos
-make all-checks     # Run all checks across all repos
+make test
+make lint
+make format
+make type-check
+make all-checks
 ```
 
-## Project Structure
+## Project structure
 
 ```
 autobots-devtools-shared-lib/
-├── src/
-│   └── autobots_devtools_shared_lib/
-│       ├── __init__.py
-│       ├── py.typed              # PEP 561 type stub marker
-│       ├── chainlit_ui/          # Chainlit UI components
-│       ├── DynAgent/             # DynAgent framework
-│       ├── llm_tools/            # LLM tool integrations
-│       ├── observability/        # Observability helpers
-│       └── batch_processing/     # Batch processing utilities
+├── src/autobots_devtools_shared_lib/
+│   ├── dynagent/           # Multi-agent framework
+│   ├── chainlit_ui/        # Chainlit UI components
+│   ├── llm_tools/          # LLM integrations
+│   ├── observability/      # Observability helpers
+│   └── batch_processing/   # Batch utilities
 ├── tests/
-│   ├── unit/                     # Unit tests
-│   ├── integration/              # Integration tests
-│   └── e2e/                      # End-to-end tests
-├── .github/workflows/            # GitHub Actions CI/CD
-├── pyproject.toml                # Dependencies and tool config
-├── poetry.toml                   # Poetry settings (uses workspace .venv)
-├── Makefile                      # Development commands
-├── CONTRIBUTING.md               # Contribution guidelines
-└── PUBLISHING.md                 # PyPI publishing guide
+│   ├── unit/
+│   ├── integration/
+│   └── e2e/
+├── .github/workflows/
+├── pyproject.toml
+├── poetry.toml             # Poetry settings (uses workspace .venv)
+├── Makefile
+├── CONTRIBUTING.md
+└── PUBLISHING.md
 ```
 
-## Code Quality Standards
+## Code quality standards
 
-This project maintains high code quality standards:
-
-- **Type Safety**: Type annotations required (Pyright basic mode)
-- **Testing**: Comprehensive test coverage with pytest
-- **Formatting**: Ruff formatter (line length: 100)
-- **Linting**: Ruff linter with strict rules
-- **Pre-commit Hooks**: Automated checks on every commit
+- **Type safety:** Type annotations; Pyright (basic mode).
+- **Testing:** pytest; unit, integration, e2e.
+- **Formatting:** Ruff, line length 100.
+- **Linting:** Ruff, strict rules.
+- **Pre-commit:** Format, lint, type-check, tests on commit.
 
 ## Testing
 
 ```bash
-# Run all tests
 make test
-
-# Run specific test file
 make test-one TEST=tests/unit/test_example.py
-
-# Run with coverage report
-make test-cov
+make test-cov   # HTML coverage report
 ```
 
-Tests are organized into:
+- **Unit** (`tests/unit/`): Functions and classes.
+- **Integration** (`tests/integration/`): Component interactions.
+- **E2E** (`tests/e2e/`): Full workflows.
 
-- **Unit tests** (`tests/unit/`): Test individual functions and classes
-- **Integration tests** (`tests/integration/`): Test component interactions
-- **E2E tests** (`tests/e2e/`): Test complete workflows
-
-## Type Checking
+## Type checking
 
 ```bash
-# Run Pyright type checker
 make type-check
 ```
 
-All code should have type annotations. The project uses Pyright in basic mode.
+All code must have type annotations. Pyright runs in basic mode.
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines and workflow.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development workflow and guidelines.
 
 ## Publishing
 
-See [PUBLISHING.md](PUBLISHING.md) for instructions on publishing to PyPI.
+See [PUBLISHING.md](PUBLISHING.md) for PyPI publishing.
 
 ## License
 
@@ -210,10 +199,8 @@ MIT
 
 ## Authors
 
-- Pra1had
-  - Email: <pralhad.kamath@pratishthanventures.com>
-  - [Github:pra1had](https://github.com/pra1had)
+- **Pra1had** — [GitHub](https://github.com/pra1had) · pralhad.kamath@pratishthanventures.com
 
 ## Questions?
 
-If you have questions or need help, please open an issue on the project repository.
+Open an issue on the project repository.
