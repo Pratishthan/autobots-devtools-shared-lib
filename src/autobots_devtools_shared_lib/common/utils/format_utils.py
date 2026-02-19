@@ -1,6 +1,6 @@
 import json
 
-from jsonschema import Draft7Validator
+from jsonschema import Draft7Validator, ValidationError
 from langchain_core.messages import AnyMessage
 
 from autobots_devtools_shared_lib.common.observability.logging_utils import get_logger
@@ -8,7 +8,7 @@ from autobots_devtools_shared_lib.common.observability.logging_utils import get_
 logger = get_logger(__name__)
 
 
-def _validate_output(result: dict, schema: dict) -> bool:
+def _validate_output(result: dict, schema: dict) -> list[ValidationError]:
     """Validate the output against the schema.
 
     Args:
@@ -21,11 +21,7 @@ def _validate_output(result: dict, schema: dict) -> bool:
     logger.info(f"validate_output: result={result}, schema={schema}")
     # Call some FOSS Python library to validate the output against the schema.
     validator = Draft7Validator(schema)
-    errors = list(validator.iter_errors(result))
-    if errors:
-        logger.error(f"validate_output: errors={errors}")
-        return False
-    return True
+    return list(validator.iter_errors(result))
 
 
 def output_format_converter(
@@ -60,7 +56,8 @@ def output_format_converter(
     if error or result is None:
         return f"Error: conversion failed — {error or 'unknown error'}"
 
-    if validate and not _validate_output(result, schema):
-        return f"Error: validation failed — {error or 'unknown error'}"
-
+    if validate:
+        errors = _validate_output(result, schema)
+        if errors:
+            return f"Error: validation failed — {', '.join([error.message for error in errors])}"
     return json.dumps(result)
