@@ -3,9 +3,7 @@
 
 from langchain.tools import ToolException, ToolRuntime, tool
 
-from autobots_devtools_shared_lib.common.utils.format_utils import (
-    output_format_converter,
-)
+from autobots_devtools_shared_lib.common.utils.format_utils import output_format_converter
 from autobots_devtools_shared_lib.dynagent.models.state import Dynagent
 
 
