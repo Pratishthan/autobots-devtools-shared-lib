@@ -17,6 +17,9 @@ from autobots_devtools_shared_lib.common.observability.tracing import (
     get_langfuse_client,
     get_langfuse_handler,
 )
+from autobots_devtools_shared_lib.dynagent.agents.invocation_utils import (
+    inject_langfuse_handler_into_config,
+)
 
 logger = get_logger(__name__)
 
@@ -205,14 +208,9 @@ def batch_invoker(
         else 1
     )
 
-    # Auto-inject Langfuse handler into config when tracing enabled and config has no callbacks
-    if enable_tracing and not (config and config.get("callbacks")):
-        langfuse_handler = get_langfuse_handler()
-        if langfuse_handler:
-            config = cast(
-                "RunnableConfig",
-                {**(config or {}), "callbacks": [langfuse_handler]},
-            )
+    # Auto-inject Langfuse handler into config when tracing enabled
+    if enable_tracing:
+        config = inject_langfuse_handler_into_config(config, get_langfuse_handler())
 
     # --- Execute with observability wrapper ---
     try:
