@@ -18,10 +18,28 @@ from autobots_devtools_shared_lib.common.observability.tracing import (
 logger = get_logger(__name__)
 
 
+def inject_langfuse_handler_into_config(
+    config: RunnableConfig | None,
+    langfuse_handler: Any,
+) -> RunnableConfig:
+    """Inject Langfuse handler into config callbacks. Returns config (mutates when not None)."""
+    if langfuse_handler is None:
+        return config if config is not None else {}
+    if config is None:
+        return {"callbacks": [langfuse_handler]}
+    existing = config.get("callbacks")
+    if isinstance(existing, list):
+        config["callbacks"] = [*existing, langfuse_handler]
+    else:
+        config["callbacks"] = [langfuse_handler]
+    return config
+
+
 def invoke_agent(
     agent_name: str,
     input_state: dict[str, Any],
-    config: RunnableConfig,
+    checkpointer: Any = None,
+    config: RunnableConfig | None = None,
     enable_tracing: bool = True,
     trace_metadata: TraceMetadata | None = None,
 ) -> dict[str, Any]:
@@ -79,17 +97,7 @@ def invoke_agent(
 
     # Auto-create Langfuse handler if tracing enabled
     if enable_tracing:
-        langfuse_handler = get_langfuse_handler()
-
-        if langfuse_handler:
-            existing_callbacks = config.get("callbacks")
-
-            if existing_callbacks is None:
-                config["callbacks"] = [langfuse_handler]
-            elif (
-                isinstance(existing_callbacks, list) and langfuse_handler not in existing_callbacks
-            ):
-                config["callbacks"] = [*existing_callbacks, langfuse_handler]
+        config = inject_langfuse_handler_into_config(config, get_langfuse_handler())
 
     # Execute with observability wrapper
     try:
@@ -121,8 +129,11 @@ def invoke_agent(
                     create_base_agent,
                 )
 
+                if checkpointer is None:
+                    checkpointer = InMemorySaver()
+
                 agent = create_base_agent(
-                    checkpointer=InMemorySaver(),
+                    checkpointer=checkpointer,
                     sync_mode=True,
                     initial_agent_name=agent_name,  # pyright: ignore[reportCallIssue]
                 )
@@ -156,7 +167,8 @@ def invoke_agent(
 async def ainvoke_agent(
     agent_name: str,
     input_state: dict[str, Any],
-    config: RunnableConfig,
+    checkpointer: Any = None,
+    config: RunnableConfig | None = None,
     enable_tracing: bool = True,
     trace_metadata: TraceMetadata | None = None,
 ) -> dict[str, Any]:
@@ -215,17 +227,7 @@ async def ainvoke_agent(
 
     # Auto-create Langfuse handler if tracing enabled
     if enable_tracing:
-        langfuse_handler = get_langfuse_handler()
-
-        if langfuse_handler:
-            existing_callbacks = config.get("callbacks")
-
-            if existing_callbacks is None:
-                config["callbacks"] = [langfuse_handler]
-            elif (
-                isinstance(existing_callbacks, list) and langfuse_handler not in existing_callbacks
-            ):
-                config["callbacks"] = [*existing_callbacks, langfuse_handler]
+        config = inject_langfuse_handler_into_config(config, get_langfuse_handler())
 
     # Execute with observability wrapper
     try:
@@ -257,8 +259,11 @@ async def ainvoke_agent(
                     create_base_agent,
                 )
 
+                if checkpointer is None:
+                    checkpointer = InMemorySaver()
+
                 agent = create_base_agent(
-                    checkpointer=InMemorySaver(),
+                    checkpointer=checkpointer,
                     sync_mode=False,
                     initial_agent_name=agent_name,  # pyright: ignore[reportCallIssue]
                 )

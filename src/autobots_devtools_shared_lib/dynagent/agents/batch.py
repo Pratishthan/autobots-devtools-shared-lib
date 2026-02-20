@@ -4,7 +4,7 @@
 import uuid
 from contextlib import nullcontext
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, cast
 
 from dotenv import load_dotenv
 from langchain_core.runnables import RunnableConfig
@@ -16,6 +16,9 @@ from autobots_devtools_shared_lib.common.observability.tracing import (
     flush_tracing,
     get_langfuse_client,
     get_langfuse_handler,
+)
+from autobots_devtools_shared_lib.dynagent.agents.invocation_utils import (
+    inject_langfuse_handler_into_config,
 )
 
 logger = get_logger(__name__)
@@ -61,13 +64,20 @@ class BatchResult:
 # ---------------------------------------------------------------------------
 
 
-def _build_inputs(agent_name: str, records: list[str]) -> list[dict[str, Any]]:
+def _build_inputs(
+    agent_name: str,
+    records: list[str],
+    input_state: dict[str, Any] | None = None,
+) -> list[dict[str, Any]]:
     """Convert plain-string records into agent input-state dicts.
 
     Each input gets a uuid4 session_id for workspace isolation.
+    Optional input_state is merged into each record (record keys override).
     """
+    base = dict(input_state) if input_state else {}
     return [
         {
+            **base,
             "messages": [{"role": "user", "content": record}],
             "agent_name": agent_name,
             "session_id": str(uuid.uuid4()),
@@ -77,21 +87,39 @@ def _build_inputs(agent_name: str, records: list[str]) -> list[dict[str, Any]]:
 
 
 def _build_configs(
-    count: int, callbacks: list[Any] | None = None, max_concurrency: int = 1
+    count: int,
+    max_concurrency: int = 1,
+    config: RunnableConfig | None = None,
 ) -> list[RunnableConfig]:
     """Build a list of RunnableConfigs, each with a unique thread_id.
 
+    Optional config is used as base for each entry; thread_id is always set per run.
+    Callbacks come from config when present; max_concurrency is set per run.
+
     Args:
         count: Number of configs to build.
-        callbacks: Optional list of callback handlers to inject into each config.
+        max_concurrency: Max concurrency per config.
+        config: Optional base RunnableConfig to merge into each (e.g. configurable, callbacks).
     """
+    base_configurable = dict(config.get("configurable", {})) if config else {}
+    extra_keys: dict[str, Any] = {
+        k: v
+        for k, v in (config or {}).items()
+        if k not in ("configurable", "callbacks", "max_concurrency")
+    }
     configs: list[RunnableConfig] = []
     for _ in range(count):
-        config: RunnableConfig = {"configurable": {"thread_id": str(uuid.uuid4())}}
-        if callbacks:
-            config["callbacks"] = callbacks
-        config["max_concurrency"] = max_concurrency
-        configs.append(config)
+        cfg = cast(
+            "RunnableConfig",
+            {
+                **extra_keys,
+                "configurable": {**base_configurable, "thread_id": str(uuid.uuid4())},
+            },
+        )
+        if config and "callbacks" in config:
+            cfg["callbacks"] = config["callbacks"]
+        cfg["max_concurrency"] = max_concurrency
+        configs.append(cfg)
     return configs
 
 
@@ -127,20 +155,26 @@ def _extract_last_ai_content(state_output: dict[str, Any]) -> str | None:
 def batch_invoker(
     agent_name: str,
     records: list[str],
-    callbacks: list[Any] | None = None,
     enable_tracing: bool = True,
     trace_metadata: TraceMetadata | None = None,
+    checkpointer: Any = None,
+    input_state: dict[str, Any] | None = None,
+    config: RunnableConfig | None = None,
 ) -> BatchResult:
     """Run a list of prompts through the dynagent in parallel.
 
     Args:
         agent_name: Name of the agent to invoke (must exist in agents.yaml).
         records: Non-empty list of plain-string prompts.
-        callbacks: Optional list of callback handlers (e.g., Langfuse) for tracing.
         enable_tracing: Whether to enable Langfuse tracing (default True, gracefully
             degrades if not configured).
         trace_metadata: Optional TraceMetadata instance with session_id, app_name,
             user_id, and tags. If None, uses defaults with auto-generated session_id.
+        checkpointer: Optional checkpointer to use for the agent. If None, uses InMemorySaver.
+        input_state: Optional base state merged into each record (e.g. user_name, context).
+            Per-record keys (messages, agent_name, session_id) override these.
+        config: Optional base RunnableConfig merged into each invocation (e.g. configurable,
+            callbacks). thread_id is always set per run. Pass callbacks via config when needed.
 
     Returns:
         BatchResult with per-record success/failure details.
@@ -174,11 +208,9 @@ def batch_invoker(
         else 1
     )
 
-    # Auto-create Langfuse handler if tracing enabled and no callbacks provided
-    if enable_tracing and callbacks is None:
-        langfuse_handler = get_langfuse_handler()
-        if langfuse_handler:
-            callbacks = [langfuse_handler]
+    # Auto-inject Langfuse handler into config when tracing enabled
+    if enable_tracing:
+        config = inject_langfuse_handler_into_config(config, get_langfuse_handler())
 
     # --- Execute with observability wrapper ---
     try:
@@ -209,17 +241,22 @@ def batch_invoker(
                     create_base_agent,
                 )
 
+                if checkpointer is None:
+                    checkpointer = InMemorySaver()
+
                 agent = create_base_agent(
-                    checkpointer=InMemorySaver(),
+                    checkpointer=checkpointer,
                     sync_mode=True,
                     initial_agent_name=agent_name,  # pyright: ignore[reportCallIssue]
                 )
 
                 # --- Build inputs & configs ---
-                inputs = _build_inputs(agent_name, records)
+                inputs = _build_inputs(agent_name, records, input_state=input_state)
 
                 configs = _build_configs(
-                    len(records), callbacks=callbacks, max_concurrency=max_concurrency
+                    len(records),
+                    max_concurrency=max_concurrency,
+                    config=config,
                 )
 
                 # --- Execute in parallel (thread pool via .batch) ---

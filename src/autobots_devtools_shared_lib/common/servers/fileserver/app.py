@@ -24,7 +24,7 @@ from fastapi.responses import Response
 
 from autobots_devtools_shared_lib.common.observability.logging_utils import (
     get_logger,
-    set_conversation_id,
+    set_session_id,
 )
 from autobots_devtools_shared_lib.common.servers.fileserver.config import FileServerConfig
 from autobots_devtools_shared_lib.common.servers.fileserver.models import (
@@ -134,7 +134,7 @@ def health() -> dict[str, Any]:
 @app.post("/listFiles")
 def list_files(body: ListFilesBody) -> dict[str, Any]:
     """List files under path. When workspace_context is set, path is under that workspace."""
-    set_conversation_id(body.conversation_id or "default_conversation_id")
+    set_session_id(body.session_id or "default_session_id")
     logger.info("listFiles called path=%s", body.path)
     base = _path_under_root(body.workspace_context, body.path)
     if not base.exists():
@@ -159,7 +159,7 @@ def list_files(body: ListFilesBody) -> dict[str, Any]:
 @app.post("/readFile")
 def read_file(body: ReadFileBody) -> Response:
     """Return file content as raw bytes. Path resolved under workspace when workspace_context set."""
-    set_conversation_id(body.conversation_id or "default_conversation_id")
+    set_session_id(body.session_id or "default_session_id")
     logger.info("readFile called fileName=%s", body.fileName)
     path = _path_under_root(body.workspace_context, body.fileName)
     if not path.exists():
@@ -176,7 +176,7 @@ def read_file(body: ReadFileBody) -> Response:
 @app.post("/writeFile")
 def write_file(body: WriteFileBody) -> dict[str, Any]:
     """Write base64-encoded content to file. Path resolved under workspace when workspace_context set."""
-    set_conversation_id(body.conversation_id or "default_conversation_id")
+    set_session_id(body.session_id or "default_session_id")
     logger.info("writeFile called file_name=%s", body.file_name)
     try:
         raw = base64.b64decode(body.file_content.encode("utf-8"))
@@ -206,7 +206,7 @@ def write_file(body: WriteFileBody) -> dict[str, Any]:
 @app.post("/moveFile")
 def move_file(body: MoveFileBody) -> dict[str, Any]:
     """Move file from source_path to destination_path. Paths resolved under workspace when workspace_context set."""
-    set_conversation_id(body.conversation_id or "default_conversation_id")
+    set_session_id(body.session_id or "default_session_id")
     logger.info(
         "moveFile called source_path=%s destination_path=%s",
         body.source_path,
@@ -238,7 +238,7 @@ def move_file(body: MoveFileBody) -> dict[str, Any]:
 @app.post("/createDownloadLink")
 def create_download_link(body: ReadFileBody) -> Response:
     """Return a simple download link (file path) as text for local testing. Path resolved under workspace when workspace_context set."""
-    set_conversation_id(body.conversation_id or "default_conversation_id")
+    set_session_id(body.session_id or "default_session_id")
     logger.info("createDownloadLink called fileName=%s", body.fileName)
     path = _path_under_root(body.workspace_context, body.fileName)
     if not path.exists():

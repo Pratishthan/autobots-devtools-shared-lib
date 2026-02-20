@@ -25,9 +25,9 @@ class ListFilesBody(BaseModel):
             "examples": [{"workspace_base_path": "shruthi/fbp-core-genai-sanity-MER-00001"}]
         },
     )
-    conversation_id: str | None = Field(
+    session_id: str | None = Field(
         default=None,
-        description="Optional session/conversation ID for trace correlation/logging.",
+        description="Optional session ID for trace correlation/logging.",
     )
 
     @field_validator("path")
@@ -47,12 +47,12 @@ class ReadFileBody(BaseModel):
             "operations under `<config.root>/<workspace_base_path>`."
         ),
         json_schema_extra={
-            "examples": [{"workspace_base_path": "shruthi/fbp-core-genai-sanity-MER-00001"}]
+            "examples": [{"workspace_base_path": "user/fbp-core-genai-sanity-MER-00001"}]
         },
     )
-    conversation_id: str | None = Field(
+    session_id: str | None = Field(
         default=None,
-        description="Optional session/conversation ID for trace correlation/logging.",
+        description="Optional session ID for trace correlation/logging.",
     )
 
     @field_validator("fileName")
@@ -76,9 +76,9 @@ class WriteFileBody(BaseModel):
             "examples": [{"workspace_base_path": "shruthi/fbp-core-genai-sanity-MER-00001"}]
         },
     )
-    conversation_id: str | None = Field(
+    session_id: str | None = Field(
         default=None,
-        description="Optional session/conversation ID for trace correlation/logging.",
+        description="Optional session ID for trace correlation/logging.",
     )
 
     @field_validator("file_name")
@@ -113,9 +113,9 @@ class MoveFileBody(BaseModel):
             "examples": [{"workspace_base_path": "shruthi/fbp-core-genai-sanity-MER-00001"}]
         },
     )
-    conversation_id: str | None = Field(
+    session_id: str | None = Field(
         default=None,
-        description="Optional session/conversation ID for trace correlation/logging.",
+        description="Optional session ID for trace correlation/logging.",
     )
 
     @field_validator("source_path", "destination_path")
