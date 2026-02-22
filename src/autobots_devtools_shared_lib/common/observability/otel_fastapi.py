@@ -40,7 +40,7 @@ def _configure_langfuse_otlp() -> bool:
     sk = os.getenv("LANGFUSE_SECRET_KEY", "").strip()
     if not pk or not sk:
         return False
-    host = os.getenv("LANGFUSE_BASE_URL")
+    host = os.getenv("LANGFUSE_HOST")
     endpoint = f"{host}/api/public/otel"
     auth = base64.b64encode(f"{pk}:{sk}".encode()).decode()
     os.environ["OTEL_EXPORTER_OTLP_ENDPOINT"] = endpoint
@@ -257,11 +257,11 @@ def instrument_fastapi(app: FastAPI) -> bool:
 
     try:
         from opentelemetry import trace
-        from opentelemetry.exporter.otlp.proto.http.trace_exporter import (  # pyright: ignore[reportMissingImports]
-            OTLPSpanExporter,
+        from opentelemetry.exporter.otlp.proto.http.trace_exporter import (
+            OTLPSpanExporter,  # pyright: ignore[reportMissingImports]
         )
-        from opentelemetry.instrumentation.fastapi import (  # pyright: ignore[reportMissingImports]
-            FastAPIInstrumentor,
+        from opentelemetry.instrumentation.fastapi import (
+            FastAPIInstrumentor,  # pyright: ignore[reportMissingImports]
         )
         from opentelemetry.propagate import set_global_textmap
         from opentelemetry.sdk.resources import Resource

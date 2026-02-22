@@ -35,7 +35,7 @@ A helper module providing a `traced_http_call` context manager that:
 Key design decisions:
 - **Lazy init**: OTEL tracer created on first use only. If OTEL packages aren't installed, yields empty headers (no-op).
 - **Provider guard**: Checks `type(current_provider).__name__ == "ProxyTracerProvider"` before creating a new one — avoids conflict if fileserver runs in the same process.
-- **Reuses Langfuse OTLP config**: Same `LANGFUSE_PUBLIC_KEY`/`LANGFUSE_SECRET_KEY`/`LANGFUSE_BASE_URL` env vars.
+- **Reuses Langfuse OTLP config**: Same `LANGFUSE_PUBLIC_KEY`/`LANGFUSE_SECRET_KEY`/`LANGFUSE_HOST` env vars.
 - **`SpanKind.CLIENT`**: Pairs naturally with the server's `SpanKind.SERVER` span from `FastAPIInstrumentor`.
 
 ### 2. Update `common/utils/fserver_client_utils.py`

@@ -2,7 +2,7 @@
 OpenTelemetry trace propagation helpers for HTTP client calls.
 
 Provides W3C traceparent header injection and session linking for fileserver HTTP calls.
-Reuses Langfuse configuration (LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY, LANGFUSE_BASE_URL).
+Reuses Langfuse configuration (LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY, LANGFUSE_HOST).
 """
 
 from __future__ import annotations
@@ -43,8 +43,8 @@ def _ensure_tracer_provider() -> bool:
     try:
         # Check if OTEL packages available
         from opentelemetry import trace
-        from opentelemetry.exporter.otlp.proto.http.trace_exporter import (  # pyright: ignore[reportMissingImports]
-            OTLPSpanExporter,
+        from opentelemetry.exporter.otlp.proto.http.trace_exporter import (
+            OTLPSpanExporter,  # pyright: ignore[reportMissingImports]
         )
         from opentelemetry.sdk.resources import Resource
         from opentelemetry.sdk.trace import TracerProvider
@@ -80,7 +80,7 @@ def _ensure_tracer_provider() -> bool:
 
     try:
         # Configure OTLP endpoint (same pattern as otel_fastapi.py)
-        host = os.getenv("LANGFUSE_BASE_URL", "https://cloud.langfuse.com")
+        host = os.getenv("LANGFUSE_HOST", "https://cloud.langfuse.com")
         endpoint = f"{host}/api/public/otel"
         auth = base64.b64encode(f"{pk}:{sk}".encode()).decode()
         os.environ["OTEL_EXPORTER_OTLP_ENDPOINT"] = endpoint
