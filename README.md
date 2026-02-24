@@ -2,6 +2,9 @@
 
 **Dyn**amic **Agent** (**Dynagent**) is the core of this library. It turns your prompts and business processes into production-ready, multi-agent applications—chatbots and unsupervised workflows—in hours. You focus on prompts, output schemas, and domain logic; Dynagent handles multi-LLM wiring, UI integration, observability, and batch processing out of the box.
 
+**Quickstart**
+Build your first agent by following Scaffolding guide [here](https://github.com/Pratishthan/autobots-agents-jarvis/blob/main/docs/user-manuals/scaffolding.md).
+
 ### Essential features
 
 | Feature | Description |
