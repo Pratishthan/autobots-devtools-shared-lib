@@ -3,8 +3,9 @@
 
 from typing import Any, cast
 
-from langchain.agents import create_agent
+from langchain.agents import AgentState, create_agent
 from langchain.agents.middleware import AgentMiddleware, SummarizationMiddleware
+from langchain.agents.middleware.types import ResponseT
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.graph.state import CompiledStateGraph
 
@@ -23,7 +24,10 @@ logger = get_agent_logger(__name__)
 
 
 def create_base_agent(
-    checkpointer: Any = None, sync_mode: bool = False, initial_agent_name: str | None = None
+    checkpointer: Any = None,
+    sync_mode: bool = False,
+    initial_agent_name: str | None = None,
+    state_schema: type[AgentState[ResponseT]] = Dynagent,
 ) -> CompiledStateGraph:
     """Create the dynagent base agent with middleware.
 
@@ -56,7 +60,7 @@ def create_base_agent(
         model,
         name=initial_agent_name or "dynagent",
         tools=all_tools,
-        state_schema=Dynagent,
+        state_schema=state_schema,
         middleware=cast(
             "list[AgentMiddleware[Any, Any]]",
             [

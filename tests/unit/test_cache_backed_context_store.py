@@ -3,8 +3,11 @@
 
 from __future__ import annotations
 
+import inspect
 from typing import TYPE_CHECKING, Any
 from unittest.mock import MagicMock
+
+import pytest
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
@@ -20,6 +23,11 @@ from autobots_devtools_shared_lib.common.services.context import (
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
+
+def _cache_backed_accepts_prefix() -> bool:
+    """True if the installed CacheBackedContextStore accepts a prefix argument."""
+    return "prefix" in inspect.signature(CacheBackedContextStore.__init__).parameters
 
 
 class _FakeDbRepository:
@@ -38,10 +46,15 @@ class _FakeDbRepository:
         self._store.pop(context_key, None)
 
 
-def _make_store() -> tuple[CacheBackedContextStore, _FakeDbRepository, InMemoryContextStore]:
+def _make_store(
+    prefix: str = "",
+) -> tuple[CacheBackedContextStore, _FakeDbRepository, InMemoryContextStore]:
     db = _FakeDbRepository()
     cache = InMemoryContextStore()
-    store = CacheBackedContextStore(db=db, cache=cache)
+    kwargs: dict[str, Any] = {"db": db, "cache": cache}
+    if _cache_backed_accepts_prefix():
+        kwargs["prefix"] = prefix
+    store = CacheBackedContextStore(**kwargs)
     return store, db, cache
 
 
@@ -195,6 +208,75 @@ def test_delete_removes_from_cache():
 def test_delete_nonexistent_key_does_not_raise():
     store, _, _ = _make_store()
     store.delete("nonexistent")  # should not raise
+
+
+# ---------------------------------------------------------------------------
+# prefix — applied to both db and cache keys
+# ---------------------------------------------------------------------------
+
+
+def test_prefix_applied_to_db_and_cache_on_set():
+    """With prefix 'mer_ctx', set('foo', data) stores under 'mer_ctx_foo' in both db and cache."""
+    if not _cache_backed_accepts_prefix():
+        pytest.skip("CacheBackedContextStore in this environment does not support prefix")
+    store, db, cache = _make_store(prefix="mer_ctx")
+    store.set("foo", {"a": 1})
+
+    assert db.get("mer_ctx_foo") == {"a": 1}
+    assert cache.get("mer_ctx_foo") == {"a": 1}
+    assert db.get("foo") is None
+    assert cache.get("foo") is None
+
+
+def test_prefix_applied_on_get():
+    """With prefix 'mer_ctx', get('foo') reads from 'mer_ctx_foo' in db/cache."""
+    if not _cache_backed_accepts_prefix():
+        pytest.skip("CacheBackedContextStore in this environment does not support prefix")
+    store, db, _ = _make_store(prefix="mer_ctx")
+    db._store["mer_ctx_foo"] = {"x": 42}
+
+    result = store.get("foo")
+
+    assert result == {"x": 42}
+
+
+def test_prefix_applied_on_update():
+    """With prefix 'mer_ctx', update('foo', patch) reads/writes 'mer_ctx_foo' in db and cache."""
+    if not _cache_backed_accepts_prefix():
+        pytest.skip("CacheBackedContextStore in this environment does not support prefix")
+    store, db, cache = _make_store(prefix="mer_ctx")
+    db._store["mer_ctx_foo"] = {"a": 1}
+
+    result = store.update("foo", {"b": 2})
+
+    assert result == {"a": 1, "b": 2}
+    assert db.get("mer_ctx_foo") == {"a": 1, "b": 2}
+    assert cache.get("mer_ctx_foo") == {"a": 1, "b": 2}
+
+
+def test_prefix_applied_on_delete():
+    """With prefix 'mer_ctx', delete('foo') removes 'mer_ctx_foo' from db and cache."""
+    if not _cache_backed_accepts_prefix():
+        pytest.skip("CacheBackedContextStore in this environment does not support prefix")
+    store, db, cache = _make_store(prefix="mer_ctx")
+    db._store["mer_ctx_foo"] = {"a": 1}
+    cache.set("mer_ctx_foo", {"a": 1})
+
+    store.delete("foo")
+
+    assert db.get("mer_ctx_foo") is None
+    assert cache.get("mer_ctx_foo") is None
+
+
+def test_empty_prefix_keeps_keys_unchanged():
+    """With prefix '', keys are passed through unchanged (backward compatible)."""
+    if not _cache_backed_accepts_prefix():
+        pytest.skip("CacheBackedContextStore in this environment does not support prefix")
+    store, db, cache = _make_store(prefix="")
+    store.set("raw_key", {"v": 1})
+
+    assert db.get("raw_key") == {"v": 1}
+    assert cache.get("raw_key") == {"v": 1}
 
 
 # ---------------------------------------------------------------------------

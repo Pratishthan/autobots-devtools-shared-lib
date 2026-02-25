@@ -64,6 +64,28 @@ class BatchResult:
 # ---------------------------------------------------------------------------
 
 
+def _build_single_run_config(
+    extra_keys: dict[str, Any],
+    base_configurable: dict[str, Any],
+    thread_id: str,
+    max_concurrency: int,
+    callbacks: list[Any] | None = None,
+) -> RunnableConfig:
+    """Build one RunnableConfig for a single batch run (unique thread_id, optional callbacks).
+
+    Mirrors the style of inject_langfuse_handler_into_config: takes base parts and
+    optional callbacks, returns a complete RunnableConfig.
+    """
+    cfg: dict[str, Any] = dict(extra_keys)
+    configurable = dict(base_configurable)
+    configurable["thread_id"] = thread_id
+    cfg["configurable"] = configurable
+    cfg["max_concurrency"] = max_concurrency
+    if callbacks is not None:
+        cfg["callbacks"] = list(callbacks)
+    return cast("RunnableConfig", cfg)
+
+
 def _build_inputs(
     agent_name: str,
     records: list[str],
@@ -103,22 +125,22 @@ def _build_configs(
     """
     base_configurable = dict(config.get("configurable", {})) if config else {}
     extra_keys: dict[str, Any] = {
-        k: v
-        for k, v in (config or {}).items()
-        if k not in ("configurable", "callbacks", "max_concurrency")
+        key: value
+        for key, value in (config or {}).items()
+        if key not in ("configurable", "callbacks", "max_concurrency")
     }
+    callbacks: list[Any] | None = None
+    if config and "callbacks" in config and isinstance(config["callbacks"], list):
+        callbacks = config["callbacks"]
     configs: list[RunnableConfig] = []
     for _ in range(count):
-        cfg = cast(
-            "RunnableConfig",
-            {
-                **extra_keys,
-                "configurable": {**base_configurable, "thread_id": str(uuid.uuid4())},
-            },
+        cfg = _build_single_run_config(
+            extra_keys,
+            base_configurable,
+            thread_id=str(uuid.uuid4()),
+            max_concurrency=max_concurrency,
+            callbacks=callbacks,
         )
-        if config and "callbacks" in config:
-            cfg["callbacks"] = config["callbacks"]
-        cfg["max_concurrency"] = max_concurrency
         configs.append(cfg)
     return configs
 
