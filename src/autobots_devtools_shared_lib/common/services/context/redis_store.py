@@ -31,6 +31,9 @@ class RedisContextStore:
         self._prefix = config.prefix
 
     def _key(self, context_key: str) -> str:
+        """Return the key used in Redis; no prefix is applied when prefix is empty (e.g. when used as cache behind CacheBackedContextStore)."""
+        if not self._prefix:
+            return context_key
         return f"{self._prefix}_{context_key}"
 
     def get(self, context_key: str) -> dict[str, Any] | None:

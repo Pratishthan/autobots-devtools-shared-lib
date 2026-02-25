@@ -171,11 +171,11 @@ def traced_http_call(
             # Inject W3C traceparent header
             TraceContextTextMapPropagator().inject(headers)
 
-            yield headers
-
     except Exception as e:
         print(
             f"OTEL: Failed to create trace for {operation}: {e}",
             file=sys.stderr,
         )
-        yield {}
+        headers = {}
+
+    yield headers
