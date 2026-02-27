@@ -43,11 +43,6 @@ class DynagentSettings(BaseSettings):
     )
 
     # Workspace settings
-    # TODO: Remove these settings
-    workspace_base: Path = Field(default=Path("workspace"), description="Workspace base directory")
-    schema_base: Path = Field(
-        default=Path("schemas"), description="Base directory for JSON schemas"
-    )
     dynagent_config_root_dir: Path = Field(
         default=Path("configs"),
         description="Base directory for agent configuration files",
