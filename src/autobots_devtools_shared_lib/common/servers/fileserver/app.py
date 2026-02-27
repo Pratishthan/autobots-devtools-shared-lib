@@ -136,6 +136,9 @@ def list_files(body: ListFilesBody) -> dict[str, Any]:
     """List files under path. When workspace_context is set, path is under that workspace."""
     set_session_id(body.session_id or "default_session_id")
     logger.info("listFiles called path=%s", body.path)
+    # Resolve the workspace root (config.root or config.root / workspace_base_path)
+    workspace_root = _path_under_root(body.workspace_context, None)
+    # Resolve the base directory to walk, under the workspace root
     base = _path_under_root(body.workspace_context, body.path)
     if not base.exists():
         logger.warning("listFiles path not found path=%s", base)
@@ -148,8 +151,10 @@ def list_files(body: ListFilesBody) -> dict[str, Any]:
         for name in filenames:
             full = Path(root) / name
             try:
-                rel = full.relative_to(config.root)
+                # Return paths relative to the workspace root (after the workspace context folder)
+                rel = full.relative_to(workspace_root)
             except ValueError:
+                # Skip any files not under the workspace root
                 continue
             files.append(str(rel).replace("\\", "/"))
     logger.info("listFiles success path=%s count=%s", body.path, len(files))

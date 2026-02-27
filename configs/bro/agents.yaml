@@ -6,6 +6,7 @@ agents:
     output_schema: null
     batch_enabled: false
     max_concurrency: 2
+    is_default: true
 
   preface_agent:
     prompt: preface_agent

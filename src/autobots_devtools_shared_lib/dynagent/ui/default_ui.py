@@ -47,7 +47,7 @@ logger = get_logger(__name__)
 @cl.on_chat_start
 async def start():
     """Create the base agent once and store it in the Chainlit session."""
-    agent = create_base_agent(initial_agent_name="coordinator")  # pyright: ignore[reportCallIssue]
+    agent = create_base_agent()  # pyright: ignore[reportCallIssue]
     cl.user_session.set("agent", agent)
     await cl.Message(content="Hello, how can I help you today?").send()
 

@@ -40,8 +40,8 @@ def mock_runtime():
     return ToolRuntime(
         context=None,
         state={},
-        config=None,
-        stream_writer=None,
+        config={},
+        stream_writer=lambda _chunk: None,
         tool_call_id=None,
         store=None,
     )
@@ -102,25 +102,26 @@ def test_write_file_and_list_and_read(local_file_server, mock_runtime):
         write_file_tool,
     )
 
-    ws = "{}"
+    ws = '{"workspace_base_path": "ws-folder"}'
     write_result = write_file_tool.invoke(
         {
             "runtime": mock_runtime,
-            "file_name": "hello.txt",
+            "file_name": "test-folder/hello.txt",
             "content": "Hello world",
             "workspace_context": ws,
         }
     )
     assert "File written successfully" in write_result
-    assert "hello.txt" in write_result
+    assert "test-folder/hello.txt" in write_result
 
     list_result = list_files_tool.invoke(
         {"runtime": mock_runtime, "base_path": "", "workspace_context": ws}
     )
-    assert "hello.txt" in list_result
+    assert "test-folder/hello.txt" in list_result
+    assert "ws-folder/test-folder/hello.txt" not in list_result
 
     read_result = read_file_tool.invoke(
-        {"runtime": mock_runtime, "file_name": "hello.txt", "workspace_context": ws}
+        {"runtime": mock_runtime, "file_name": "test-folder/hello.txt", "workspace_context": ws}
     )
     assert read_result == "Hello world"
 
@@ -149,6 +150,76 @@ def test_write_file_with_workspace_context(local_file_server, mock_runtime):
         {"runtime": mock_runtime, "file_name": "scoped.txt", "workspace_context": ws}
     )
     assert read_result == "scoped content"
+
+
+def test_list_files_with_workspace_base_path(local_file_server, mock_runtime):
+    from autobots_devtools_shared_lib.common.tools.fserver_client_tools import (
+        list_files_tool,
+        write_file_tool,
+    )
+
+    # workspace_base_path should be treated as the workspace root, and returned
+    # file paths must be relative to this folder (i.e., not include it).
+    ws = '{"workspace_base_path": "ws-folder"}'
+    write_file_tool.invoke(
+        {
+            "runtime": mock_runtime,
+            "file_name": "nested/hello.txt",
+            "content": "hello in workspace",
+            "workspace_context": ws,
+        }
+    )
+
+    list_result = list_files_tool.invoke(
+        {"runtime": mock_runtime, "base_path": "", "workspace_context": ws}
+    )
+    # Should list paths relative to the workspace folder, without the workspace_base_path prefix.
+    assert "nested/hello.txt" in list_result
+    assert "ws-folder/nested/hello.txt" not in list_result
+
+
+def test_list_files_with_nested_base_path(local_file_server, mock_runtime):
+    from autobots_devtools_shared_lib.common.tools.fserver_client_tools import (
+        list_files_tool,
+        write_file_tool,
+    )
+
+    ws = '{"workspace_base_path": "ws-folder"}'
+    # Create files at different nesting levels
+    write_file_tool.invoke(
+        {
+            "runtime": mock_runtime,
+            "file_name": "nested/inner/file1.txt",
+            "content": "file1",
+            "workspace_context": ws,
+        }
+    )
+    write_file_tool.invoke(
+        {
+            "runtime": mock_runtime,
+            "file_name": "nested/inner1/file2.txt",
+            "content": "file2",
+            "workspace_context": ws,
+        }
+    )
+    write_file_tool.invoke(
+        {
+            "runtime": mock_runtime,
+            "file_name": "other/file3.txt",
+            "content": "file3",
+            "workspace_context": ws,
+        }
+    )
+
+    # When base_path points to a nested folder, only list files under that folder,
+    # and paths must still be relative to the workspace root (not including workspace_base_path).
+    list_result = list_files_tool.invoke(
+        {"runtime": mock_runtime, "base_path": "nested/inner", "workspace_context": ws}
+    )
+
+    assert "nested/inner/file1.txt" in list_result
+    assert "nested/inner1/file2.txt" in list_result
+    assert "other/file3.txt" not in list_result
 
 
 def test_move_file(local_file_server, mock_runtime):
