@@ -7,6 +7,7 @@ from autobots_devtools_shared_lib.dynagent.tools.tool_registry import (
     _reset_usecase_tools,
     get_all_tools,
     get_default_tools,
+    get_jenkins_usecase_tools,
     get_usecase_tools,
     register_usecase_tools,
 )
@@ -26,7 +27,11 @@ EXPECTED_DEFAULT_NAMES = {
     "read_file_tool",
     "move_file_tool",
     "create_download_link_tool",
+    # Jenkins builtin tools are NOT here — they live in get_jenkins_usecase_tools()
+    # and are only present when jenkins.yaml is configured.
 }
+
+JENKINS_BUILTIN_NAMES = {"get_jenkins_build_status", "get_jenkins_console_log"}
 
 BRO_TOOL_NAMES = {
     "update_section",
@@ -43,8 +48,16 @@ BRO_TOOL_NAMES = {
 
 
 @pytest.fixture(autouse=True)
-def reset_usecase():
-    """Isolate every test from prior usecase registrations."""
+def reset_usecase(monkeypatch, tmp_path):
+    """Isolate every test from prior usecase registrations.
+
+    Points config dir at an empty tmp_path so get_jenkins_usecase_tools()
+    finds no jenkins.yaml and caches [] without hitting real disk.
+    """
+    monkeypatch.setattr(
+        "autobots_devtools_shared_lib.dynagent.agents.agent_config_utils.get_config_dir",
+        lambda: tmp_path,
+    )
     _reset_usecase_tools()
     yield
     _reset_usecase_tools()
@@ -115,6 +128,7 @@ def test_get_all_tools_is_union():
     register_usecase_tools([fake])
     all_tools = get_all_tools()
     names = {t.name for t in all_tools}
+    # Jenkins tier is [] in tests (no jenkins.yaml in tmp_path)
     assert names == EXPECTED_DEFAULT_NAMES | {"union_tool"}
 
 
@@ -123,3 +137,27 @@ def test_get_default_tools_stable_after_registration():
     register_usecase_tools([_FakeTool("interloper")])
     names = {t.name for t in get_default_tools()}
     assert names == EXPECTED_DEFAULT_NAMES
+
+
+# --- get_jenkins_usecase_tools ---
+
+
+def test_get_jenkins_usecase_tools_returns_empty_when_no_yaml():
+    """No jenkins.yaml in config dir → empty list, no Jenkins tools registered."""
+    result = get_jenkins_usecase_tools()
+    assert result == []
+    names = {t.name for t in result}
+    assert names.isdisjoint(JENKINS_BUILTIN_NAMES)
+
+
+def test_get_jenkins_usecase_tools_caches_empty_result():
+    """Second call with no yaml returns same [] without re-reading disk."""
+    first = get_jenkins_usecase_tools()
+    second = get_jenkins_usecase_tools()
+    assert first is second  # same cached object
+
+
+def test_jenkins_builtins_absent_from_default_tools():
+    """Builtin Jenkins tools must NOT appear in get_default_tools() — they are config-gated."""
+    names = {t.name for t in get_default_tools()}
+    assert names.isdisjoint(JENKINS_BUILTIN_NAMES)

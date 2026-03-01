@@ -5,6 +5,9 @@
 # UI streaming helpers live in dynagent.ui to avoid pulling Chainlit for
 # batch/invoke-only use.
 
+from autobots_devtools_shared_lib.common.jenkins.config import JenkinsConfig, JenkinsPipelineConfig
+from autobots_devtools_shared_lib.common.jenkins.loader import load_jenkins_config
+from autobots_devtools_shared_lib.common.jenkins.tools import create_jenkins_tools
 from autobots_devtools_shared_lib.common.utils.format_utils import output_format_converter
 from autobots_devtools_shared_lib.dynagent.agents.agent_config_utils import get_batch_enabled_agents
 from autobots_devtools_shared_lib.dynagent.agents.agent_meta import AgentMeta
@@ -33,15 +36,19 @@ __all__ = [
     "BatchResult",
     "Dynagent",
     "DynagentSettings",
+    "JenkinsConfig",
+    "JenkinsPipelineConfig",
     "LLMProvider",
     "RecordResult",
     "ainvoke_agent",
     "batch_invoker",
     "create_base_agent",
+    "create_jenkins_tools",
     "get_batch_enabled_agents",
     "get_dynagent_settings",
     "invoke_agent",
     "lm",
+    "load_jenkins_config",
     "output_format_converter",
     "register_usecase_tools",
     "set_dynagent_settings",
