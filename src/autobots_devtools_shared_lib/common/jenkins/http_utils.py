@@ -106,8 +106,8 @@ def wait_for_build(
 ) -> str:
     """Poll the build API until the result is non-null or the timeout is reached."""
     elapsed = 0
+    api_url = f"{base_url}/job/{job_name}/{build_number}/api/json"
     while elapsed < polling.max_wait_seconds:
-        api_url = f"{base_url}/job/{job_name}/{build_number}/api/json"
         try:
             resp = requests.get(api_url, auth=auth, timeout=30)
             resp.raise_for_status()
@@ -122,12 +122,19 @@ def wait_for_build(
                 f"Build #{build_number} in progress; "
                 f"waiting {polling.poll_interval_seconds}s (elapsed={elapsed}s)"
             )
-            time.sleep(polling.poll_interval_seconds)
-            elapsed += polling.poll_interval_seconds
-        except requests.RequestException as exc:
-            logger.exception(f"Build poll error for {job_name}#{build_number}")
+        except (requests.ConnectionError, requests.Timeout) as exc:
+            logger.warning(
+                f"Transient poll error for {job_name}#{build_number}: {exc}; retrying in "
+                f"{polling.poll_interval_seconds}s (elapsed={elapsed}s)"
+            )
+        except requests.HTTPError as exc:
+            logger.exception(f"HTTP error polling {job_name}#{build_number}")
             return f"Error polling build status: {exc}"
-
+        except requests.RequestException as exc:
+            logger.exception(f"Unexpected poll error for {job_name}#{build_number}")
+            return f"Error polling build status: {exc}"
+        time.sleep(polling.poll_interval_seconds)
+        elapsed += polling.poll_interval_seconds
     return (
         f"Timeout: build #{build_number} for job '{job_name}' "
         f"did not complete within {polling.max_wait_seconds}s"

@@ -74,7 +74,7 @@ def get_jenkins_usecase_tools() -> list[Any]:
     if _jenkins_tools_cache is None:  # 1st check — no lock (fast path)
         with _jenkins_tools_lock:  # acquire lock
             if _jenkins_tools_cache is None:  # 2nd check — inside lock (safe)
-                from autobots_devtools_shared_lib.common.jenkins.tools import (
+                from autobots_devtools_shared_lib.common.tools.jenkins_pipeline_tools import (
                     register_pipeline_tools,
                 )
 

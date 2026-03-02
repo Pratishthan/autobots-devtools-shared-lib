@@ -10,11 +10,6 @@ import requests
 from langchain_core.tools import StructuredTool
 from pydantic import BaseModel, Field, create_model
 
-from autobots_devtools_shared_lib.common.jenkins.builtin_tools import (
-    get_jenkins_build_status,
-    get_jenkins_console_log,
-    set_jenkins_config,
-)
 from autobots_devtools_shared_lib.common.jenkins.http_utils import (
     extract_job_name_from_url,
     get_auth,
@@ -22,6 +17,11 @@ from autobots_devtools_shared_lib.common.jenkins.http_utils import (
     wait_for_build,
 )
 from autobots_devtools_shared_lib.common.observability.logging_utils import get_logger
+from autobots_devtools_shared_lib.common.tools.jenkins_builtin_tools import (
+    get_jenkins_build_status,
+    get_jenkins_console_log,
+    set_jenkins_config,
+)
 
 if TYPE_CHECKING:
     from autobots_devtools_shared_lib.common.jenkins.config import (

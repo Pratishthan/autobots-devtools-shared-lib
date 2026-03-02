@@ -13,7 +13,7 @@ from autobots_devtools_shared_lib.common.jenkins.config import (
     JenkinsParameterConfig,
     JenkinsPipelineConfig,
 )
-from autobots_devtools_shared_lib.common.jenkins.tools import (
+from autobots_devtools_shared_lib.common.tools.jenkins_pipeline_tools import (
     create_jenkins_tools,
     register_pipeline_tools,
 )

@@ -1,4 +1,4 @@
-# ABOUTME: Built-in generic Jenkins observability tools.
+# ABOUTME: Built-in generic Jenkins observability tools (LangChain @tool wrappers).
 # ABOUTME: Provides get_jenkins_build_status and get_jenkins_console_log.
 # ABOUTME: Call set_jenkins_config() once at startup before these tools are invoked.
 

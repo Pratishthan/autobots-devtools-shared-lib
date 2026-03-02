@@ -9,7 +9,7 @@ from autobots_devtools_shared_lib.common.jenkins.config import (
     JenkinsPollingConfig,
 )
 from autobots_devtools_shared_lib.common.jenkins.loader import load_jenkins_config
-from autobots_devtools_shared_lib.common.jenkins.tools import (
+from autobots_devtools_shared_lib.common.tools.jenkins_pipeline_tools import (
     create_jenkins_tools,
     register_pipeline_tools,
 )
