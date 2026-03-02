@@ -10,21 +10,21 @@ import requests
 from langchain_core.tools import StructuredTool
 from pydantic import BaseModel, Field, create_model
 
-from autobots_devtools_shared_lib.common.jenkins.http_utils import (
-    extract_job_name_from_url,
-    get_auth,
-    poll_queue_for_build_number,
-    wait_for_build,
-)
 from autobots_devtools_shared_lib.common.observability.logging_utils import get_logger
 from autobots_devtools_shared_lib.common.tools.jenkins_builtin_tools import (
     get_jenkins_build_status,
     get_jenkins_console_log,
     set_jenkins_config,
 )
+from autobots_devtools_shared_lib.common.utils.jenkins_http_utils import (
+    extract_job_name_from_url,
+    get_auth,
+    poll_queue_for_build_number,
+    wait_for_build,
+)
 
 if TYPE_CHECKING:
-    from autobots_devtools_shared_lib.common.jenkins.config import (
+    from autobots_devtools_shared_lib.common.config.jenkins_config import (
         JenkinsConfig,
         JenkinsPipelineConfig,
     )
@@ -147,7 +147,7 @@ def register_pipeline_tools() -> list[Any]:
     reads from disk on each invocation.
     """
     try:
-        from autobots_devtools_shared_lib.common.jenkins.loader import load_jenkins_config
+        from autobots_devtools_shared_lib.common.config.jenkins_loader import load_jenkins_config
 
         logger.info("Loading Jenkins pipeline tools")
         config = load_jenkins_config()

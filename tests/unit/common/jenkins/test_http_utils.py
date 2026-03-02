@@ -5,8 +5,11 @@ from __future__ import annotations
 
 import pytest
 
-from autobots_devtools_shared_lib.common.jenkins.config import JenkinsAuthConfig, JenkinsConfig
-from autobots_devtools_shared_lib.common.jenkins.http_utils import (
+from autobots_devtools_shared_lib.common.config.jenkins_config import (
+    JenkinsAuthConfig,
+    JenkinsConfig,
+)
+from autobots_devtools_shared_lib.common.utils.jenkins_http_utils import (
     extract_job_name_from_url,
     get_auth,
 )

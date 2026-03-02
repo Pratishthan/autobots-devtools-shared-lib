@@ -8,7 +8,7 @@ from typing import get_args, get_origin
 
 import pytest
 
-from autobots_devtools_shared_lib.common.jenkins.config import (
+from autobots_devtools_shared_lib.common.config.jenkins_config import (
     JenkinsConfig,
     JenkinsParameterConfig,
     JenkinsPipelineConfig,

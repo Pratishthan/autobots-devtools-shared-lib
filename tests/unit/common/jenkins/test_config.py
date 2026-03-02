@@ -6,7 +6,7 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from autobots_devtools_shared_lib.common.jenkins.config import (
+from autobots_devtools_shared_lib.common.config.jenkins_config import (
     JenkinsAuthConfig,
     JenkinsConfig,
     JenkinsParameterConfig,

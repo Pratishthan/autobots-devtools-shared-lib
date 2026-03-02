@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 import yaml
 from pydantic import ValidationError
 
-from autobots_devtools_shared_lib.common.jenkins.loader import load_jenkins_config
+from autobots_devtools_shared_lib.common.config.jenkins_loader import load_jenkins_config
 
 # --- Fixture: point get_config_dir at a temp directory for each test ---
 

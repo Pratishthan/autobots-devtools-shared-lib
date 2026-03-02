@@ -9,11 +9,11 @@ from typing import TYPE_CHECKING
 import requests
 from langchain.tools import tool
 
-from autobots_devtools_shared_lib.common.jenkins.http_utils import get_auth
 from autobots_devtools_shared_lib.common.observability.logging_utils import get_logger
+from autobots_devtools_shared_lib.common.utils.jenkins_http_utils import get_auth
 
 if TYPE_CHECKING:
-    from autobots_devtools_shared_lib.common.jenkins.config import JenkinsConfig
+    from autobots_devtools_shared_lib.common.config.jenkins_config import JenkinsConfig
 
 logger = get_logger(__name__)
 

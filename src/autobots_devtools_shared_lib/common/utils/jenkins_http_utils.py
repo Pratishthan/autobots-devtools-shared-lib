@@ -12,7 +12,7 @@ import requests
 from autobots_devtools_shared_lib.common.observability.logging_utils import get_logger
 
 if TYPE_CHECKING:
-    from autobots_devtools_shared_lib.common.jenkins.config import (
+    from autobots_devtools_shared_lib.common.config.jenkins_config import (
         JenkinsConfig,
         JenkinsPollingConfig,
     )

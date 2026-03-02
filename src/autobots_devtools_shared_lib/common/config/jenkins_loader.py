@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import yaml
 
-from autobots_devtools_shared_lib.common.jenkins.config import JenkinsConfig
+from autobots_devtools_shared_lib.common.config.jenkins_config import JenkinsConfig
 from autobots_devtools_shared_lib.common.observability.logging_utils import get_logger
 
 logger = get_logger(__name__)
