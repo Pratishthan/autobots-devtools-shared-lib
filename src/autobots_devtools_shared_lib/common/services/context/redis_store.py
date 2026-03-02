@@ -57,7 +57,7 @@ class RedisContextStore:
 
     def update(self, context_key: str, patch: Mapping[str, Any]) -> dict[str, Any]:
         current = self.get(context_key) or {}
-        updated = {**current, **dict(patch)}
+        updated = {**current, **{k: v for k, v in patch.items() if v is not None}}
         self.set(context_key, updated)
         return updated
 

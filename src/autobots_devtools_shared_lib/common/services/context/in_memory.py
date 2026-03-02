@@ -20,8 +20,7 @@ class InMemoryContextStore:
 
     def update(self, context_key: str, patch: Mapping[str, Any]) -> dict[str, Any]:
         current = self._store.get(context_key, {})
-        # Create a shallow copy to avoid mutating the original dict outside this store
-        updated = {**current, **dict(patch)}
+        updated = {**current, **{k: v for k, v in patch.items() if v is not None}}
         self._store[context_key] = updated
         return updated
 

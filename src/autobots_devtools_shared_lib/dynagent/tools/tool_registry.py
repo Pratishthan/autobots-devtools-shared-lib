@@ -3,12 +3,7 @@
 
 from typing import Any
 
-from autobots_devtools_shared_lib.common.tools.context_tools import (
-    clear_context_tool,
-    get_context_tool,
-    set_context_tool,
-    update_context_tool,
-)
+from autobots_devtools_shared_lib.common.tools.context_tools import make_context_tools
 from autobots_devtools_shared_lib.common.tools.format_tools import output_format_converter_tool
 from autobots_devtools_shared_lib.common.tools.fserver_client_tools import (
     create_download_link_tool,
@@ -18,6 +13,7 @@ from autobots_devtools_shared_lib.common.tools.fserver_client_tools import (
     read_file_tool,
     write_file_tool,
 )
+from autobots_devtools_shared_lib.dynagent.models.state import Dynagent
 from autobots_devtools_shared_lib.dynagent.tools.state_tools import get_agent_list, handoff
 
 # --- Module-level usecase storage (populated by register_* at startup) ---
@@ -34,10 +30,7 @@ def get_default_tools() -> list[Any]:
         handoff,
         get_agent_list,
         output_format_converter_tool,
-        get_context_tool,
-        set_context_tool,
-        update_context_tool,
-        clear_context_tool,
+        *make_context_tools(Dynagent),
         get_disk_usage_tool,
         read_file_tool,
         move_file_tool,
@@ -64,8 +57,13 @@ def get_usecase_tools() -> list[Any]:
 
 
 def get_all_tools() -> list[Any]:
-    """Return default + usecase tools (the full pool passed to the agent)."""
-    return get_default_tools() + get_usecase_tools()
+    """Return default + usecase tools; usecase tools override defaults by name."""
+    seen: dict[str, Any] = {}
+    for t in get_default_tools():
+        seen[t.name] = t
+    for t in get_usecase_tools():
+        seen[t.name] = t  # usecase wins on collision
+    return list(seen.values())
 
 
 # --- Test-isolation helpers (private; used only by fixtures) ---

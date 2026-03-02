@@ -54,7 +54,7 @@ class CacheBackedContextStore:
         key = self._key(context_key)
         # Read from DB (not cache) to avoid acting on stale cache data
         current = self._db.get(key) or {}
-        updated = {**current, **dict(patch)}
+        updated = {**current, **{k: v for k, v in patch.items() if v is not None}}
         self._db.set(key, updated)
         self._cache.set(key, updated)
         return updated
