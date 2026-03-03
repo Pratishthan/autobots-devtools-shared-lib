@@ -37,8 +37,8 @@ def inject_langfuse_handler_into_config(
 
 def invoke_agent(
     agent_name: str,
-    input_state: dict[str, Any],
-    checkpointer: Any = None,
+    input_state: dict[str, Any] | None = None,
+    checkpointer: Any | None = None,
     config: RunnableConfig | None = None,
     enable_tracing: bool = True,
     trace_metadata: TraceMetadata | None = None,
@@ -81,6 +81,9 @@ def invoke_agent(
     valid_agents = get_agent_list()
     if agent_name not in valid_agents:
         raise ValueError(f"Unknown agent: {agent_name}. Valid agents: {', '.join(valid_agents)}")
+
+    if input_state is None:
+        input_state = {}
     # Use provided metadata or create default
     if trace_metadata is None:
         trace_metadata = TraceMetadata.create(
@@ -166,8 +169,8 @@ def invoke_agent(
 
 async def ainvoke_agent(
     agent_name: str,
-    input_state: dict[str, Any],
-    checkpointer: Any = None,
+    input_state: dict[str, Any] | None = None,
+    checkpointer: Any | None = None,
     config: RunnableConfig | None = None,
     enable_tracing: bool = True,
     trace_metadata: TraceMetadata | None = None,
@@ -211,6 +214,8 @@ async def ainvoke_agent(
     valid_agents = get_agent_list()
     if agent_name not in valid_agents:
         raise ValueError(f"Unknown agent: {agent_name}. Valid agents: {', '.join(valid_agents)}")
+    if input_state is None:
+        input_state = {}
     # Use provided metadata or create default
     if trace_metadata is None:
         trace_metadata = TraceMetadata.create(
