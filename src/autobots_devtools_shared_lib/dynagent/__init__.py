@@ -34,6 +34,8 @@ __all__ = [
     "BatchResult",
     "Dynagent",
     "DynagentSettings",
+    "JenkinsConfig",
+    "JenkinsPipelineConfig",
     "LLMProvider",
     "RecordResult",
     "ainvoke_agent",
