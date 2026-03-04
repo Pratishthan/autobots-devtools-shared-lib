@@ -36,19 +36,15 @@ def get_jenkins_config() -> JenkinsConfig | None:
     """
     global _config, _config_loaded
     if not _config_loaded:
-        set_jenkins_config(load_jenkins_config())
+        set_jenkins_config(_load_jenkins_config())
     return _config
 
 
-def load_jenkins_config() -> JenkinsConfig | None:
+def _load_jenkins_config() -> JenkinsConfig | None:
     """Load and validate jenkins.yaml from the active config directory.
 
-    Reads from the same directory as agents.yaml (controlled by
-    DYNAGENT_CONFIG_ROOT_DIR). Returns None if jenkins.yaml is absent so
-    callers do not need to handle the optional file specially.
-
-    Prefer get_jenkins_config() over this function when a cached singleton
-    is acceptable — load_jenkins_config() always reads from disk.
+    Internal implementation — always reads from disk without caching.
+    Use get_jenkins_config() for the cached singleton instead.
 
     Returns:
         Validated JenkinsConfig or None if the file does not exist.
