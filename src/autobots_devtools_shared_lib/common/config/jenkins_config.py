@@ -5,16 +5,28 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
+from autobots_devtools_shared_lib.common.config.jenkins_constants import (
+    DEFAULT_API_TOKEN_ENV,
+    DEFAULT_MAX_WAIT_SECONDS,
+    DEFAULT_PARAM_REQUIRED,
+    DEFAULT_PARAM_TYPE,
+    DEFAULT_POLL_INTERVAL_SECONDS,
+    DEFAULT_QUEUE_MAX_RETRIES,
+    DEFAULT_QUEUE_RETRY_DELAY_SECONDS,
+    DEFAULT_USERNAME_ENV,
+    DEFAULT_WAIT_FOR_COMPLETION,
+)
+
 
 class JenkinsAuthConfig(BaseModel):
     """Credentials resolved from environment variables at runtime."""
 
     username_env: str = Field(
-        default="JENKINS_USERNAME",
+        default=DEFAULT_USERNAME_ENV,
         description="Name of the env var holding the Jenkins username",
     )
     token_env: str = Field(
-        default="JENKINS_API_TOKEN",
+        default=DEFAULT_API_TOKEN_ENV,
         description="Name of the env var holding the Jenkins API token",
     )
 
@@ -23,23 +35,23 @@ class JenkinsPollingConfig(BaseModel):
     """Controls whether and how long to wait for a triggered build to complete."""
 
     wait_for_completion: bool = Field(
-        default=True,
+        default=DEFAULT_WAIT_FOR_COMPLETION,
         description="Whether to block until the build finishes",
     )
     poll_interval_seconds: int = Field(
-        default=10,
+        default=DEFAULT_POLL_INTERVAL_SECONDS,
         description="Seconds to wait between build-status polls",
     )
     max_wait_seconds: int = Field(
-        default=300,
+        default=DEFAULT_MAX_WAIT_SECONDS,
         description="Maximum seconds to wait before giving up",
     )
     queue_max_retries: int = Field(
-        default=5,
+        default=DEFAULT_QUEUE_MAX_RETRIES,
         description="Max attempts to resolve a build number from the Jenkins queue",
     )
     queue_retry_delay_seconds: int = Field(
-        default=2,
+        default=DEFAULT_QUEUE_RETRY_DELAY_SECONDS,
         description="Seconds to wait between queue-item polls",
     )
 
@@ -48,7 +60,7 @@ class JenkinsParameterConfig(BaseModel):
     """A single parameter that will be forwarded as a query string to Jenkins."""
 
     type: str = Field(
-        default="string",
+        default=DEFAULT_PARAM_TYPE,
         description="Parameter type: 'string', 'boolean', or 'integer'",
     )
     description: str = Field(
@@ -56,7 +68,7 @@ class JenkinsParameterConfig(BaseModel):
         description="LLM-facing hint describing what value to provide",
     )
     required: bool = Field(
-        default=True,
+        default=DEFAULT_PARAM_REQUIRED,
         description="Whether the LLM must always supply this parameter",
     )
 
@@ -64,7 +76,7 @@ class JenkinsParameterConfig(BaseModel):
 class JenkinsPipelineConfig(BaseModel):
     """Configuration for a single Jenkins pipeline entry.
 
-    The framework registers this as a LangChain tool named ``{key}_tool``,
+    The framework registers this as a LangChain tool named ``{key}{TOOL_NAME_SUFFIX}``,
     so pipeline keys in jenkins.yaml should not carry a ``_tool`` suffix.
     """
 
