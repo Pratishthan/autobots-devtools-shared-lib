@@ -12,7 +12,6 @@ from collections.abc import Callable, Mapping
 from typing import Any
 
 from autobots_devtools_shared_lib.common.observability.logging_utils import get_logger
-from autobots_devtools_shared_lib.common.services import get_context_store
 
 logger = get_logger(__name__)
 
@@ -36,6 +35,19 @@ def set_context_key_resolver(
     """
     global _context_key_resolver
     _context_key_resolver = resolver
+
+
+def get_current_thread_info(
+    *,
+    user_name: str | None = None,
+    agent_name: str | None = None,
+) -> dict[str, Any]:
+    """
+    Build thread info dict for the current request context.
+    Returns a dict with at least 'thread_id' for use in logging/session context.
+    """
+    thread_id = f"{user_name or 'default'}:{agent_name or 'default'}"
+    return {"thread_id": thread_id}
 
 
 def resolve_context_key(state: Mapping[str, Any]) -> str:
@@ -69,6 +81,8 @@ def get_context(context_key: str) -> dict[str, Any]:
     Returns:
         JSON-serializable context dict; empty dict if none exists.
     """
+    from autobots_devtools_shared_lib.common.services import get_context_store
+
     store = get_context_store()
     context = store.get(context_key) or {}
     logger.info(
@@ -87,6 +101,8 @@ def set_context(context_key: str, data: dict[str, Any]) -> str:
     Returns:
         Success message.
     """
+    from autobots_devtools_shared_lib.common.services import get_context_store
+
     store = get_context_store()
     store.set(context_key, data)
     logger.info("Set context for context_key '%s' with keys: %s", context_key, list(data.keys()))
@@ -103,6 +119,8 @@ def update_context(context_key: str, patch: dict[str, Any]) -> dict[str, Any]:
     Returns:
         The full context after the update.
     """
+    from autobots_devtools_shared_lib.common.services import get_context_store
+
     store = get_context_store()
     updated = store.update(context_key, patch)
     logger.info(
@@ -123,6 +141,8 @@ def clear_context(context_key: str) -> str:
     Returns:
         Success message.
     """
+    from autobots_devtools_shared_lib.common.services import get_context_store
+
     store = get_context_store()
     store.delete(context_key)
     logger.info("Cleared context for context_key '%s'", context_key)

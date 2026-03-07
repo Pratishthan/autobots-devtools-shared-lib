@@ -24,6 +24,8 @@ dependencies = [
     "opentelemetry-sdk>=1.30.0,<2.0.0",
     "opentelemetry-exporter-otlp-proto-http>=1.30.0,<2.0.0",
     "opentelemetry-instrumentation-fastapi>=0.49b0",
+    "pandas>=2.0.0",
+    "openpyxl>=3.1.0",
 ]
 dev = [
     "pre-commit>=4.5.1",
@@ -32,6 +34,7 @@ dev = [
     "pytest-asyncio>=1.3.0",
     "pytest-cov>=7.0.0",
     "ruff>=0.14.14",
+    "openpyxl>=3.1.0",
 ]
 
 [tool.poetry]
@@ -105,7 +108,12 @@ markers = [
 pythonVersion = "3.12"
 typeCheckingMode = "basic"
 include = ["src", "tests"]
-exclude = ["**/__pycache__", ".venv"]
+exclude = [
+    "**/__pycache__",
+    ".venv",
+    "src/autobots_devtools_shared_lib/common/servers/xlserver.py",
+    "src/autobots_devtools_shared_lib/converter/xlsheets.py"
+]
 venvPath = ".."
 venv = ".venv"
 extraPaths = ["src"]
