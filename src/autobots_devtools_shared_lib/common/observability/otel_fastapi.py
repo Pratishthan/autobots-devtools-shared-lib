@@ -34,14 +34,20 @@ class OtelCaptureConfig:
         ]
 
 
+# Default Langfuse cloud host when LANGFUSE_HOST is not set (same as trace_propagation.py).
+_DEFAULT_LANGFUSE_HOST = "https://cloud.langfuse.com"
+
+
 def _configure_langfuse_otlp() -> bool:
     """If Langfuse keys are set, configure env for OTLP export to Langfuse. Returns True if set."""
     pk = os.getenv("LANGFUSE_PUBLIC_KEY", "").strip()
     sk = os.getenv("LANGFUSE_SECRET_KEY", "").strip()
     if not pk or not sk:
         return False
-    host = os.getenv("LANGFUSE_HOST")
-    endpoint = f"{host}/api/public/otel"
+    host = os.getenv("LANGFUSE_BASE_URL", _DEFAULT_LANGFUSE_HOST).strip()
+    if not host:
+        return False
+    endpoint = f"{host.rstrip('/')}/api/public/otel"
     auth = base64.b64encode(f"{pk}:{sk}".encode()).decode()
     os.environ["OTEL_EXPORTER_OTLP_ENDPOINT"] = endpoint
     os.environ["OTEL_EXPORTER_OTLP_HEADERS"] = f"Authorization=Basic {auth}"
@@ -207,12 +213,12 @@ def _set_span_attributes(
             input_data["body"] = req_truncated["content"]
             input_data["body_size"] = req_truncated["size_bytes"]
 
-            # Extract conversation_id and set as langfuse.session.id
+            # Extract session_id and set as langfuse.session.id
             try:
                 req_json = json.loads(req_body.decode("utf-8"))
-                conversation_id = req_json.get("conversation_id")
-                if conversation_id:
-                    span.set_attribute("langfuse.session.id", str(conversation_id))
+                session_id = req_json.get("session_id")
+                if session_id:
+                    span.set_attribute("langfuse.session.id", str(session_id))
             except (json.JSONDecodeError, UnicodeDecodeError):
                 # Not JSON or invalid UTF-8, skip session linking
                 pass
