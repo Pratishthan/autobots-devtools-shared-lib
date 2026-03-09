@@ -10,6 +10,9 @@ from autobots_devtools_shared_lib.common.observability.logging_utils import (
     setup_logging,
 )
 from autobots_devtools_shared_lib.common.observability.trace_metadata import TraceMetadata
+from autobots_devtools_shared_lib.common.observability.trace_propagation import (
+    otel_span,
+)
 from autobots_devtools_shared_lib.common.observability.tracing import (
     flush_tracing,
     get_langfuse_handler,
@@ -24,6 +27,7 @@ __all__ = [
     "get_langfuse_handler",
     "get_logger",
     "init_tracing",
+    "otel_span",
     "set_log_level",
     "set_session_id",
     "setup_logging",
