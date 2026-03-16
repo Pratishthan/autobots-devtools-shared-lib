@@ -2,7 +2,7 @@
 OpenTelemetry trace propagation helpers for HTTP client calls.
 
 Provides W3C traceparent header injection and session linking for fileserver HTTP calls.
-Reuses Langfuse configuration (LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY, LANGFUSE_HOST).
+Reuses Langfuse configuration (LANGFUSE_PUBLIC_KEY, LANGFUSE_SECRET_KEY, LANGFUSE_BASE_URL).
 """
 
 from __future__ import annotations
@@ -11,7 +11,7 @@ import base64
 import os
 import sys
 from contextlib import contextmanager
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -43,8 +43,8 @@ def _ensure_tracer_provider() -> bool:
     try:
         # Check if OTEL packages available
         from opentelemetry import trace
-        from opentelemetry.exporter.otlp.proto.http.trace_exporter import (
-            OTLPSpanExporter,  # pyright: ignore[reportMissingImports]
+        from opentelemetry.exporter.otlp.proto.http.trace_exporter import (  # pyright: ignore[reportMissingImports]
+            OTLPSpanExporter,
         )
         from opentelemetry.sdk.resources import Resource
         from opentelemetry.sdk.trace import TracerProvider
@@ -80,7 +80,7 @@ def _ensure_tracer_provider() -> bool:
 
     try:
         # Configure OTLP endpoint (same pattern as otel_fastapi.py)
-        host = os.getenv("LANGFUSE_HOST", "https://cloud.langfuse.com")
+        host = os.getenv("LANGFUSE_BASE_URL", "https://cloud.langfuse.com")
         endpoint = f"{host}/api/public/otel"
         auth = base64.b64encode(f"{pk}:{sk}".encode()).decode()
         os.environ["OTEL_EXPORTER_OTLP_ENDPOINT"] = endpoint
@@ -115,6 +115,35 @@ def _ensure_tracer_provider() -> bool:
     return False
 
 
+def ensure_tracer_provider() -> bool:
+    """Public wrapper — returns True when an OTel tracer provider is ready."""
+    return _ensure_tracer_provider()
+
+
+def otel_span(name: str, kind: str = "SERVER") -> Any:
+    """Return an OTel span context manager, or nullcontext if OTel is unavailable.
+
+    Use this to create a root span that encompasses an entire orchestration step
+    (agent invocation + downstream file I/O) so all child spans share one trace.
+
+    Args:
+        name: Span name shown in Langfuse.
+        kind: OTel SpanKind string — "SERVER" (default) or "CLIENT".
+    """
+    from contextlib import nullcontext
+
+    if not _ensure_tracer_provider():
+        return nullcontext()
+    try:
+        from opentelemetry import trace
+        from opentelemetry.trace import SpanKind
+
+        span_kind = SpanKind.CLIENT if kind == "CLIENT" else SpanKind.SERVER
+        return trace.get_tracer(__name__).start_as_current_span(name, kind=span_kind)
+    except Exception:
+        return nullcontext()
+
+
 @contextmanager
 def traced_http_call(
     operation: str,
@@ -125,6 +154,9 @@ def traced_http_call(
     Context manager that creates an OTEL client span and injects W3C traceparent header.
 
     Links HTTP calls to Langfuse sessions via langfuse.session.id attribute.
+    When the same session_id is used for the parent (e.g. nurture trigger / agent
+    invocation) and for file client calls, Langfuse groups them in the Session view
+    so http.client.readFile / http.client.writeFile appear with the agent trace.
     Gracefully degrades to empty headers if OTEL unavailable.
 
     Args:

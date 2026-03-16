@@ -9,6 +9,13 @@ from typing import TYPE_CHECKING, Any
 
 import requests
 
+from autobots_devtools_shared_lib.common.config.jenkins_constants import (
+    API_JSON_SUFFIX,
+    BUILD_STATUS_URL,
+    HTTP_TIMEOUT_SECONDS,
+    JOB_URL_SEGMENT,
+    QUEUE_INITIAL_DELAY_SECONDS,
+)
 from autobots_devtools_shared_lib.common.observability.logging_utils import get_logger
 
 if TYPE_CHECKING:
@@ -51,13 +58,13 @@ def poll_queue_for_build_number(
         logger.error(msg)
         return {"status": "error", "message": msg, "build_number": None, "build_url": None}
 
-    time.sleep(1)
-    queue_api_url = f"{queue_location}api/json"
+    time.sleep(QUEUE_INITIAL_DELAY_SECONDS)
+    queue_api_url = f"{queue_location}{API_JSON_SUFFIX}"
     logger.info(f"Polling Jenkins queue: {queue_api_url}")
 
     for attempt in range(polling.queue_max_retries):
         try:
-            resp = requests.get(queue_api_url, auth=auth, timeout=30)
+            resp = requests.get(queue_api_url, auth=auth, timeout=HTTP_TIMEOUT_SECONDS)
             resp.raise_for_status()
             data = resp.json()
             executable = data.get("executable")
@@ -106,10 +113,12 @@ def wait_for_build(
 ) -> str:
     """Poll the build API until the result is non-null or the timeout is reached."""
     elapsed = 0
-    api_url = f"{base_url}/job/{job_name}/{build_number}/api/json"
+    api_url = BUILD_STATUS_URL.format(
+        base_url=base_url, job_name=job_name, build_number=build_number
+    )
     while elapsed < polling.max_wait_seconds:
         try:
-            resp = requests.get(api_url, auth=auth, timeout=30)
+            resp = requests.get(api_url, auth=auth, timeout=HTTP_TIMEOUT_SECONDS)
             resp.raise_for_status()
             data = resp.json()
             building = data.get("building", False)
@@ -148,7 +157,7 @@ def extract_job_name_from_url(url: str) -> str:
     """
     parts = [p for p in url.split("/") if p]
     try:
-        job_idx = parts.index("job")
+        job_idx = parts.index(JOB_URL_SEGMENT)
         return parts[job_idx + 1]
     except (ValueError, IndexError):
         return url

@@ -7,6 +7,8 @@ from dataclasses import dataclass, field
 from typing import Any, cast
 
 from dotenv import load_dotenv
+from langchain.agents import AgentState
+from langchain.agents.middleware.types import ResponseT
 from langchain_core.runnables import RunnableConfig
 from langfuse import propagate_attributes
 
@@ -20,6 +22,7 @@ from autobots_devtools_shared_lib.common.observability.tracing import (
 from autobots_devtools_shared_lib.dynagent.agents.invocation_utils import (
     inject_langfuse_handler_into_config,
 )
+from autobots_devtools_shared_lib.dynagent.models.state import Dynagent
 
 logger = get_logger(__name__)
 
@@ -182,6 +185,7 @@ def batch_invoker(
     checkpointer: Any = None,
     input_state: dict[str, Any] | None = None,
     config: RunnableConfig | None = None,
+    state_schema: type[AgentState[ResponseT]] = Dynagent,
 ) -> BatchResult:
     """Run a list of prompts through the dynagent in parallel.
 
@@ -197,6 +201,7 @@ def batch_invoker(
             Per-record keys (messages, agent_name, session_id) override these.
         config: Optional base RunnableConfig merged into each invocation (e.g. configurable,
             callbacks). thread_id is always set per run. Pass callbacks via config when needed.
+        state_schema: State schema for the agent. Defaults to Dynagent.
 
     Returns:
         BatchResult with per-record success/failure details.
@@ -268,6 +273,7 @@ def batch_invoker(
 
                 agent = create_base_agent(
                     checkpointer=checkpointer,
+                    state_schema=state_schema,
                     sync_mode=True,
                     initial_agent_name=agent_name,  # pyright: ignore[reportCallIssue]
                 )
