@@ -171,16 +171,80 @@ def test_json_to_sheet_data_ref_mode_parent_only():
     assert result["Sheet1"][0]["Property"] == "addr"
 
 
+def test_json_to_sheet_data_ref_mode_per_occurrence_sheet_names():
+    """perOccurrenceSheet: ref sheets named {SchemaTitle}_{parentKey} (child model names)."""
+    mapper = MapperConfig(
+        rowSourcePath="components.schemas.MyModel.properties",
+        refMode="perOccurrenceSheet",
+        columns=[
+            ColumnConfig(header="Property", path="$key"),
+            ColumnConfig(header="Type", path="$key/type"),
+            ColumnConfig(header="Description", path="$key/description"),
+        ],
+    )
+    data = {
+        "components": {
+            "schemas": {
+                "Address": {
+                    "title": "Address",
+                    "type": "object",
+                    "properties": {
+                        "street": {"type": "string"},
+                        "city": {"type": "string"},
+                    },
+                },
+                "MyModel": {
+                    "type": "object",
+                    "properties": {
+                        "id": {"type": "string"},
+                        "billingAddress": {"$ref": "#/components/schemas/Address"},
+                        "shippingAddress": {"$ref": "#/components/schemas/Address"},
+                    },
+                },
+            },
+        },
+    }
+    result = json_to_sheet_data(data, mapper, model_name="MyModel")
+    assert "MyModel" in result
+    assert "Address_billingAddress" in result
+    assert "Address_shippingAddress" in result
+    assert result["Address_billingAddress"][0]["Property"] == "billingAddress.street"
+    assert result["Address_shippingAddress"][0]["Property"] == "shippingAddress.street"
+
+
 # --- json_to_dataframes ---
 
 
-def test_json_to_dataframes_returns_dict_of_dataframes():
+def test_json_to_dataframes_returns_list_of_name_and_dataframe():
     mapper = MapperConfig(columns=[ColumnConfig(header="A", path="a")])
     data = [{"a": 1}, {"a": 2}]
-    dfs = json_to_dataframes(data, mapper)
-    assert "Sheet1" in dfs
-    assert isinstance(dfs["Sheet1"], pd.DataFrame)
-    assert len(dfs["Sheet1"]) == 2
+    sheet_results = json_to_dataframes(data, mapper)
+    assert isinstance(sheet_results, list)
+    assert len(sheet_results) == 1
+    sheet_name, df = sheet_results[0]
+    assert sheet_name == "Sheet1"
+    assert isinstance(df, pd.DataFrame)
+    assert len(df) == 2
+
+
+def test_json_to_sheet_data_model_name():
+    mapper = MapperConfig(columns=[ColumnConfig(header="A", path="a")])
+    data = [{"a": 1}]
+    result = json_to_sheet_data(data, mapper, model_name="MyModel")
+    assert "MyModel" in result
+    assert "Sheet1" not in result
+    assert len(result["MyModel"]) == 1
+    assert result["MyModel"][0]["A"] == "1"
+
+
+def test_json_to_dataframes_model_name():
+    mapper = MapperConfig(columns=[ColumnConfig(header="A", path="a")])
+    data = [{"a": 1}]
+    sheet_results = json_to_dataframes(data, mapper, model_name="Test-Params")
+    assert len(sheet_results) == 1
+    name, df = sheet_results[0]
+    assert name == "Test-Params"
+    assert len(df) == 1
 
 
 # --- excel_to_json (mocked) ---

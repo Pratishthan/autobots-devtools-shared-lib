@@ -10,7 +10,7 @@ from typing import Any
 from autobots_devtools_shared_lib.common.config.json_excel_mapper_config import (
     ColumnConfig,
     MapperConfig,
-load_mapper_config,json
+    load_mapper_config,
 )
 from autobots_devtools_shared_lib.common.observability.logging_utils import get_logger
 
@@ -128,6 +128,7 @@ def _cell_value(value: Any, col: ColumnConfig) -> str:
 def _rows_from_row_source(
     data: dict[str, Any],
     mapper: MapperConfig,
+    main_sheet_name: str | None = None,
 ) -> list[tuple[str, dict[str, Any]]]:
     """Produce (sheet_name, row) tuples from rowSourcePath + refMode."""
     path_str = mapper.rowSourcePath or ""
@@ -136,7 +137,7 @@ def _rows_from_row_source(
         return []
 
     ref_mode = mapper.refMode
-    default_sheet = _DEFAULT_SHEET
+    default_sheet = main_sheet_name if main_sheet_name is not None else _DEFAULT_SHEET
     out: list[tuple[str, dict[str, Any]]] = []
 
     for k, v in obj.items():
@@ -170,7 +171,7 @@ def _rows_from_row_source(
                 elif ref_mode == "uniqueSheet":
                     out.append((schema_name, child_row))
                 else:
-                    out.append((k, child_row))
+                    out.append((f"{schema_name}_{k}", child_row))
         else:
             row = {"$key": k, **(v if isinstance(v, dict) else {"_value": v})}
             out.append((default_sheet, row))
@@ -334,12 +335,18 @@ def json_to_sheet_data(
     mapper_base_path: str | None = None,
     workspace_context: str = "{}",
     session_id: str | None = None,
+    model_name: str | None = None,
 ) -> dict[str, list[dict[str, Any]]]:
     """Return sheet name → list of row dicts (header → cell value). No file I/O."""
     cfg = _resolve_mapper(mapper, mapper_base_path, workspace_context, session_id)
+    main_sheet = model_name if model_name is not None else _DEFAULT_SHEET
 
     if cfg.rowSourcePath is not None:
-        pairs = _rows_from_row_source(data if isinstance(data, dict) else (data[0] if data and isinstance(data, list) else {}), cfg)
+        pairs = _rows_from_row_source(
+            data if isinstance(data, dict) else (data[0] if data and isinstance(data, list) else {}),
+            cfg,
+            main_sheet_name=model_name,
+        )
         by_sheet: dict[str, list[dict[str, Any]]] = {}
         for idx, (sheet_name, row) in enumerate(pairs):
             if sheet_name not in by_sheet:
@@ -355,7 +362,7 @@ def json_to_sheet_data(
         return by_sheet
 
     rows = _normalize_data(data)
-    result: dict[str, list[dict[str, Any]]] = {_DEFAULT_SHEET: []}
+    result: dict[str, list[dict[str, Any]]] = {main_sheet: []}
     for idx, row in enumerate(rows):
         cell_row = {}
         for col in cfg.columns:
@@ -364,7 +371,7 @@ def json_to_sheet_data(
             else:
                 val = get_value_by_path(row, col.path)
                 cell_row[col.header] = _cell_value(val, col)
-        result[_DEFAULT_SHEET].append(cell_row)
+        result[main_sheet].append(cell_row)
     return result
 
 
@@ -374,12 +381,15 @@ def json_to_dataframes(
     mapper_base_path: str | None = None,
     workspace_context: str = "{}",
     session_id: str | None = None,
-) -> dict[str, Any]:
-    """Return sheet name → pandas DataFrame. Requires pandas."""
+    model_name: str | None = None,
+) -> list[tuple[str, Any]]:
+    """Return list of (sheet name, pandas DataFrame) so each item has name and rows. Requires pandas."""
     import pandas as pd
 
-    sheet_data = json_to_sheet_data(data, mapper, mapper_base_path, workspace_context, session_id)
-    return {name: pd.DataFrame(rows) for name, rows in sheet_data.items()}
+    sheet_data = json_to_sheet_data(
+        data, mapper, mapper_base_path, workspace_context, session_id, model_name=model_name
+    )
+    return [(name, pd.DataFrame(rows)) for name, rows in sheet_data.items()]
 
 
 def json_to_excel(
@@ -394,11 +404,14 @@ def json_to_excel(
     workspace_context: str = "{}",
     session_id: str | None = None,
     excel_manager: Any = None,
+    model_name: str | None = None,
 ) -> str:
     """Write JSON data to Excel via ExcelSheetsManager. Returns success message."""
     import pandas as pd
 
-    sheet_data = json_to_sheet_data(data, mapper, mapper_base_path, workspace_context, session_id)
+    sheet_data = json_to_sheet_data(
+        data, mapper, mapper_base_path, workspace_context, session_id, model_name=model_name
+    )
     if excel_manager is None:
         try:
             from autobots_devtools_shared_lib.converter.xlsheets import ExcelSheetsManager
