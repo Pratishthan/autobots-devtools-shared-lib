@@ -15,7 +15,10 @@ class ColumnConfig(BaseModel):
     """Single column mapping: header name and path into the row object."""
 
     header: str = Field(..., description="Excel column header")
-    path: str = Field(..., description="Dot-path into the row object (e.g. id, type, $key, $key/type); ignored when type is serial")
+    path: str = Field(
+        ...,
+        description="Dot-path into the row object (e.g. id, type, $key, $key/type); ignored when type is serial",
+    )
     type: Literal["array", "serial", "gen-sl"] | None = Field(
         default=None,
         description="array: value as array (join/dump). serial or gen-sl: generated 1-based row number in Excel; ignored on Excel→JSON",

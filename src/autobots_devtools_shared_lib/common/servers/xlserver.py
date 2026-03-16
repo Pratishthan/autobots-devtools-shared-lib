@@ -43,18 +43,15 @@ Endpoints:
 
 import os
 from contextlib import asynccontextmanager
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, cast
+from datetime import UTC, datetime
+from typing import Any, cast
 
 import pandas as pd
 import uvicorn
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response
 from pydantic import BaseModel, Field
 
-# Import ExcelSheetsManager and logging/context helpers
-from autobots_devtools_shared_lib.converter.xlsheets import ExcelSheetsManager
 from autobots_devtools_shared_lib.common.observability.logging_utils import (
     get_logger,
     set_conversation_id,
@@ -63,6 +60,9 @@ from autobots_devtools_shared_lib.common.observability.logging_utils import (
 from autobots_devtools_shared_lib.common.utils.context_utils import (
     get_current_thread_info,
 )
+
+# Import ExcelSheetsManager and logging/context helpers
+from autobots_devtools_shared_lib.converter.xlsheets import ExcelSheetsManager
 
 # Initialize logging for the application
 setup_logging()
@@ -79,9 +79,7 @@ class ExcelServerConfig:
     """Configuration for excel server."""
 
     # File server URL
-    FILE_SERVER_URL = os.getenv(
-        "FILE_SERVER_URL", "C:/work/src/fbp-devtools-utils/file_storage"
-    )
+    FILE_SERVER_URL = os.getenv("FILE_SERVER_URL", "C:/work/src/fbp-devtools-utils/file_storage")
 
     # Server settings
     HOST = os.getenv("EXCEL_SERVER_HOST", "0.0.0.0")
@@ -110,7 +108,7 @@ class ValidateSheetRequest(BaseRequest):
     """Request model for validating sheet name."""
 
     file_path: str = Field(..., description="Path to the Excel file")
-    folder_path: Optional[str] = Field(None, description="Optional folder path")
+    folder_path: str | None = Field(None, description="Optional folder path")
 
 
 class ValidateSheetResponse(BaseModel):
@@ -123,7 +121,7 @@ class FindSpreadsheetRequest(BaseRequest):
     """Request model for finding spreadsheet."""
 
     name: str = Field(..., description="Name of the Excel file")
-    folder_path: Optional[str] = Field(None, description="Optional folder path")
+    folder_path: str | None = Field(None, description="Optional folder path")
 
 
 class FindSpreadsheetResponse(BaseModel):
@@ -143,13 +141,13 @@ class SpreadsheetInfoResponse(BaseModel):
 class ListSpreadsheetsRequest(BaseRequest):
     """Request model for listing spreadsheets."""
 
-    folder_path: Optional[str] = Field(None, description="Optional folder path")
+    folder_path: str | None = Field(None, description="Optional folder path")
 
 
 class ListSpreadsheetsResponse(BaseModel):
     """Response model for listing spreadsheets."""
 
-    spreadsheets: List[Dict[str, Any]]
+    spreadsheets: list[dict[str, Any]]
 
 
 class ListWorksheetsRequest(BaseRequest):
@@ -161,7 +159,7 @@ class ListWorksheetsRequest(BaseRequest):
 class ListWorksheetsResponse(BaseModel):
     """Response model for listing worksheets."""
 
-    worksheets: List[str]
+    worksheets: list[str]
 
 
 class ValidateWorksheetRequest(BaseRequest):
@@ -182,8 +180,8 @@ class CreateWorksheetRequest(BaseRequest):
 
     file_path: str = Field(..., description="Path to the Excel file")
     worksheet_name: str = Field(..., description="Name for the new worksheet")
-    rows: Optional[int] = Field(1000, description="Number of rows")
-    cols: Optional[int] = Field(26, description="Number of columns")
+    rows: int | None = Field(1000, description="Number of rows")
+    cols: int | None = Field(26, description="Number of columns")
 
 
 class WorksheetOperationResponse(BaseModel):
@@ -228,13 +226,13 @@ class GetSheetDataRequest(BaseRequest):
 
     file_path: str = Field(..., description="Path to the Excel file")
     worksheet_name: str = Field(..., description="Name of the worksheet")
-    range: Optional[str] = Field(None, description="Optional Excel range")
+    range: str | None = Field(None, description="Optional Excel range")
 
 
 class GetSheetDataResponse(BaseModel):
     """Response model for getting sheet data."""
 
-    data: List[Dict[str, Any]]  # JSON representation of DataFrame as list of records
+    data: list[dict[str, Any]]  # JSON representation of DataFrame as list of records
 
 
 class GetCellValueRequest(BaseRequest):
@@ -265,7 +263,7 @@ class AppendRowsRequest(BaseRequest):
 
     file_path: str = Field(..., description="Path to the Excel file")
     worksheet_name: str = Field(..., description="Name of the worksheet")
-    data: Dict[str, Any] = Field(..., description="DataFrame data as dict")
+    data: dict[str, Any] = Field(..., description="DataFrame data as dict")
 
 
 class UpdateCellRequest(BaseRequest):
@@ -284,7 +282,7 @@ class UpdateRangeRequest(BaseRequest):
     file_path: str = Field(..., description="Path to the Excel file")
     worksheet_name: str = Field(..., description="Name of the worksheet")
     range: str = Field(..., description="Excel range")
-    data: Dict[str, Any] = Field(..., description="DataFrame data as dict")
+    data: dict[str, Any] = Field(..., description="DataFrame data as dict")
 
 
 class InsertRowsRequest(BaseRequest):
@@ -293,7 +291,7 @@ class InsertRowsRequest(BaseRequest):
     file_path: str = Field(..., description="Path to the Excel file")
     worksheet_name: str = Field(..., description="Name of the worksheet")
     start_row: int = Field(..., description="Row number to insert at (1-indexed)")
-    data: Dict[str, Any] = Field(..., description="DataFrame data as dict")
+    data: dict[str, Any] = Field(..., description="DataFrame data as dict")
 
 
 class ClearRangeRequest(BaseRequest):
@@ -334,7 +332,7 @@ class UpsertSheetDataRequest(BaseRequest):
 
     file_path: str = Field(..., description="Path to the Excel file")
     worksheet_name: str = Field(..., description="Name of the worksheet")
-    data: List[Dict[str, Any]] = Field(
+    data: list[dict[str, Any]] = Field(
         ..., description="List of row objects with column name-value pairs"
     )
 
@@ -413,9 +411,9 @@ async def validate_sheet_name(request: ValidateSheetRequest):
     """
     try:
         set_conversation_id(
-            get_current_thread_info(
-                user_name=request.user_name, agent_name=request.agent_name
-            ).get("thread_id", "default-conversation-id")
+            get_current_thread_info(user_name=request.user_name, agent_name=request.agent_name).get(
+                "thread_id", "default-conversation-id"
+            )
         )
 
         logger.info(f"Validating sheet name: {request.file_path}")
@@ -431,7 +429,7 @@ async def validate_sheet_name(request: ValidateSheetRequest):
         logger.error(f"Error validating sheet name: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error validating sheet name: {str(e)}",
+            detail=f"Error validating sheet name: {e!s}",
         )
 
 
@@ -449,9 +447,9 @@ async def find_spreadsheet_by_name(request: FindSpreadsheetRequest):
     """
     try:
         set_conversation_id(
-            get_current_thread_info(
-                user_name=request.user_name, agent_name=request.agent_name
-            ).get("thread_id", "default-conversation-id")
+            get_current_thread_info(user_name=request.user_name, agent_name=request.agent_name).get(
+                "thread_id", "default-conversation-id"
+            )
         )
 
         logger.info(f"Finding spreadsheet: {request.name}")
@@ -470,7 +468,7 @@ async def find_spreadsheet_by_name(request: FindSpreadsheetRequest):
         logger.error(f"Error finding spreadsheet: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error finding spreadsheet: {str(e)}",
+            detail=f"Error finding spreadsheet: {e!s}",
         )
 
 
@@ -487,9 +485,9 @@ async def get_spreadsheet_folder_info(request: FindSpreadsheetRequest):
     """
     try:
         set_conversation_id(
-            get_current_thread_info(
-                user_name=request.user_name, agent_name=request.agent_name
-            ).get("thread_id", "default-conversation-id")
+            get_current_thread_info(user_name=request.user_name, agent_name=request.agent_name).get(
+                "thread_id", "default-conversation-id"
+            )
         )
 
         logger.info(f"Getting spreadsheet info: {request.name}")
@@ -504,7 +502,7 @@ async def get_spreadsheet_folder_info(request: FindSpreadsheetRequest):
         logger.error(f"Error getting spreadsheet info: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error getting spreadsheet info: {str(e)}",
+            detail=f"Error getting spreadsheet info: {e!s}",
         )
 
 
@@ -521,9 +519,9 @@ async def list_spreadsheets(request: ListSpreadsheetsRequest):
     """
     try:
         set_conversation_id(
-            get_current_thread_info(
-                user_name=request.user_name, agent_name=request.agent_name
-            ).get("thread_id", "default-conversation-id")
+            get_current_thread_info(user_name=request.user_name, agent_name=request.agent_name).get(
+                "thread_id", "default-conversation-id"
+            )
         )
 
         logger.info(f"Listing spreadsheets in folder: {request.folder_path}")
@@ -539,7 +537,7 @@ async def list_spreadsheets(request: ListSpreadsheetsRequest):
         logger.error(f"Error listing spreadsheets: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error listing spreadsheets: {str(e)}",
+            detail=f"Error listing spreadsheets: {e!s}",
         )
 
 
@@ -556,9 +554,9 @@ async def list_worksheets(request: ListWorksheetsRequest):
     """
     try:
         set_conversation_id(
-            get_current_thread_info(
-                user_name=request.user_name, agent_name=request.agent_name
-            ).get("thread_id", "default-conversation-id")
+            get_current_thread_info(user_name=request.user_name, agent_name=request.agent_name).get(
+                "thread_id", "default-conversation-id"
+            )
         )
 
         worksheets = excel_manager.list_worksheets(
@@ -572,7 +570,7 @@ async def list_worksheets(request: ListWorksheetsRequest):
         logger.error(f"Error listing worksheets: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error listing worksheets: {str(e)}",
+            detail=f"Error listing worksheets: {e!s}",
         )
 
 
@@ -589,14 +587,12 @@ async def validate_worksheet_name(request: ValidateWorksheetRequest):
     """
     try:
         set_conversation_id(
-            get_current_thread_info(
-                user_name=request.user_name, agent_name=request.agent_name
-            ).get("thread_id", "default-conversation-id")
+            get_current_thread_info(user_name=request.user_name, agent_name=request.agent_name).get(
+                "thread_id", "default-conversation-id"
+            )
         )
 
-        logger.info(
-            f"Validating worksheet: {request.worksheet_name} in {request.file_path}"
-        )
+        logger.info(f"Validating worksheet: {request.worksheet_name} in {request.file_path}")
         exists = excel_manager.validate_worksheet_name(
             file_path=request.file_path,
             worksheet_name=request.worksheet_name,
@@ -609,7 +605,7 @@ async def validate_worksheet_name(request: ValidateWorksheetRequest):
         logger.error(f"Error validating worksheet: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error validating worksheet: {str(e)}",
+            detail=f"Error validating worksheet: {e!s}",
         )
 
 
@@ -626,19 +622,17 @@ async def create_worksheet(request: CreateWorksheetRequest):
     """
     try:
         set_conversation_id(
-            get_current_thread_info(
-                user_name=request.user_name, agent_name=request.agent_name
-            ).get("thread_id", "default-conversation-id")
+            get_current_thread_info(user_name=request.user_name, agent_name=request.agent_name).get(
+                "thread_id", "default-conversation-id"
+            )
         )
 
-        logger.info(
-            f"Creating worksheet: {request.worksheet_name} in {request.file_path}"
-        )
+        logger.info(f"Creating worksheet: {request.worksheet_name} in {request.file_path}")
         success = excel_manager.create_worksheet(
             file_path=request.file_path,
             worksheet_name=request.worksheet_name,
-            rows=cast(int, request.rows),
-            cols=cast(int, request.cols),
+            rows=cast("int", request.rows),
+            cols=cast("int", request.cols),
             user_name=request.user_name,
             repo_name=request.repo_name,
             jira_number=request.jira_number,
@@ -653,7 +647,7 @@ async def create_worksheet(request: CreateWorksheetRequest):
         logger.error(f"Error creating worksheet: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error creating worksheet: {str(e)}",
+            detail=f"Error creating worksheet: {e!s}",
         )
 
 
@@ -670,14 +664,12 @@ async def delete_worksheet(request: ValidateWorksheetRequest):
     """
     try:
         set_conversation_id(
-            get_current_thread_info(
-                user_name=request.user_name, agent_name=request.agent_name
-            ).get("thread_id", "default-conversation-id")
+            get_current_thread_info(user_name=request.user_name, agent_name=request.agent_name).get(
+                "thread_id", "default-conversation-id"
+            )
         )
 
-        logger.info(
-            f"Deleting worksheet: {request.worksheet_name} from {request.file_path}"
-        )
+        logger.info(f"Deleting worksheet: {request.worksheet_name} from {request.file_path}")
         success = excel_manager.delete_worksheet(
             file_path=request.file_path,
             worksheet_name=request.worksheet_name,
@@ -695,7 +687,7 @@ async def delete_worksheet(request: ValidateWorksheetRequest):
         logger.error(f"Error deleting worksheet: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error deleting worksheet: {str(e)}",
+            detail=f"Error deleting worksheet: {e!s}",
         )
 
 
@@ -712,9 +704,9 @@ async def rename_worksheet(request: RenameWorksheetRequest):
     """
     try:
         set_conversation_id(
-            get_current_thread_info(
-                user_name=request.user_name, agent_name=request.agent_name
-            ).get("thread_id", "default-conversation-id")
+            get_current_thread_info(user_name=request.user_name, agent_name=request.agent_name).get(
+                "thread_id", "default-conversation-id"
+            )
         )
 
         logger.info(
@@ -731,14 +723,14 @@ async def rename_worksheet(request: RenameWorksheetRequest):
         message = (
             f"Worksheet renamed from '{request.old_name}' to '{request.new_name}' successfully"
             if success
-            else f"Failed to rename worksheet"
+            else "Failed to rename worksheet"
         )
         return WorksheetOperationResponse(success=success, message=message)
     except Exception as e:
         logger.error(f"Error renaming worksheet: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error renaming worksheet: {str(e)}",
+            detail=f"Error renaming worksheet: {e!s}",
         )
 
 
@@ -755,9 +747,9 @@ async def duplicate_worksheet(request: DuplicateWorksheetRequest):
     """
     try:
         set_conversation_id(
-            get_current_thread_info(
-                user_name=request.user_name, agent_name=request.agent_name
-            ).get("thread_id", "default-conversation-id")
+            get_current_thread_info(user_name=request.user_name, agent_name=request.agent_name).get(
+                "thread_id", "default-conversation-id"
+            )
         )
 
         logger.info(
@@ -774,14 +766,14 @@ async def duplicate_worksheet(request: DuplicateWorksheetRequest):
         message = (
             f"Worksheet '{request.source_worksheet}' duplicated as '{request.new_name}' successfully"
             if success
-            else f"Failed to duplicate worksheet"
+            else "Failed to duplicate worksheet"
         )
         return WorksheetOperationResponse(success=success, message=message)
     except Exception as e:
         logger.error(f"Error duplicating worksheet: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error duplicating worksheet: {str(e)}",
+            detail=f"Error duplicating worksheet: {e!s}",
         )
 
 
@@ -798,9 +790,9 @@ async def copy_spreadsheet_to_folder(request: CopySpreadsheetRequest):
     """
     try:
         set_conversation_id(
-            get_current_thread_info(
-                user_name=request.user_name, agent_name=request.agent_name
-            ).get("thread_id", "default-conversation-id")
+            get_current_thread_info(user_name=request.user_name, agent_name=request.agent_name).get(
+                "thread_id", "default-conversation-id"
+            )
         )
 
         logger.info(
@@ -819,7 +811,7 @@ async def copy_spreadsheet_to_folder(request: CopySpreadsheetRequest):
         logger.error(f"Error copying spreadsheet: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error copying spreadsheet: {str(e)}",
+            detail=f"Error copying spreadsheet: {e!s}",
         )
 
 
@@ -836,9 +828,9 @@ async def copy_spreadsheet_from_path(request: CopySpreadsheetRequest):
     """
     try:
         set_conversation_id(
-            get_current_thread_info(
-                user_name=request.user_name, agent_name=request.agent_name
-            ).get("thread_id", "default-conversation-id")
+            get_current_thread_info(user_name=request.user_name, agent_name=request.agent_name).get(
+                "thread_id", "default-conversation-id"
+            )
         )
 
         logger.info(
@@ -857,7 +849,7 @@ async def copy_spreadsheet_from_path(request: CopySpreadsheetRequest):
         logger.error(f"Error copying spreadsheet: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error copying spreadsheet: {str(e)}",
+            detail=f"Error copying spreadsheet: {e!s}",
         )
 
 
@@ -874,14 +866,12 @@ async def get_sheet_data(request: GetSheetDataRequest):
     """
     try:
         set_conversation_id(
-            get_current_thread_info(
-                user_name=request.user_name, agent_name=request.agent_name
-            ).get("thread_id", "default-conversation-id")
+            get_current_thread_info(user_name=request.user_name, agent_name=request.agent_name).get(
+                "thread_id", "default-conversation-id"
+            )
         )
 
-        logger.info(
-            f"Getting sheet data: {request.worksheet_name} from {request.file_path}"
-        )
+        logger.info(f"Getting sheet data: {request.worksheet_name} from {request.file_path}")
         df = excel_manager.get_sheet_data(
             file_path=request.file_path,
             worksheet_name=request.worksheet_name,
@@ -896,7 +886,7 @@ async def get_sheet_data(request: GetSheetDataRequest):
         logger.error(f"Error getting sheet data: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error getting sheet data: {str(e)}",
+            detail=f"Error getting sheet data: {e!s}",
         )
 
 
@@ -913,9 +903,9 @@ async def get_cell_value(request: GetCellValueRequest):
     """
     try:
         set_conversation_id(
-            get_current_thread_info(
-                user_name=request.user_name, agent_name=request.agent_name
-            ).get("thread_id", "default-conversation-id")
+            get_current_thread_info(user_name=request.user_name, agent_name=request.agent_name).get(
+                "thread_id", "default-conversation-id"
+            )
         )
 
         logger.info(
@@ -935,7 +925,7 @@ async def get_cell_value(request: GetCellValueRequest):
         logger.error(f"Error getting cell value: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error getting cell value: {str(e)}",
+            detail=f"Error getting cell value: {e!s}",
         )
 
 
@@ -952,9 +942,9 @@ async def get_range_values(request: GetRangeValuesRequest):
     """
     try:
         set_conversation_id(
-            get_current_thread_info(
-                user_name=request.user_name, agent_name=request.agent_name
-            ).get("thread_id", "default-conversation-id")
+            get_current_thread_info(user_name=request.user_name, agent_name=request.agent_name).get(
+                "thread_id", "default-conversation-id"
+            )
         )
 
         logger.info(
@@ -974,7 +964,7 @@ async def get_range_values(request: GetRangeValuesRequest):
         logger.error(f"Error getting range values: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error getting range values: {str(e)}",
+            detail=f"Error getting range values: {e!s}",
         )
 
 
@@ -991,14 +981,12 @@ async def append_rows(request: AppendRowsRequest):
     """
     try:
         set_conversation_id(
-            get_current_thread_info(
-                user_name=request.user_name, agent_name=request.agent_name
-            ).get("thread_id", "default-conversation-id")
+            get_current_thread_info(user_name=request.user_name, agent_name=request.agent_name).get(
+                "thread_id", "default-conversation-id"
+            )
         )
 
-        logger.info(
-            f"Appending rows to {request.worksheet_name} in {request.file_path}"
-        )
+        logger.info(f"Appending rows to {request.worksheet_name} in {request.file_path}")
         df = pd.DataFrame(request.data)
         success = excel_manager.append_rows(
             file_path=request.file_path,
@@ -1014,7 +1002,7 @@ async def append_rows(request: AppendRowsRequest):
         logger.error(f"Error appending rows: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error appending rows: {str(e)}",
+            detail=f"Error appending rows: {e!s}",
         )
 
 
@@ -1031,9 +1019,9 @@ async def update_cell(request: UpdateCellRequest):
     """
     try:
         set_conversation_id(
-            get_current_thread_info(
-                user_name=request.user_name, agent_name=request.agent_name
-            ).get("thread_id", "default-conversation-id")
+            get_current_thread_info(user_name=request.user_name, agent_name=request.agent_name).get(
+                "thread_id", "default-conversation-id"
+            )
         )
 
         logger.info(
@@ -1055,7 +1043,7 @@ async def update_cell(request: UpdateCellRequest):
         logger.error(f"Error updating cell: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error updating cell: {str(e)}",
+            detail=f"Error updating cell: {e!s}",
         )
 
 
@@ -1072,9 +1060,9 @@ async def update_range(request: UpdateRangeRequest):
     """
     try:
         set_conversation_id(
-            get_current_thread_info(
-                user_name=request.user_name, agent_name=request.agent_name
-            ).get("thread_id", "default-conversation-id")
+            get_current_thread_info(user_name=request.user_name, agent_name=request.agent_name).get(
+                "thread_id", "default-conversation-id"
+            )
         )
 
         logger.info(
@@ -1096,7 +1084,7 @@ async def update_range(request: UpdateRangeRequest):
         logger.error(f"Error updating range: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error updating range: {str(e)}",
+            detail=f"Error updating range: {e!s}",
         )
 
 
@@ -1113,9 +1101,9 @@ async def insert_rows(request: InsertRowsRequest):
     """
     try:
         set_conversation_id(
-            get_current_thread_info(
-                user_name=request.user_name, agent_name=request.agent_name
-            ).get("thread_id", "default-conversation-id")
+            get_current_thread_info(user_name=request.user_name, agent_name=request.agent_name).get(
+                "thread_id", "default-conversation-id"
+            )
         )
 
         logger.info(
@@ -1137,7 +1125,7 @@ async def insert_rows(request: InsertRowsRequest):
         logger.error(f"Error inserting rows: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error inserting rows: {str(e)}",
+            detail=f"Error inserting rows: {e!s}",
         )
 
 
@@ -1154,9 +1142,9 @@ async def clear_range(request: ClearRangeRequest):
     """
     try:
         set_conversation_id(
-            get_current_thread_info(
-                user_name=request.user_name, agent_name=request.agent_name
-            ).get("thread_id", "default-conversation-id")
+            get_current_thread_info(user_name=request.user_name, agent_name=request.agent_name).get(
+                "thread_id", "default-conversation-id"
+            )
         )
 
         logger.info(
@@ -1176,7 +1164,7 @@ async def clear_range(request: ClearRangeRequest):
         logger.error(f"Error clearing range: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error clearing range: {str(e)}",
+            detail=f"Error clearing range: {e!s}",
         )
 
 
@@ -1193,9 +1181,9 @@ async def delete_rows(request: DeleteRowsRequest):
     """
     try:
         set_conversation_id(
-            get_current_thread_info(
-                user_name=request.user_name, agent_name=request.agent_name
-            ).get("thread_id", "default-conversation-id")
+            get_current_thread_info(user_name=request.user_name, agent_name=request.agent_name).get(
+                "thread_id", "default-conversation-id"
+            )
         )
 
         logger.info(
@@ -1216,7 +1204,7 @@ async def delete_rows(request: DeleteRowsRequest):
         logger.error(f"Error deleting rows: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error deleting rows: {str(e)}",
+            detail=f"Error deleting rows: {e!s}",
         )
 
 
@@ -1233,9 +1221,9 @@ async def delete_columns(request: DeleteColumnsRequest):
     """
     try:
         set_conversation_id(
-            get_current_thread_info(
-                user_name=request.user_name, agent_name=request.agent_name
-            ).get("thread_id", "default-conversation-id")
+            get_current_thread_info(user_name=request.user_name, agent_name=request.agent_name).get(
+                "thread_id", "default-conversation-id"
+            )
         )
 
         logger.info(
@@ -1250,15 +1238,13 @@ async def delete_columns(request: DeleteColumnsRequest):
             repo_name=request.repo_name,
             jira_number=request.jira_number,
         )
-        message = (
-            "Columns deleted successfully" if success else "Failed to delete columns"
-        )
+        message = "Columns deleted successfully" if success else "Failed to delete columns"
         return WorksheetOperationResponse(success=success, message=message)
     except Exception as e:
         logger.error(f"Error deleting columns: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error deleting columns: {str(e)}",
+            detail=f"Error deleting columns: {e!s}",
         )
 
 
@@ -1275,14 +1261,12 @@ async def clear_worksheet(request: ClearWorksheetRequest):
     """
     try:
         set_conversation_id(
-            get_current_thread_info(
-                user_name=request.user_name, agent_name=request.agent_name
-            ).get("thread_id", "default-conversation-id")
+            get_current_thread_info(user_name=request.user_name, agent_name=request.agent_name).get(
+                "thread_id", "default-conversation-id"
+            )
         )
 
-        logger.info(
-            f"Clearing worksheet {request.worksheet_name} in {request.file_path}"
-        )
+        logger.info(f"Clearing worksheet {request.worksheet_name} in {request.file_path}")
         success = excel_manager.clear_worksheet(
             file_path=request.file_path,
             worksheet_name=request.worksheet_name,
@@ -1290,15 +1274,13 @@ async def clear_worksheet(request: ClearWorksheetRequest):
             repo_name=request.repo_name,
             jira_number=request.jira_number,
         )
-        message = (
-            "Worksheet cleared successfully" if success else "Failed to clear worksheet"
-        )
+        message = "Worksheet cleared successfully" if success else "Failed to clear worksheet"
         return WorksheetOperationResponse(success=success, message=message)
     except Exception as e:
         logger.error(f"Error clearing worksheet: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error clearing worksheet: {str(e)}",
+            detail=f"Error clearing worksheet: {e!s}",
         )
 
 
@@ -1320,7 +1302,7 @@ async def clear_cache():
         logger.error(f"Error clearing cache: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error clearing cache: {str(e)}",
+            detail=f"Error clearing cache: {e!s}",
         )
 
 
@@ -1338,9 +1320,9 @@ async def upsert_sheet_data(request: UpsertSheetDataRequest):
     """
     try:
         set_conversation_id(
-            get_current_thread_info(
-                user_name=request.user_name, agent_name=request.agent_name
-            ).get("thread_id", "default-conversation-id")
+            get_current_thread_info(user_name=request.user_name, agent_name=request.agent_name).get(
+                "thread_id", "default-conversation-id"
+            )
         )
 
         logger.info(
@@ -1365,9 +1347,7 @@ async def upsert_sheet_data(request: UpsertSheetDataRequest):
 
         if worksheet_exists:
             # Clear existing worksheet
-            logger.info(
-                f"Worksheet '{request.worksheet_name}' exists, clearing it first"
-            )
+            logger.info(f"Worksheet '{request.worksheet_name}' exists, clearing it first")
             clear_success = excel_manager.clear_worksheet(
                 file_path=request.file_path,
                 worksheet_name=request.worksheet_name,
@@ -1379,9 +1359,7 @@ async def upsert_sheet_data(request: UpsertSheetDataRequest):
                 raise Exception(f"Failed to clear worksheet '{request.worksheet_name}'")
         else:
             # Create new worksheet
-            logger.info(
-                f"Worksheet '{request.worksheet_name}' doesn't exist, creating it"
-            )
+            logger.info(f"Worksheet '{request.worksheet_name}' doesn't exist, creating it")
             create_success = excel_manager.create_worksheet(
                 file_path=request.file_path,
                 worksheet_name=request.worksheet_name,
@@ -1392,9 +1370,7 @@ async def upsert_sheet_data(request: UpsertSheetDataRequest):
                 jira_number=request.jira_number,
             )
             if not create_success:
-                raise Exception(
-                    f"Failed to create worksheet '{request.worksheet_name}'"
-                )
+                raise Exception(f"Failed to create worksheet '{request.worksheet_name}'")
 
         # Insert data into the worksheet
         success = excel_manager.append_rows(
@@ -1422,7 +1398,7 @@ async def upsert_sheet_data(request: UpsertSheetDataRequest):
         logger.error(f"Error upserting sheet data: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error upserting sheet data: {str(e)}",
+            detail=f"Error upserting sheet data: {e!s}",
         )
 
 
@@ -1440,14 +1416,14 @@ async def health_check():
     try:
         return HealthResponse(
             status="healthy",
-            timestamp=datetime.now(timezone.utc).isoformat(),
+            timestamp=datetime.now(UTC).isoformat(),
             file_server_url=ExcelServerConfig.FILE_SERVER_URL,
         )
     except Exception as e:
         logger.error(f"Error in health check: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Health check failed: {str(e)}",
+            detail=f"Health check failed: {e!s}",
         )
 
 
@@ -1533,9 +1509,7 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         if sys.argv[1] == "--help":
             print("Excel Server CLI")
-            print(
-                "Usage: python -m autobots_devtools_shared_lib.common.servers.xlserver [OPTIONS]"
-            )
+            print("Usage: python -m autobots_devtools_shared_lib.common.servers.xlserver [OPTIONS]")
             print("\nOptions:")
             print("  --host HOST       Host to bind to (default: 0.0.0.0)")
             print("  --port PORT       Port to bind to (default: 8001)")
@@ -1549,5 +1523,4 @@ if __name__ == "__main__":
             print("Use --help for usage information")
             sys.exit(1)
     else:
-
         run_server("localhost", 9001, reload=True, log_level="debug")

@@ -25,7 +25,6 @@ from autobots_devtools_shared_lib.common.tools.json_excel_converter import (
     sheet_data_to_json_shape,
 )
 
-
 # --- Path helpers ---
 
 
@@ -64,13 +63,17 @@ def test_set_value_by_path_key_prefix():
 
 def test_load_mapper_config_from_file(tmp_path: Path):
     mapper_file = tmp_path / "test_mapper.json"
-    mapper_file.write_text(json.dumps({
-        "columns": [
-            {"header": "Property", "path": "$key"},
-            {"header": "Type", "path": "type"},
-        ],
-        "rowSourcePath": "components.schemas.X.properties",
-    }))
+    mapper_file.write_text(
+        json.dumps(
+            {
+                "columns": [
+                    {"header": "Property", "path": "$key"},
+                    {"header": "Type", "path": "type"},
+                ],
+                "rowSourcePath": "components.schemas.X.properties",
+            }
+        )
+    )
     cfg = load_mapper_config("test_mapper", mapper_base_path=str(tmp_path))
     assert cfg.rowSourcePath == "components.schemas.X.properties"
     assert len(cfg.columns) == 2
@@ -93,10 +96,12 @@ def test_load_mapper_config_requires_base_path_when_no_env(monkeypatch):
 
 
 def test_json_to_sheet_data_list_of_objects():
-    mapper = MapperConfig(columns=[
-        ColumnConfig(header="User ID", path="id"),
-        ColumnConfig(header="Name", path="name"),
-    ])
+    mapper = MapperConfig(
+        columns=[
+            ColumnConfig(header="User ID", path="id"),
+            ColumnConfig(header="Name", path="name"),
+        ]
+    )
     data = [{"id": 1, "name": "Alice"}, {"id": 2, "name": "Bob"}]
     result = json_to_sheet_data(data, mapper)
     assert "Sheet1" in result
@@ -107,10 +112,14 @@ def test_json_to_sheet_data_list_of_objects():
 
 
 def test_json_to_sheet_data_single_object():
-    mapper = MapperConfig(columns=[
-        ColumnConfig(header="User ID", path="id"),
-        ColumnConfig(header="Phones", path="phones", type="array", elementType="string", delimiter=","),
-    ])
+    mapper = MapperConfig(
+        columns=[
+            ColumnConfig(header="User ID", path="id"),
+            ColumnConfig(
+                header="Phones", path="phones", type="array", elementType="string", delimiter=","
+            ),
+        ]
+    )
     data = {"id": 1, "phones": ["a", "b"]}
     result = json_to_sheet_data(data, mapper)
     assert len(result["Sheet1"]) == 1
@@ -251,17 +260,23 @@ def test_json_to_dataframes_model_name():
 
 
 def test_excel_to_json_with_mock_manager():
-    mapper = MapperConfig(columns=[
-        ColumnConfig(header="Property", path="$key"),
-        ColumnConfig(header="Type", path="type"),
-    ])
+    mapper = MapperConfig(
+        columns=[
+            ColumnConfig(header="Property", path="$key"),
+            ColumnConfig(header="Type", path="type"),
+        ]
+    )
     mock_df = pd.DataFrame([{"Property": "bankName", "Type": "string"}])
     mock_manager = MagicMock()
     mock_manager.get_sheet_data.return_value = mock_df
 
     result = excel_to_json(
-        "file.xlsx", "Sheet1", mapper,
-        "user", "repo", "JIRA-1",
+        "file.xlsx",
+        "Sheet1",
+        mapper,
+        "user",
+        "repo",
+        "JIRA-1",
         excel_manager=mock_manager,
     )
     assert len(result) == 1
@@ -279,8 +294,13 @@ def test_json_to_excel_with_mock_manager():
     mock_manager.append_rows.return_value = True
 
     msg = json_to_excel(
-        data, mapper, "out.xlsx", "Sheet1",
-        "user", "repo", "JIRA-1",
+        data,
+        mapper,
+        "out.xlsx",
+        "Sheet1",
+        "user",
+        "repo",
+        "JIRA-1",
         excel_manager=mock_manager,
     )
     assert "Wrote" in msg or "sheet" in msg.lower()
@@ -292,10 +312,12 @@ def test_json_to_excel_with_mock_manager():
 
 def test_sheet_data_to_json_shape_root_list():
     """No rowSourcePath: returns list of path-based row dicts (default sheet)."""
-    mapper = MapperConfig(columns=[
-        ColumnConfig(header="User ID", path="id"),
-        ColumnConfig(header="Name", path="name"),
-    ])
+    mapper = MapperConfig(
+        columns=[
+            ColumnConfig(header="User ID", path="id"),
+            ColumnConfig(header="Name", path="name"),
+        ]
+    )
     sheet_data = {
         "Sheet1": [
             {"id": "1", "name": "Alice"},
@@ -379,10 +401,12 @@ def test_sheet_data_to_json_shape_row_source_path_multi_sheet():
 
 def test_merge_excel_into_json_preserves_original():
     """Merge with sheet data that matches original: result equals original (round-trip)."""
-    mapper = MapperConfig(columns=[
-        ColumnConfig(header="User ID", path="id"),
-        ColumnConfig(header="Name", path="name"),
-    ])
+    mapper = MapperConfig(
+        columns=[
+            ColumnConfig(header="User ID", path="id"),
+            ColumnConfig(header="Name", path="name"),
+        ]
+    )
     original = [{"id": 1, "name": "Alice"}, {"id": 2, "name": "Bob"}]
     sheet_data = {
         "Sheet1": [
@@ -397,10 +421,12 @@ def test_merge_excel_into_json_preserves_original():
 
 def test_merge_excel_into_json_overlay_wins():
     """Overlay (sheet) values overwrite original at same paths."""
-    mapper = MapperConfig(columns=[
-        ColumnConfig(header="A", path="a"),
-        ColumnConfig(header="B", path="b"),
-    ])
+    mapper = MapperConfig(
+        columns=[
+            ColumnConfig(header="A", path="a"),
+            ColumnConfig(header="B", path="b"),
+        ]
+    )
     original = [{"a": 1, "b": "old", "c": "keep"}]
     sheet_data = {"Sheet1": [{"a": 10, "b": "new"}]}
     result = merge_excel_into_json(original, sheet_data, mapper)
@@ -411,9 +437,11 @@ def test_merge_excel_into_json_overlay_wins():
 
 def test_merge_excel_into_json_list_by_index():
     """Lists merge by index; overlay element at i overwrites/merges with base[i]."""
-    mapper = MapperConfig(columns=[
-        ColumnConfig(header="X", path="x"),
-    ])
+    mapper = MapperConfig(
+        columns=[
+            ColumnConfig(header="X", path="x"),
+        ]
+    )
     original = [{"x": 1, "y": 10}, {"x": 2, "y": 20}]
     sheet_data = {"Sheet1": [{"x": 100}, {"x": 200}]}
     result = merge_excel_into_json(original, sheet_data, mapper)
