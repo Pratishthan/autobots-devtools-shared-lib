@@ -35,6 +35,13 @@ def set_session_id(session_id: str) -> None:
     _session_id_var.set(session_id)
 
 
+def set_conversation_id(conversation_id: str) -> None:
+    """
+    Set the conversation/thread identifier for the current context (alias for set_session_id).
+    """
+    set_session_id(conversation_id)
+
+
 def _parse_log_level(level: LogLevelLike | None) -> int:
     """
     Normalize various level representations into a standard logging level.

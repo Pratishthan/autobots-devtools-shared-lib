@@ -8,14 +8,11 @@ from typing import get_args, get_origin
 
 import pytest
 
-import autobots_devtools_shared_lib.common.config.jenkins_loader as jenkins_loader_module
-import autobots_devtools_shared_lib.common.utils.jenkins_pipeline_utils as pipeline_utils_module
 from autobots_devtools_shared_lib.common.config.jenkins_config import (
     JenkinsConfig,
     JenkinsParameterConfig,
     JenkinsPipelineConfig,
 )
-from autobots_devtools_shared_lib.common.config.jenkins_loader import set_jenkins_config
 from autobots_devtools_shared_lib.common.tools.jenkins_pipeline_tools import (
     create_jenkins_tools,
     register_pipeline_tools,
@@ -72,17 +69,12 @@ def cfg() -> JenkinsConfig:
 
 @pytest.fixture(autouse=True)
 def reset_state(monkeypatch, tmp_path):
-    """Reset all singleton and registration state before/after each test."""
+    """Reset all registration state and point config dir at tmp_path before each test."""
     _reset_usecase_tools()
     monkeypatch.setattr(
         "autobots_devtools_shared_lib.dynagent.agents.agent_config_utils.get_config_dir",
         lambda: tmp_path,
     )
-    # Reset jenkins_loader singleton so each test starts from a clean slate
-    monkeypatch.setattr(jenkins_loader_module, "_config", None)
-    monkeypatch.setattr(jenkins_loader_module, "_config_loaded", False)
-    # Reset pipeline runner singleton
-    monkeypatch.setattr(pipeline_utils_module, "_runner", None)
     yield
     _reset_usecase_tools()
 
@@ -93,20 +85,17 @@ def reset_state(monkeypatch, tmp_path):
 
 
 def test_create_tools_returns_one_tool_per_pipeline(cfg):
-    set_jenkins_config(cfg)
-    tools = create_jenkins_tools()
+    tools = create_jenkins_tools(cfg)
     assert len(tools) == 1
 
 
 def test_tool_name_has_underscore_tool_suffix(cfg):
-    set_jenkins_config(cfg)
-    tools = create_jenkins_tools()
+    tools = create_jenkins_tools(cfg)
     assert tools[0].name == "deploy_app_tool"
 
 
 def test_tool_description_matches_pipeline_description(cfg):
-    set_jenkins_config(cfg)
-    tools = create_jenkins_tools()
+    tools = create_jenkins_tools(cfg)
     assert tools[0].description == "Deploy the application"
 
 
@@ -120,14 +109,12 @@ def test_tool_fallback_description_when_empty():
             )
         },
     )
-    set_jenkins_config(cfg)
-    tools = create_jenkins_tools()
+    tools = create_jenkins_tools(cfg)
     assert "my-job" in tools[0].description or "/job/" in tools[0].description
 
 
 def test_tool_is_invocable(cfg):
-    set_jenkins_config(cfg)
-    tools = create_jenkins_tools()
+    tools = create_jenkins_tools(cfg)
     assert hasattr(tools[0], "invoke")
 
 
@@ -140,8 +127,7 @@ def test_multiple_pipelines_produce_multiple_tools():
             "job_c": JenkinsPipelineConfig(uri="/job/c/build"),
         },
     )
-    set_jenkins_config(cfg)
-    tools = create_jenkins_tools()
+    tools = create_jenkins_tools(cfg)
     assert len(tools) == 3
     names = {t.name for t in tools}
     assert names == {"job_a_tool", "job_b_tool", "job_c_tool"}
@@ -153,8 +139,7 @@ def test_multiple_pipelines_produce_multiple_tools():
 
 
 def test_args_schema_has_required_field(cfg):
-    set_jenkins_config(cfg)
-    tools = create_jenkins_tools()
+    tools = create_jenkins_tools(cfg)
     schema = tools[0].args_schema
     assert schema is not None
     fields = schema.model_fields
@@ -162,8 +147,7 @@ def test_args_schema_has_required_field(cfg):
 
 
 def test_required_field_is_plain_str(cfg):
-    set_jenkins_config(cfg)
-    tools = create_jenkins_tools()
+    tools = create_jenkins_tools(cfg)
     schema = tools[0].args_schema
     env_field = schema.model_fields["ENV"]
     # Required field has no default
@@ -173,15 +157,13 @@ def test_required_field_is_plain_str(cfg):
 
 
 def test_args_schema_has_optional_field(cfg):
-    set_jenkins_config(cfg)
-    tools = create_jenkins_tools()
+    tools = create_jenkins_tools(cfg)
     schema = tools[0].args_schema
     assert "SKIP_TESTS" in schema.model_fields
 
 
 def test_optional_field_is_bool_or_none(cfg):
-    set_jenkins_config(cfg)
-    tools = create_jenkins_tools()
+    tools = create_jenkins_tools(cfg)
     schema = tools[0].args_schema
     skip_field = schema.model_fields["SKIP_TESTS"]
     # Annotation should be bool | None
@@ -195,8 +177,7 @@ def test_optional_field_is_bool_or_none(cfg):
 
 
 def test_optional_field_has_none_default(cfg):
-    set_jenkins_config(cfg)
-    tools = create_jenkins_tools()
+    tools = create_jenkins_tools(cfg)
     schema = tools[0].args_schema
     skip_field = schema.model_fields["SKIP_TESTS"]
     assert skip_field.default is None
@@ -207,8 +188,7 @@ def test_pipeline_with_no_params_produces_empty_schema():
         base_url="https://ci.example.com",
         pipelines={"no_params": JenkinsPipelineConfig(uri="/job/np/build")},
     )
-    set_jenkins_config(cfg)
-    tools = create_jenkins_tools()
+    tools = create_jenkins_tools(cfg)
     assert tools[0].args_schema is not None
     assert len(tools[0].args_schema.model_fields) == 0
 
@@ -245,8 +225,7 @@ def test_parameter_type_mapping(type_str, expected_py_type):
             )
         },
     )
-    set_jenkins_config(cfg)
-    tools = create_jenkins_tools()
+    tools = create_jenkins_tools(cfg)
     field = tools[0].args_schema.model_fields["PARAM"]
     assert field.annotation is expected_py_type
 
