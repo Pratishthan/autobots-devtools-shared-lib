@@ -999,7 +999,7 @@ async def append_rows(request: AppendRowsRequest):
         logger.info(
             f"Appending rows to {request.worksheet_name} in {request.file_path}"
         )
-        df = pd.DataFrame(request.data)
+        df = pd.DataFrame(**request.data)
         success = excel_manager.append_rows(
             file_path=request.file_path,
             worksheet_name=request.worksheet_name,
