@@ -8,9 +8,9 @@ import pytest
 from autobots_devtools_shared_lib.dynagent.agents.agent_config_utils import (
     _reset_agent_config,
     get_agent_list,
+    get_capabilities_map,
     get_prompt_map,
-    get_schema_map,
-    get_schema_path_map,
+    get_resolved_output_schema_map,
     get_tool_map,
     load_schema,
 )
@@ -61,23 +61,6 @@ def test_get_prompt_map_values_are_non_empty_strings():
         assert len(prompt) > 0, f"{name} prompt is empty"
 
 
-def test_get_schema_path_map_coordinator_is_none():
-    schema_map = get_schema_path_map()
-    assert schema_map.get("coordinator") is None
-
-
-def test_get_schema_path_map_section_agents_have_expected_paths():
-    schema_map = get_schema_path_map()
-    expected = {
-        "preface_agent": "01-preface.json",
-        "getting_started_agent": "02-getting-started.json",
-        "features_agent": "03-01-list-of-features.json",
-        "entity_agent": "05-entity.json",
-    }
-    for agent, path in expected.items():
-        assert schema_map.get(agent) == path, f"{agent} schema path mismatch"
-
-
 def test_get_tool_map_resolves_per_agent(bro_registered):
     """With BRO registered, every agent's listed tools resolve to real tool objects."""
     tool_map = get_tool_map()
@@ -111,15 +94,15 @@ def test_get_tool_map_raises_on_unresolved():
     _reset_usecase_tools()
 
 
-def test_get_schema_map_coordinator_is_none():
-    """Coordinator has no output_schema, should get None in schema_map."""
-    schema_map = get_schema_map()
+def test_get_resolved_output_schema_map_coordinator_is_none():
+    """Coordinator has no output schema, should get None in schema_map."""
+    schema_map = get_resolved_output_schema_map()
     assert schema_map.get("coordinator") is None
 
 
-def test_get_schema_map_section_agents_have_parsed_schemas():
+def test_get_resolved_output_schema_map_section_agents_have_parsed_schemas():
     """Section agents should have parsed schema dicts, not paths."""
-    schema_map = get_schema_map()
+    schema_map = get_resolved_output_schema_map()
 
     agents_with_schemas = [
         "preface_agent",
@@ -135,11 +118,18 @@ def test_get_schema_map_section_agents_have_parsed_schemas():
         assert "type" in schema, f"{agent} schema missing 'type' field"
 
 
-def test_get_schema_map_all_agents_present():
+def test_get_resolved_output_schema_map_all_agents_present():
     """schema_map should have entries for all agents."""
-    schema_map = get_schema_map()
+    schema_map = get_resolved_output_schema_map()
     agent_list = get_agent_list()
     assert set(schema_map.keys()) == set(agent_list)
+
+
+def test_get_capabilities_map_has_lists_per_agent():
+    capabilities_map = get_capabilities_map()
+    assert set(capabilities_map.keys()) == EXPECTED_AGENTS
+    for capabilities in capabilities_map.values():
+        assert isinstance(capabilities, list)
 
 
 def test_load_schema_missing_file_raises_error(tmp_path, monkeypatch):

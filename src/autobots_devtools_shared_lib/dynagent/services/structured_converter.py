@@ -9,6 +9,7 @@ from langchain.messages import ToolMessage
 from langchain_core.messages import BaseMessage
 
 from autobots_devtools_shared_lib.common.observability.logging_utils import get_logger
+from autobots_devtools_shared_lib.dynagent.agents.agent_meta import AgentMeta
 
 logger = get_logger(__name__)
 
@@ -110,11 +111,15 @@ class StructuredOutputConverter:
         # Create conversion prompt
         conversion_prompt = self._create_conversion_prompt(filtered_messages)
 
+        # Prefer pre-resolved output schema from AgentMeta when available.
+        meta = AgentMeta.instance()
+        effective_schema = meta.output_schema_map.get(current_agent) or json_schema
+
         # Use structured output to convert
         try:
-            schema_title = json_schema.get("title", "structured output")
+            schema_title = effective_schema.get("title", "structured output")
             logger.info(f"Converting conversation to {schema_title} for agent {current_agent}")
-            structured_llm = self.model.with_structured_output(json_schema, method="json_schema")
+            structured_llm = self.model.with_structured_output(effective_schema, method="json_schema")
             result = structured_llm.invoke(conversion_prompt)
 
         except Exception as e:
