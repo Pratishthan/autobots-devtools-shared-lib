@@ -1,10 +1,10 @@
 # ABOUTME: Middleware that injects agent-specific prompts and tools on every LLM call.
 # ABOUTME: Reads current agent_name from state and overrides via AgentMeta.
 
+import json
 from collections import defaultdict
 from collections.abc import Awaitable, Callable
 
-import json
 from langchain.agents.middleware import ModelRequest, ModelResponse, wrap_model_call
 from langchain.messages import SystemMessage
 

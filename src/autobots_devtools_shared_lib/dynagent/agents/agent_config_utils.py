@@ -75,7 +75,11 @@ class AgentConfig:
             directives_name_val = raw_output.get("directives")
             if isinstance(schema_name_val, str) or isinstance(directives_name_val, str):
                 schema_key = schema_name_val if isinstance(schema_name_val, str) else ""
-                output_cfg = {schema_key: directives_name_val if isinstance(directives_name_val, str) else None}
+                output_cfg = {
+                    schema_key: directives_name_val
+                    if isinstance(directives_name_val, str)
+                    else None
+                }
 
         raw_capabilities = data.get("capabilities")
         capabilities: list[str] = []
@@ -209,7 +213,9 @@ def get_resolved_input_schema_map() -> dict[str, dict[str, dict]]:
             if not directive_name:
                 continue
             parent_paths = _build_parent_paths(schema_name)
-            directive_path = config_dir / "directives" / _normalize_directive_filename(directive_name)
+            directive_path = (
+                config_dir / "directives" / _normalize_directive_filename(directive_name)
+            )
             resolved = resolve_parent_with_directives(parent_paths, directive_path)
             schema_key = Path(schema_name).stem
             per_agent[schema_key] = resolved
@@ -218,7 +224,9 @@ def get_resolved_input_schema_map() -> dict[str, dict[str, dict]]:
     return result
 
 
-def _resolve_output_schema_for_agent(agent_name: str, cfg: AgentConfig, config_dir: Path) -> dict | None:
+def _resolve_output_schema_for_agent(
+    agent_name: str, cfg: AgentConfig, config_dir: Path
+) -> dict | None:
     """Resolve a single agent's output schema from output schema+directive config."""
     if cfg.output is None:
         return None
