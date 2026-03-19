@@ -364,7 +364,7 @@ The **demo** in `demo/` shows all flows with sample mappers and data:
 
 - **Run all scenarios**: `python demo/run_demo.py`
 - **Single scenario**: `python demo/run_demo.py --json Test-Params.json --mapper test_params`
-- **Excel → JSON only** (using an existing Excel in `demo/output/excel/`):  
+- **Excel → JSON only** (using an existing Excel in `demo/output/excel/`):
   `python demo/run_demo.py --excel list_objects.xlsx --mapper list_objects --json users.json`
 
 See `demo/README.md` for layout, scenarios, and output files (sheet_data JSON, from_excel, shape, merged).

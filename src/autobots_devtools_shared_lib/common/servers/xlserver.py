@@ -981,14 +981,12 @@ async def append_rows(request: AppendRowsRequest):
     """
     try:
         set_conversation_id(
-            get_current_thread_info(
-                user_name=request.user_name, agent_name=request.agent_name
-            ).get("thread_id", "default-conversation-id")
+            get_current_thread_info(user_name=request.user_name, agent_name=request.agent_name).get(
+                "thread_id", "default-conversation-id"
+            )
         )
 
-        logger.info(
-            f"Appending rows to {request.worksheet_name} in {request.file_path}"
-        )
+        logger.info(f"Appending rows to {request.worksheet_name} in {request.file_path}")
         df = pd.DataFrame(**request.data)
         success = excel_manager.append_rows(
             file_path=request.file_path,

@@ -117,7 +117,9 @@ def _cell_value(value: Any, col: ColumnConfig) -> str:
     if col.type == "array" and isinstance(value, list):
         if not value:
             return ""
-        if col.elementType and all(type(x).__name__ in ("str", "int", "float", "bool") for x in value):
+        if col.elementType and all(
+            type(x).__name__ in ("str", "int", "float", "bool") for x in value
+        ):
             return col.delimiter.join(str(x) for x in value)
         return json.dumps(value)
     if isinstance(value, (list, dict)):
@@ -165,7 +167,10 @@ def _rows_from_row_source(
                 continue
             schema_name = str(resolved.get("title") or resolved.get("x-title") or "Schema")
             for ck, cv in props.items():
-                child_row = {"$key": f"{k}.{ck}", **(cv if isinstance(cv, dict) else {"_value": cv})}
+                child_row = {
+                    "$key": f"{k}.{ck}",
+                    **(cv if isinstance(cv, dict) else {"_value": cv}),
+                }
                 if ref_mode == "inline":
                     out.append((default_sheet, child_row))
                 elif ref_mode == "uniqueSheet":
@@ -186,7 +191,12 @@ def _normalize_data(data: list[dict[str, Any]] | dict[str, Any]) -> list[dict[st
     return [data]
 
 
-def _resolve_mapper(mapper: MapperConfig | str, mapper_base_path: str | None, workspace_context: str, session_id: str | None) -> MapperConfig:
+def _resolve_mapper(
+    mapper: MapperConfig | str,
+    mapper_base_path: str | None,
+    workspace_context: str,
+    session_id: str | None,
+) -> MapperConfig:
     if isinstance(mapper, MapperConfig):
         return mapper
     return load_mapper_config(mapper, mapper_base_path, workspace_context, session_id)
@@ -222,7 +232,9 @@ def _deep_merge(base: Any, overlay: Any) -> Any:
         return out
     if isinstance(base, list) and isinstance(overlay, list):
         if not overlay:
-            return copy.deepcopy(overlay)  # empty overlay clears the list (e.g. validValues removed in Excel)
+            return copy.deepcopy(
+                overlay
+            )  # empty overlay clears the list (e.g. validValues removed in Excel)
         if all(isinstance(x, dict) for x in overlay) and all(isinstance(x, dict) for x in base):
             out = list(base)
             for i, ov in enumerate(overlay):
@@ -258,7 +270,11 @@ def sheet_data_to_json_shape(
     path_str = (cfg.rowSourcePath or "").strip()
     root: dict[str, Any] = {}
     sheet_names = list(sheet_data.keys())
-    main_sheet = _DEFAULT_SHEET if _DEFAULT_SHEET in sheet_data else (sheet_names[0] if sheet_names else None)
+    main_sheet = (
+        _DEFAULT_SHEET
+        if _DEFAULT_SHEET in sheet_data
+        else (sheet_names[0] if sheet_names else None)
+    )
     ref_sheets = [s for s in sheet_names if s != main_sheet]
 
     if main_sheet is not None:
@@ -319,7 +335,9 @@ def merge_excel_into_json(
     """Merge user-filled sheet_data (path-based) into original_json at mapper paths.
     Returns original + sheet values applied; if not in_place, returns a deep copy.
     """
-    partial = sheet_data_to_json_shape(sheet_data, mapper, mapper_base_path, workspace_context, session_id)
+    partial = sheet_data_to_json_shape(
+        sheet_data, mapper, mapper_base_path, workspace_context, session_id
+    )
     base = original_json if in_place else copy.deepcopy(original_json)
     return _deep_merge(base, partial)
 
@@ -343,7 +361,9 @@ def json_to_sheet_data(
 
     if cfg.rowSourcePath is not None:
         pairs = _rows_from_row_source(
-            data if isinstance(data, dict) else (data[0] if data and isinstance(data, list) else {}),
+            data
+            if isinstance(data, dict)
+            else (data[0] if data and isinstance(data, list) else {}),
             cfg,
             main_sheet_name=model_name,
         )
@@ -426,7 +446,9 @@ def json_to_excel(
         if not rows:
             continue
         df = pd.DataFrame(rows)
-        wname = sheet_name if len(sheet_data) > 1 or sheet_name != _DEFAULT_SHEET else worksheet_name
+        wname = (
+            sheet_name if len(sheet_data) > 1 or sheet_name != _DEFAULT_SHEET else worksheet_name
+        )
         try:
             excel_manager.create_worksheet(file_path, wname, user_name, repo_name, jira_number)
         except Exception:
@@ -461,7 +483,9 @@ def excel_to_json(
             return []
 
     try:
-        df = excel_manager.get_sheet_data(file_path, worksheet_name, user_name, repo_name, jira_number)
+        df = excel_manager.get_sheet_data(
+            file_path, worksheet_name, user_name, repo_name, jira_number
+        )
     except Exception as e:
         logger.warning("get_sheet_data failed: %s", e)
         return []

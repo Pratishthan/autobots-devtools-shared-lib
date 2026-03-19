@@ -6,7 +6,6 @@ with pandas DataFrame integration, using a file server backend.
 import io
 import os
 from pathlib import Path
-from typing import List, Tuple
 
 import openpyxl
 import pandas as pd
@@ -16,8 +15,6 @@ from openpyxl.utils.dataframe import dataframe_to_rows
 # Configure logging
 from autobots_devtools_shared_lib.common.observability.logging_utils import (
     get_logger,
-    set_conversation_id,
-    setup_logging,
 )
 
 logger = get_logger(__name__)
@@ -40,7 +37,10 @@ class LocalFileClient:
         self.base_dir = base_dir
 
     def _get_base_path(
-        self, user_name: str | None = None, repo_name: str | None = None, jira_number: str | None = None
+        self,
+        user_name: str | None = None,
+        repo_name: str | None = None,
+        jira_number: str | None = None,
     ) -> Path:
         """
         Get the base path for file operations.
@@ -62,17 +62,17 @@ class LocalFileClient:
             )
 
         base_path = Path(self.base_dir)
-        logger.info(f"Base path resolved to {str(base_path)}")
+        logger.info(f"Base path resolved to {base_path!s}")
 
         if all(components):
             # mypy/pyright: components are all non-None here
             assert user_name is not None and repo_name is not None and jira_number is not None
             workspace_dirname = f"{repo_name}-{jira_number}"
             full_path = base_path / user_name / workspace_dirname
-            logger.info(f"Constructed path with in if full_path {str(full_path)}")
+            logger.info(f"Constructed path with in if full_path {full_path!s}")
         else:
             full_path = base_path
-            logger.info(f"Constructed path with in if full_path {str(full_path)}")
+            logger.info(f"Constructed path with in if full_path {full_path!s}")
 
         # Resolve to absolute path
         full_path = full_path.resolve()
@@ -159,7 +159,7 @@ class LocalFileClient:
         user_name: str | None = None,
         repo_name: str | None = None,
         jira_number: str | None = None,
-    ) -> List[str]:
+    ) -> list[str]:
         """
         List all files in the local filesystem, optionally filtered by path.
 
@@ -548,7 +548,7 @@ class ExcelSheetsManager:
         user_name: str | None = None,
         repo_name: str | None = None,
         jira_number: str | None = None,
-    ) -> List[str]:
+    ) -> list[str]:
         """
         Get all worksheet names.
 
@@ -924,10 +924,9 @@ class ExcelSheetsManager:
                 # This is a simplified implementation
                 df = pd.read_excel(io.BytesIO(file_content), sheet_name=worksheet_name)
                 return self._extract_range_from_dataframe(df=df, range=range)
-            else:
-                # Get all data
-                df = pd.read_excel(io.BytesIO(file_content), sheet_name=worksheet_name)
-                return df
+            # Get all data
+            df = pd.read_excel(io.BytesIO(file_content), sheet_name=worksheet_name)
+            return df
 
         except Exception as e:
             raise Exception(f"Error getting sheet data: {e}")
@@ -1436,7 +1435,7 @@ class ExcelSheetsManager:
         """
         return get_column_letter(col_index)
 
-    def _parse_range(self, range: str) -> Tuple[str, int, int, int, int]:
+    def _parse_range(self, range: str) -> tuple[str, int, int, int, int]:
         """
         Parse A1 notation range.
 
@@ -1452,11 +1451,10 @@ class ExcelSheetsManager:
             start_row, start_col = self._parse_cell_reference(start_cell)
             end_row, end_col = self._parse_cell_reference(end_cell)
             return range, start_row, start_col, end_row, end_col
-        else:
-            row, col = self._parse_cell_reference(range)
-            return range, row, col, row, col
+        row, col = self._parse_cell_reference(range)
+        return range, row, col, row, col
 
-    def _parse_cell_reference(self, cell_ref: str) -> Tuple[int, int]:
+    def _parse_cell_reference(self, cell_ref: str) -> tuple[int, int]:
         """
         Parse cell reference like "A1" into (row, col).
 
@@ -1497,7 +1495,7 @@ class ExcelSheetsManager:
 
         return result
 
-    def _dataframe_to_values(self, df: pd.DataFrame) -> List[List]:
+    def _dataframe_to_values(self, df: pd.DataFrame) -> list[list]:
         """
         Convert DataFrame to list of lists format.
 
@@ -1512,7 +1510,7 @@ class ExcelSheetsManager:
         values.extend(df.values.tolist())
         return values
 
-    def _values_to_dataframe(self, values: List[List], headers: bool = True) -> pd.DataFrame:
+    def _values_to_dataframe(self, values: list[list], headers: bool = True) -> pd.DataFrame:
         """
         Convert list of lists format to DataFrame.
 
