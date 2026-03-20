@@ -160,7 +160,8 @@ async def stream_agent_events(
             tags=trace_metadata.tags,
         ):
             span_ctx = (
-                client.start_as_current_span(
+                client.start_as_current_observation(
+                    as_type="span",
                     name=f"{trace_metadata.app_name}-stream",
                     input={
                         "message_count": len(input_state.get("messages", [])),
