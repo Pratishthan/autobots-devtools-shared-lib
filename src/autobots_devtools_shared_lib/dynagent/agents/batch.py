@@ -249,7 +249,8 @@ def batch_invoker(
             tags=trace_metadata.tags,
         ):
             span_ctx = (
-                client.start_as_current_span(
+                client.start_as_current_observation(
+                    as_type="span",
                     name=f"{trace_metadata.app_name}-{agent_name}-batch",
                     input={
                         "agent_name": agent_name,
