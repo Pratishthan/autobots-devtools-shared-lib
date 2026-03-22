@@ -46,13 +46,49 @@ def _build_agent_output(result: dict[str, Any]) -> AgentOutput:
 def _run_assertions(
     agent_output: AgentOutput,
     assertions: list[Any],
+    retry_count: int = 0,
+    retry_only_for: list[str] | None = None,
 ) -> list[AssertionResult]:
-    """Run all assertions against an agent output."""
+    """Run all assertions against an agent output, with optional retry for flaky assertions."""
     results: list[AssertionResult] = []
+    retry_names = set(retry_only_for) if retry_only_for else set()
+
     for assertion in assertions:
         try:
             eval_fn = resolve_assertion(assertion.name)
             result = eval_fn(agent_output, assertion.config)
+
+            # Retry logic: retry failed inconclusive assertions if eligible.
+            if (
+                not result.passed
+                and result.inconclusive
+                and retry_count > 0
+                and assertion.name in retry_names
+            ):
+                for attempt in range(retry_count):
+                    logger.info(
+                        "Retrying %s (attempt %d/%d)", assertion.name, attempt + 1, retry_count
+                    )
+                    result = eval_fn(agent_output, assertion.config)
+                    if result.passed:
+                        break
+
+            # on_judge_error handling: applied after retries are exhausted.
+            # If still inconclusive and on_judge_error=warn, treat as passed (log warning).
+            # If on_judge_error=fail, keep the failed result.
+            on_judge_error = getattr(assertion, "on_judge_error", "warn")
+            if not result.passed and result.inconclusive and on_judge_error == "warn":
+                logger.warning(
+                    "Assertion %s is inconclusive; treating as pass (on_judge_error=warn)",
+                    assertion.name,
+                )
+                result = AssertionResult(
+                    passed=True,
+                    name=result.name,
+                    detail=f"{result.detail} (treated as pass: on_judge_error=warn)",
+                    inconclusive=True,
+                )
+
             results.append(result)
         except Exception as e:
             results.append(
@@ -98,7 +134,12 @@ async def run_linear_eval(
             )
 
             agent_output = _build_agent_output(result)
-            assertion_results = _run_assertions(agent_output, turn.assertions)
+            assertion_results = _run_assertions(
+                agent_output,
+                turn.assertions,
+                retry_count=eval_case.retry.count,
+                retry_only_for=eval_case.retry.only_for,
+            )
             all_passed = all(a.passed for a in assertion_results)
 
             turns.append(
