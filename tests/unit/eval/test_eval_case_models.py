@@ -134,3 +134,25 @@ def test_linear_requires_turns():
                 "cost": {},
             }
         )
+
+
+def test_assertion_on_judge_error_default():
+    """on_judge_error defaults to 'warn' when not specified."""
+    a = Assertion.model_validate({"llm_judge": {"criteria": "Is it good?", "threshold": 0.8}})
+    assert a.on_judge_error == "warn"
+
+
+def test_assertion_on_judge_error_explicit():
+    """on_judge_error can be set to 'fail'."""
+    a = Assertion.model_validate(
+        {"llm_judge": {"criteria": "Is it good?", "threshold": 0.8, "on_judge_error": "fail"}}
+    )
+    assert a.on_judge_error == "fail"
+
+
+def test_assertion_on_judge_error_invalid():
+    """on_judge_error rejects invalid values."""
+    with pytest.raises(ValidationError):
+        Assertion.model_validate(
+            {"llm_judge": {"criteria": "Is it good?", "on_judge_error": "ignore"}}
+        )

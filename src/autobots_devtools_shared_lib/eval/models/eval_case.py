@@ -20,6 +20,7 @@ class Assertion(BaseModel):
 
     name: str
     config: Any
+    on_judge_error: Literal["warn", "fail"] = "warn"
 
     @model_validator(mode="before")
     @classmethod
@@ -29,7 +30,12 @@ class Assertion(BaseModel):
                 msg = f"Assertion must have exactly one key, got {list(data.keys())}"
                 raise ValueError(msg)
             name, config = next(iter(data.items()))
-            return {"name": name, "config": config}
+            result: dict[str, Any] = {"name": name, "config": config}
+            # Extract on_judge_error from dict config if present (without mutating input)
+            if isinstance(config, dict) and "on_judge_error" in config:
+                result["on_judge_error"] = config["on_judge_error"]
+                result["config"] = {k: v for k, v in config.items() if k != "on_judge_error"}
+            return result
         return data
 
 
