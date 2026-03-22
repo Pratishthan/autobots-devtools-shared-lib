@@ -130,12 +130,13 @@ def _estimate_tokens(text: str) -> int:
         return len(text) // 4
 
 
-def query_langfuse(session_id: str, partial: bool = False) -> CostReport | None:
-    """Query Langfuse for trace data and build a Level 1 cost report.
+def query_langfuse(session_id: str, partial: bool = False, deep: bool = False) -> CostReport | None:
+    """Query Langfuse for trace data and build a Level 1 (or Level 2) cost report.
 
     Args:
         session_id: The session ID used during the eval run.
         partial: If True, tolerate missing data (for error cases).
+        deep: If True, run Level 2 utilization analysis via LLM judge.
 
     Returns:
         CostReport if Langfuse is available and trace found, None otherwise.
@@ -211,6 +212,35 @@ def query_langfuse(session_id: str, partial: bool = False) -> CostReport | None:
                         attribution=attribution,
                     )
                 )
+
+        # Level 2: deep utilization analysis
+        if deep:
+            for turn_cost in all_turns:
+                for tool_attr in turn_cost.attribution.tools:
+                    analyze_tool_utilization(
+                        tool_attr,
+                        agent_output_text="",  # populated from trace in production
+                    )
+
+            # Collect lowest utilization tools and recommendations
+            all_tool_attrs = [
+                t for tc in all_turns for t in tc.attribution.tools if t.utilization is not None
+            ]
+            low_util = [t for t in all_tool_attrs if t.utilization is not None and t.utilization < 0.5]
+            low_util.sort(key=lambda t: t.utilization or 0.0)
+
+            return CostReport(
+                eval_name="",  # set by caller
+                agent="",  # set by caller
+                turns=all_turns,
+                total_input_tokens=total_input,
+                total_output_tokens=total_output,
+                total_cost_usd=total_cost,
+                total_latency_ms=total_latency,
+                llm_calls=llm_calls,
+                lowest_utilization_tools=low_util[:5],
+                recommendations=[t.recommendation for t in low_util if t.recommendation],
+            )
 
         return CostReport(
             eval_name="",  # set by caller

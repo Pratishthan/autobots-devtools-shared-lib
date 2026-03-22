@@ -32,6 +32,7 @@ def dynagent_eval(request: pytest.FixtureRequest):
     - Langfuse score posting (unless --eval-no-langfuse-score)
     """
     post_langfuse = not request.config.getoption("--eval-no-langfuse-score", default=False)
+    cost_deep = request.config.getoption("--eval-cost-deep", default=False)
 
     async def run(eval_case: EvalCase) -> EvalResult:
         session_id = str(uuid.uuid4())
@@ -61,7 +62,7 @@ def dynagent_eval(request: pytest.FixtureRequest):
 
         # Collect cost report
         if eval_case.cost.track:
-            cost_report = query_langfuse(session_id)
+            cost_report = query_langfuse(session_id, deep=cost_deep)
             if cost_report:
                 cost_report.eval_name = eval_case.name
                 cost_report.agent = eval_case.agent
