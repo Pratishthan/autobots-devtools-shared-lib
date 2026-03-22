@@ -5,6 +5,8 @@ from __future__ import annotations
 
 import logging
 
+from openevals.llm import create_llm_as_judge
+
 from autobots_devtools_shared_lib.common.observability.tracing import get_langfuse_client
 from autobots_devtools_shared_lib.eval.models.cost import (
     CostReport,
@@ -14,6 +16,105 @@ from autobots_devtools_shared_lib.eval.models.cost import (
 )
 
 logger = logging.getLogger(__name__)
+
+_UTILIZATION_JUDGE_MODEL = "google_genai/gemini-2.0-flash"
+
+_UTILIZATION_PROMPT = """You are analyzing token efficiency in an AI agent's tool usage.
+
+The agent called the tool: {tool_name}
+The tool returned this content ({result_tokens} tokens):
+<tool_result>{tool_result}</tool_result>
+
+The agent then produced this output:
+<agent_output>{agent_output}</agent_output>
+
+Rate the utilization on a scale from 0.0 to 1.0:
+- 1.0 means the agent used all of the tool result
+- 0.0 means the agent used none of the tool result
+
+Consider what specific parts of the tool result the agent actually used in its output."""
+
+
+def analyze_tool_utilization(
+    attribution: ToolAttribution,
+    agent_output_text: str,
+    tool_result_text: str | None = None,
+) -> ToolAttribution:
+    """Analyze how much of a tool's result was actually used by the agent.
+
+    Args:
+        attribution: The tool attribution to analyze.
+        agent_output_text: The agent's final output text.
+        tool_result_text: The raw tool result text (if available).
+
+    Returns:
+        Updated ToolAttribution with utilization, summary, and recommendation.
+    """
+    # Skip small results — not worth analyzing
+    if attribution.result_tokens < 50:
+        return attribution
+
+    # Auto-flag huge results without a judge call
+    if attribution.result_tokens > 10000:
+        attribution.utilization = 0.05
+        attribution.used_content_summary = "Auto-flagged: tool result too large for efficient use"
+        attribution.recommendation = (
+            f"Tool result is {attribution.result_tokens} tokens — almost certainly wasteful. "
+            f"Pre-filter or split the input to reduce token consumption."
+        )
+        return attribution
+
+    # Truncate tool result for judge (head + tail if >4000 tokens)
+    display_result = tool_result_text or "(tool result text not available)"
+    if len(display_result) > 16000:  # rough 4000-token proxy
+        half = 8000
+        display_result = display_result[:half] + "\n...[truncated]...\n" + display_result[-half:]
+
+    try:
+        evaluator = create_llm_as_judge(
+            prompt=_UTILIZATION_PROMPT,
+            model=_UTILIZATION_JUDGE_MODEL,
+            continuous=True,
+            feedback_key="score",
+        )
+
+        result = evaluator(
+            outputs=agent_output_text,
+            tool_name=attribution.tool_name,
+            result_tokens=str(attribution.result_tokens),
+            tool_result=display_result,
+            agent_output=agent_output_text,
+        )
+
+        # Handle both list and dict return from openevals
+        if isinstance(result, list):
+            result = result[0] if result else {}
+        score = (
+            float(result.get("score", 0.0))
+            if isinstance(result, dict)
+            else float(getattr(result, "score", 0.0))
+        )
+        reasoning = (
+            result.get("reasoning", "")
+            if isinstance(result, dict)
+            else getattr(result, "reasoning", "")
+        )
+
+        attribution.utilization = score
+        attribution.used_content_summary = reasoning
+
+        if score < 0.5:
+            attribution.recommendation = (
+                f"Utilization is {score:.0%} ({attribution.result_tokens} tokens). "
+                f"{reasoning}"
+            )
+
+    except Exception:
+        logger.warning(
+            "Utilization analysis failed for %s", attribution.tool_name, exc_info=True
+        )
+
+    return attribution
 
 
 def _estimate_tokens(text: str) -> int:
