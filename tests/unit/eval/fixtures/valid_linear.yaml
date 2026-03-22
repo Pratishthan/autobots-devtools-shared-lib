@@ -1,0 +1,14 @@
+eval:
+  name: "Test linear eval"
+  agent: "coordinator"
+  mode: linear
+  tags: ["smoke", "unit"]
+  state:
+    user_name: "test-user"
+  turns:
+    - user: "Hello"
+      assertions:
+        - contains: "hello"
+        - tool_called: "get_agent_list"
+  cost:
+    track: false

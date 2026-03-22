@@ -1,0 +1,12 @@
+eval:
+  name: "Tagged eval"
+  agent: "coordinator"
+  mode: linear
+  tags: ["integration"]
+  state: {}
+  turns:
+    - user: "Test"
+      assertions:
+        - contains: "test"
+  cost:
+    track: false
