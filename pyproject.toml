@@ -46,6 +46,9 @@ packages = [
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
+[project.entry-points."pytest11"]
+dynagent_eval = "autobots_devtools_shared_lib.eval.pytest_plugin.plugin"
+
 [tool.ruff]
 line-length = 100
 target-version = "py312"
