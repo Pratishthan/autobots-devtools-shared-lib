@@ -34,6 +34,10 @@ def _register_builtins() -> None:
         tool_sequence,
         tools_unordered,
     )
+    from autobots_devtools_shared_lib.eval.assertions.llm_judge import (
+        llm_judge,
+        trajectory_quality,
+    )
 
     _REGISTRY.update(
         {
@@ -46,6 +50,8 @@ def _register_builtins() -> None:
             "tool_sequence": tool_sequence,
             "no_extra_tools": no_extra_tools,
             "tools_unordered": tools_unordered,
+            "llm_judge": llm_judge,
+            "trajectory_quality": trajectory_quality,
         }
     )
 

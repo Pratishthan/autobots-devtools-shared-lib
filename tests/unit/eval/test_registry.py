@@ -46,6 +46,8 @@ def test_resolve_all_builtins():
         "tool_sequence",
         "no_extra_tools",
         "tools_unordered",
+        "llm_judge",
+        "trajectory_quality",
     ]
     for name in builtins:
         fn = resolve_assertion(name)
