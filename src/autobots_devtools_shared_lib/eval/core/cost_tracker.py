@@ -105,14 +105,11 @@ def analyze_tool_utilization(
 
         if score < 0.5:
             attribution.recommendation = (
-                f"Utilization is {score:.0%} ({attribution.result_tokens} tokens). "
-                f"{reasoning}"
+                f"Utilization is {score:.0%} ({attribution.result_tokens} tokens). {reasoning}"
             )
 
     except Exception:
-        logger.warning(
-            "Utilization analysis failed for %s", attribution.tool_name, exc_info=True
-        )
+        logger.warning("Utilization analysis failed for %s", attribution.tool_name, exc_info=True)
 
     return attribution
 
@@ -226,7 +223,9 @@ def query_langfuse(session_id: str, partial: bool = False, deep: bool = False) -
             all_tool_attrs = [
                 t for tc in all_turns for t in tc.attribution.tools if t.utilization is not None
             ]
-            low_util = [t for t in all_tool_attrs if t.utilization is not None and t.utilization < 0.5]
+            low_util = [
+                t for t in all_tool_attrs if t.utilization is not None and t.utilization < 0.5
+            ]
             low_util.sort(key=lambda t: t.utilization or 0.0)
 
             return CostReport(

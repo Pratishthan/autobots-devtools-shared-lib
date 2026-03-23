@@ -125,13 +125,9 @@ def _format_trajectory(agent_output: AgentOutput) -> str:
             if tool_calls:
                 for tc in tool_calls:
                     if isinstance(tc, dict):
-                        lines.append(
-                            f"  -> Tool call: {tc.get('name', '?')}({tc.get('args', {})})"
-                        )
+                        lines.append(f"  -> Tool call: {tc.get('name', '?')}({tc.get('args', {})})")
                     elif hasattr(tc, "name"):
-                        lines.append(
-                            f"  -> Tool call: {tc.name}({getattr(tc, 'args', {})})"
-                        )
+                        lines.append(f"  -> Tool call: {tc.name}({getattr(tc, 'args', {})})")
         elif msg_type == "tool":
             tool_name = getattr(msg, "name", "?")
             lines.append(f"[Tool result ({tool_name})]: {content[:200]}...")
