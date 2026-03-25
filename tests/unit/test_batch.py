@@ -271,3 +271,29 @@ class TestBatchInvokerValidation:
     def test_raises_on_empty_records(self):
         with pytest.raises(ValueError, match=r"[Ee]mpty"):
             batch_invoker("coordinator", [])
+
+
+# ---------------------------------------------------------------------------
+# batch_invoker callback signature validation
+# ---------------------------------------------------------------------------
+
+
+class TestBatchInvokerCallbackSignature:
+    """Verify batch_invoker accepts on_item_start and on_item_complete params."""
+
+    def test_accepts_callback_params(self):
+        """batch_invoker should accept on_item_start and on_item_complete keyword args.
+        We test the function signature; actual execution requires a real agent."""
+        import inspect
+
+        sig = inspect.signature(batch_invoker)
+        param_names = list(sig.parameters.keys())
+        assert "on_item_start" in param_names
+        assert "on_item_complete" in param_names
+
+    def test_callback_params_default_to_none(self):
+        import inspect
+
+        sig = inspect.signature(batch_invoker)
+        assert sig.parameters["on_item_start"].default is None
+        assert sig.parameters["on_item_complete"].default is None

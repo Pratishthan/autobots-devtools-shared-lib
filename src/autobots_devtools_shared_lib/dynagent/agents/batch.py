@@ -2,6 +2,7 @@
 # ABOUTME: Wraps prompts into parallel agent invocations with per-record results.
 
 import uuid
+from collections.abc import Callable
 from contextlib import nullcontext
 from dataclasses import dataclass, field
 from typing import Any, cast
@@ -186,6 +187,8 @@ def batch_invoker(
     input_state: dict[str, Any] | None = None,
     config: RunnableConfig | None = None,
     state_schema: type[AgentState[ResponseT]] = Dynagent,
+    on_item_start: Callable[[int, str], None] | None = None,
+    on_item_complete: Callable[[int, str, bool], None] | None = None,
 ) -> BatchResult:
     """Run a list of prompts through the dynagent in parallel.
 
@@ -202,6 +205,10 @@ def batch_invoker(
         config: Optional base RunnableConfig merged into each invocation (e.g. configurable,
             callbacks). thread_id is always set per run. Pass callbacks via config when needed.
         state_schema: State schema for the agent. Defaults to Dynagent.
+        on_item_start: Called before each item is processed.
+            Receives (index, record). Called sequentially before batch dispatch.
+        on_item_complete: Called after each item completes.
+            Receives (index, record, success).
 
     Returns:
         BatchResult with per-record success/failure details.
@@ -288,6 +295,16 @@ def batch_invoker(
                     config=config,
                 )
 
+                # --- Fire on_item_start callbacks (pre-batch, all items) ---
+                if on_item_start:
+                    for idx, record in enumerate(records):
+                        try:
+                            on_item_start(idx, record)
+                        except Exception:
+                            logger.warning(
+                                "on_item_start callback failed for index %d", idx, exc_info=True
+                            )
+
                 # --- Execute in parallel (thread pool via .batch) ---
                 # return_exceptions=True captures per-record failures
                 # instead of aborting.
@@ -297,14 +314,32 @@ def batch_invoker(
                     return_exceptions=True,
                 )
 
-                # --- Wrap raw outputs into BatchResult ---
+                # --- Wrap raw outputs into BatchResult + fire on_item_complete ---
                 results: list[RecordResult] = []
                 for idx, output in enumerate(raw_outputs):
                     if isinstance(output, BaseException):
                         results.append(RecordResult(index=idx, success=False, error=str(output)))
+                        if on_item_complete:
+                            try:
+                                on_item_complete(idx, records[idx], False)
+                            except Exception:
+                                logger.warning(
+                                    "on_item_complete callback failed for index %d",
+                                    idx,
+                                    exc_info=True,
+                                )
                     else:
                         content = _extract_last_ai_content(output)
                         results.append(RecordResult(index=idx, success=True, output=content))
+                        if on_item_complete:
+                            try:
+                                on_item_complete(idx, records[idx], True)
+                            except Exception:
+                                logger.warning(
+                                    "on_item_complete callback failed for index %d",
+                                    idx,
+                                    exc_info=True,
+                                )
 
                 result = BatchResult(agent_name=agent_name, total=len(records), results=results)
 
