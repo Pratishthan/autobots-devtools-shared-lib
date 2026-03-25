@@ -28,6 +28,8 @@ def create_base_agent(
     sync_mode: bool = False,
     initial_agent_name: str | None = None,
     state_schema: type[AgentState[ResponseT]] = Dynagent,
+    enable_todos: bool = False,
+    progress_domain: str | None = None,
 ) -> CompiledStateGraph:
     """Create the dynagent base agent with middleware.
 
@@ -36,10 +38,17 @@ def create_base_agent(
             Defaults to InMemorySaver.
         sync_mode: Whether to use synchronous middleware (for batch processing).
         agent_name: Name for tracing/observability. Defaults to "dynagent".
+        enable_todos: When True, adds TodoListMiddleware (injects write_todos tool).
+        progress_domain: When set (e.g. "designer"), adds ProgressPersistenceMiddleware
+            that mirrors agent todos to workspace_progress table.
 
     Returns:
         Configured LangGraph agent.
     """
+    # TODO: Wire enable_todos and progress_domain middleware (Task 5)
+    _ = enable_todos  # Will wire TodoListMiddleware when available
+    _ = progress_domain  # Will wire ProgressPersistenceMiddleware when available
+
     if checkpointer is None:
         checkpointer = InMemorySaver()
 
