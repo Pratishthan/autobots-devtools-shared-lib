@@ -13,6 +13,7 @@ Or: make file-server (from autobots-devtools-shared-lib)
 import base64
 import os
 import shutil
+import subprocess
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 from pathlib import Path
@@ -28,6 +29,8 @@ from autobots_devtools_shared_lib.common.observability.logging_utils import (
 )
 from autobots_devtools_shared_lib.common.servers.fileserver.config import FileServerConfig
 from autobots_devtools_shared_lib.common.servers.fileserver.models import (
+    GitDiffBody,
+    GitStatusBody,
     ListFilesBody,
     MoveFileBody,
     ReadFileBody,
@@ -255,6 +258,65 @@ def create_download_link(body: ReadFileBody) -> Response:
     link = f"file://{path}"
     logger.info("createDownloadLink success fileName=%s", body.fileName)
     return Response(content=link.encode("utf-8"), media_type="text/plain; charset=utf-8")
+
+
+@app.post("/gitStatus")
+def git_status(body: GitStatusBody) -> dict[str, Any]:
+    """Run git status --porcelain and git diff --stat on the workspace."""
+    set_session_id(body.session_id or "default_session_id")
+    workspace_root = _path_under_root(body.workspace_context, None)
+    logger.info("gitStatus called workspace_root=%s", workspace_root)
+
+    if not workspace_root.exists():
+        raise HTTPException(status_code=404, detail="Workspace not found")
+
+    porcelain_result = subprocess.run(
+        ["git", "status", "--porcelain"],  # noqa: S607
+        cwd=str(workspace_root),
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+    diff_stat_result = subprocess.run(
+        ["git", "diff", "--stat"],  # noqa: S607
+        cwd=str(workspace_root),
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+
+    logger.info("gitStatus success workspace_root=%s", workspace_root)
+    return {
+        "porcelain": porcelain_result.stdout,
+        "diff_stat": diff_stat_result.stdout,
+        "errors": porcelain_result.stderr + diff_stat_result.stderr,
+    }
+
+
+@app.post("/gitDiff")
+def git_diff(body: GitDiffBody) -> dict[str, Any]:
+    """Run git diff for a single file. Returns unified diff."""
+    set_session_id(body.session_id or "default_session_id")
+    workspace_root = _path_under_root(body.workspace_context, None)
+    logger.info("gitDiff called file_path=%s workspace_root=%s", body.file_path, workspace_root)
+
+    if not workspace_root.exists():
+        raise HTTPException(status_code=404, detail="Workspace not found")
+
+    # Use list form + -- separator to prevent argument injection
+    result = subprocess.run(  # noqa: S603
+        ["git", "diff", "--", body.file_path],  # noqa: S607
+        cwd=str(workspace_root),
+        capture_output=True,
+        text=True,
+        timeout=30,
+    )
+
+    logger.info("gitDiff success file_path=%s", body.file_path)
+    return {
+        "diff": result.stdout,
+        "errors": result.stderr,
+    }
 
 
 if config.langfuse_enabled:

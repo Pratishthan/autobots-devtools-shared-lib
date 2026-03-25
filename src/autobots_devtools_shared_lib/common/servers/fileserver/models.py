@@ -124,3 +124,33 @@ class MoveFileBody(BaseModel):
         if not v or not v.strip():
             raise ValueError("Path cannot be empty")
         return _validate_no_path_traversal(v)
+
+
+class GitStatusBody(BaseModel):
+    workspace_context: dict[str, Any] = Field(
+        default_factory=dict,
+        description="Workspace scoping context (needs workspace_base_path).",
+    )
+    session_id: str | None = Field(
+        default=None,
+        description="Optional session ID for trace correlation/logging.",
+    )
+
+
+class GitDiffBody(BaseModel):
+    workspace_context: dict[str, Any] = Field(
+        default_factory=dict,
+        description="Workspace scoping context (needs workspace_base_path).",
+    )
+    file_path: str = Field(description="Relative path within workspace for diff.")
+    session_id: str | None = Field(
+        default=None,
+        description="Optional session ID for trace correlation/logging.",
+    )
+
+    @field_validator("file_path")
+    @classmethod
+    def validate_file_path(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("file_path cannot be empty")
+        return _validate_no_path_traversal(v)
