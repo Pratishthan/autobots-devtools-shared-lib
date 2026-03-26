@@ -9,10 +9,8 @@ agents:
     capabilities:
       - This agent can do this
       - Also this
-    inputs: 
+    inputs:
       - schema: scenario
         directives: scenario_directives
       - schema: test_data
         directives: test_data_directives
-
-
