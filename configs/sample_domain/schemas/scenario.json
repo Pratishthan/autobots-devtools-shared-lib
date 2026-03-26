@@ -1,0 +1,14 @@
+{
+  "title": "Scenario",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "goal": {
+      "type": "string"
+    }
+  },
+  "required": ["name"]
+}
+

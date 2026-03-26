@@ -1,0 +1,14 @@
+{
+  "title": "Test Data",
+  "type": "object",
+  "properties": {
+    "payload": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string"
+    }
+  },
+  "required": ["payload"]
+}
+

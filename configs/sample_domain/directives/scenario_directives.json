@@ -1,0 +1,16 @@
+{
+  "id": "scenario_directives",
+  "title": "Scenario Directives",
+  "directives": [
+    {
+      "target": "/properties/name",
+      "x-fbp-pragmas": {
+        "nurture": [
+          "Use a short, human-readable scenario name."
+        ]
+      },
+      "description": "Scenario naming guidance."
+    }
+  ]
+}
+

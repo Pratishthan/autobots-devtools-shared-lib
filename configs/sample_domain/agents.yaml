@@ -1,0 +1,18 @@
+agents:
+  logical_agent:
+    prompt: logical_agent
+    tools: []
+    output:
+      schema: logical_processing
+      directives: logical_processing_directives
+    batch_enabled: false
+    capabilities:
+      - This agent can do this
+      - Also this
+    inputs: 
+      - schema: scenario
+        directives: scenario_directives
+      - schema: test_data
+        directives: test_data_directives
+
+
