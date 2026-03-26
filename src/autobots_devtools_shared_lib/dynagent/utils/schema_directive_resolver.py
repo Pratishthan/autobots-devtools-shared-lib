@@ -11,7 +11,7 @@ from __future__ import annotations
 import copy
 import json
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 from autobots_devtools_shared_lib.common.observability.logging_utils import get_logger
 
@@ -37,7 +37,9 @@ def _resolve_json_pointer(document: Any, pointer: str) -> Any:
             try:
                 index = int(token)
             except ValueError as e:  # pragma: no cover - defensive
-                raise ValueError(f"Non-numeric index '{token}' for list in pointer {pointer}") from e
+                raise ValueError(
+                    f"Non-numeric index '{token}' for list in pointer {pointer}"
+                ) from e
             try:
                 current = current[index]
             except IndexError as e:
@@ -47,11 +49,15 @@ def _resolve_json_pointer(document: Any, pointer: str) -> Any:
                 raise ValueError(f"Key '{token}' not found while resolving pointer {pointer}")
             current = current[token]
         else:  # pragma: no cover - defensive
-            raise ValueError(f"Cannot traverse into non-container type at token '{token}' for pointer {pointer}")
+            raise ValueError(
+                f"Cannot traverse into non-container type at token '{token}' for pointer {pointer}"
+            )
     return current
 
 
-def _merge_pragmas(target_node: Dict[str, Any], pragma_obj: Dict[str, List[str]], description: str | None) -> None:
+def _merge_pragmas(
+    target_node: dict[str, Any], pragma_obj: dict[str, list[str]], description: str | None
+) -> None:
     """Merge x-fbp-pragmas into the target node in-place."""
     existing_pragmas = target_node.get("x-fbp-pragmas")
     if not isinstance(existing_pragmas, dict):
@@ -155,9 +161,7 @@ def resolve_parent_with_directives(parent_paths: list[Path], directive_path: Pat
         try:
             target_node = _resolve_json_pointer(merged, pointer)
         except ValueError as e:
-            error_msg = (
-                f"Failed to resolve JSON Pointer '{pointer}' in directive '{directive_path.name}': {e}"
-            )
+            error_msg = f"Failed to resolve JSON Pointer '{pointer}' in directive '{directive_path.name}': {e}"
             logger.error(error_msg)
             raise ValueError(error_msg) from e
 
@@ -170,4 +174,3 @@ def resolve_parent_with_directives(parent_paths: list[Path], directive_path: Pat
         _merge_pragmas(target_node, pragma_obj, description)
 
     return merged
-
