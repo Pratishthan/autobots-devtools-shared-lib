@@ -206,7 +206,18 @@ def get_tool_map() -> dict[str, list[Any]]:
     for name, cfg in load_agents_config().items():
         resolved: list[Any] = []
         for tool_name in cfg.tools:
-            if tool_name in tool_by_name:
+            if "." in tool_name:
+                # Namespaced MCP tool — create a lazy placeholder
+                server_name, mcp_tool_name = tool_name.split(".", 1)
+                from autobots_devtools_shared_lib.dynagent.mcp.registry import McpServerRegistry
+                from autobots_devtools_shared_lib.dynagent.mcp.tool_adapter import (
+                    create_mcp_placeholder,
+                )
+
+                McpServerRegistry.instance().get(server_name)  # validate server exists
+                resolved.append(create_mcp_placeholder(server_name, mcp_tool_name))
+                logger.info(f"Agent '{name}': adding MCP placeholder '{tool_name}'")
+            elif tool_name in tool_by_name:
                 resolved.append(tool_by_name[tool_name])
                 logger.info(f"Agent '{name}': adding resolved tool '{tool_name}'")
             else:

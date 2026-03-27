@@ -1,0 +1,21 @@
+# Example agents.yaml showing MCP tool integration.
+# This demonstrates how a use-case domain enables MCP servers
+# and exposes their tools to specific agents.
+
+mcp_servers:
+  atlassian:
+    enabled: true
+    # Optional overrides (uncomment to customize):
+    # transport: streamable_http
+    # url: https://mcp.internal.company.com/atlassian
+
+agents:
+  designer:
+    prompt: designer
+    tools:
+      - atlassian.create_issue
+      - atlassian.search_issues
+      - atlassian.get_issue
+      - handoff
+      - get_agent_list
+    is_default: true

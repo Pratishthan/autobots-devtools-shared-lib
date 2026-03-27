@@ -26,6 +26,11 @@ from autobots_devtools_shared_lib.dynagent.config.dynagent_settings import (
     set_dynagent_settings,
 )
 from autobots_devtools_shared_lib.dynagent.llm.llm import lm
+from autobots_devtools_shared_lib.dynagent.mcp import (
+    McpServerConfig,
+    McpTransport,
+    register_mcp_servers,
+)
 from autobots_devtools_shared_lib.dynagent.models.state import Dynagent
 from autobots_devtools_shared_lib.dynagent.tools.tool_registry import register_usecase_tools
 
@@ -35,6 +40,8 @@ __all__ = [
     "Dynagent",
     "DynagentSettings",
     "LLMProvider",
+    "McpServerConfig",
+    "McpTransport",
     "RecordResult",
     "ainvoke_agent",
     "batch_invoker",
@@ -45,6 +52,7 @@ __all__ = [
     "lm",
     "make_context_tools",
     "output_format_converter",
+    "register_mcp_servers",
     "register_usecase_tools",
     "set_dynagent_settings",
 ]

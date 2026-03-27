@@ -1,5 +1,5 @@
 # ABOUTME: State schema for the dynagent reference architecture.
-# ABOUTME: Dynagent holds agent_name, session_id, and optional user_name (e.g. logged-in user id).
+# ABOUTME: Dynagent holds agent_name, session_id, optional user_name, and MCP auth tokens.
 
 from typing import NotRequired
 
@@ -12,3 +12,4 @@ class Dynagent(AgentState):
     agent_name: NotRequired[str]
     session_id: NotRequired[str]
     user_name: NotRequired[str]
+    mcp_auth: NotRequired[dict[str, str]]
