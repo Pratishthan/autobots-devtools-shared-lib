@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Protocol
+from typing import TYPE_CHECKING, Any, Protocol, cast
 
 if TYPE_CHECKING:
     from autobots_devtools_shared_lib.eval.models.result import AgentOutput, AssertionResult
@@ -34,25 +34,30 @@ def _register_builtins() -> None:
         tool_sequence,
         tools_unordered,
     )
+    from autobots_devtools_shared_lib.eval.assertions.golden import golden_match
     from autobots_devtools_shared_lib.eval.assertions.llm_judge import (
         llm_judge,
         trajectory_quality,
     )
 
     _REGISTRY.update(
-        {
-            "contains": contains,
-            "regex": regex,
-            "exact_match": exact_match,
-            "json_match": json_match,
-            "response_matches_schema": schema_match,
-            "tool_called": tool_called,
-            "tool_sequence": tool_sequence,
-            "no_extra_tools": no_extra_tools,
-            "tools_unordered": tools_unordered,
-            "llm_judge": llm_judge,
-            "trajectory_quality": trajectory_quality,
-        }
+        cast(
+            "dict[str, EvalFn]",
+            {
+                "contains": contains,
+                "regex": regex,
+                "exact_match": exact_match,
+                "json_match": json_match,
+                "response_matches_schema": schema_match,
+                "tool_called": tool_called,
+                "tool_sequence": tool_sequence,
+                "no_extra_tools": no_extra_tools,
+                "tools_unordered": tools_unordered,
+                "llm_judge": llm_judge,
+                "trajectory_quality": trajectory_quality,
+                "golden_match": golden_match,
+            },
+        )
     )
 
 
