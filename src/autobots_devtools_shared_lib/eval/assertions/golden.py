@@ -1,3 +1,5 @@
+# ABOUTME: Golden match assertion for comparing agent structured_response against reference files.
+# ABOUTME: Supports exact diff mode and structural-only comparison with field ignoring.
 """Golden match assertion: compare agent output against reference files."""
 
 from __future__ import annotations

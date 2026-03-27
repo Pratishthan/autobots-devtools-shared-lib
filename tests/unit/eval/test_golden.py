@@ -1,3 +1,5 @@
+# ABOUTME: Tests for golden match assertion.
+# ABOUTME: Covers _diff_json, _deep_structural_compare, and golden_match with exact + structural modes.
 import json
 
 from langchain_core.messages import AIMessage, HumanMessage
