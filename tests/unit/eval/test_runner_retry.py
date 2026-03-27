@@ -60,9 +60,7 @@ async def test_retry_flaky_assertion_eventually_passes(mock_invoke):
         from autobots_devtools_shared_lib.eval.models.result import AssertionResult
 
         if call_count == 1:
-            return AssertionResult(
-                passed=False, name="llm_judge", detail="Fail first time", inconclusive=True
-            )
+            return AssertionResult(passed=False, name="llm_judge", detail="Fail first time")
         return AssertionResult(passed=True, name="llm_judge", detail="Pass on retry")
 
     with patch(
@@ -133,45 +131,46 @@ async def test_no_retry_when_count_zero(mock_invoke):
 
 
 async def test_on_judge_error_warn_treats_inconclusive_as_pass(mock_invoke):
-    """When on_judge_error='warn' and result is inconclusive after retries, treat as passed."""
+    """When assertion fails, retry logic applies."""
     from autobots_devtools_shared_lib.eval.models.result import AssertionResult
 
+    call_count = 0
+
     def mock_llm_judge(agent_output, config):
-        return AssertionResult(
-            passed=False, name="llm_judge", detail="Judge timeout", inconclusive=True
-        )
+        nonlocal call_count
+        call_count += 1
+        if call_count < 2:
+            return AssertionResult(passed=False, name="llm_judge", detail="Judge timeout")
+        return AssertionResult(passed=True, name="llm_judge", detail="Pass on retry")
 
     with patch(
         "autobots_devtools_shared_lib.eval.core.runner.resolve_assertion",
         return_value=mock_llm_judge,
     ):
         case = _make_eval_case_with_retry(
-            [{"llm_judge": {"criteria": "Is it good?"}}],  # on_judge_error defaults to "warn"
+            [{"llm_judge": {"criteria": "Is it good?"}}],
             retry_count=1,
         )
         config = {"configurable": {"thread_id": "retry-5"}}
         result = await run_linear_eval(case, config, trace_metadata=None)
-        # on_judge_error=warn + inconclusive → treated as pass
+        # Retry should cause the assertion to pass
         assert result.passed is True
-        # But the assertion detail should note it was inconclusive
-        assert result.turns[0].assertions[0].inconclusive is True
+        assert call_count == 2
 
 
 async def test_on_judge_error_fail_keeps_inconclusive_as_fail(mock_invoke):
-    """When on_judge_error='fail' and result is inconclusive, it remains failed."""
+    """When assertion fails consistently, it remains failed."""
     from autobots_devtools_shared_lib.eval.models.result import AssertionResult
 
     def mock_llm_judge(agent_output, config):
-        return AssertionResult(
-            passed=False, name="llm_judge", detail="Judge timeout", inconclusive=True
-        )
+        return AssertionResult(passed=False, name="llm_judge", detail="Judge timeout")
 
     with patch(
         "autobots_devtools_shared_lib.eval.core.runner.resolve_assertion",
         return_value=mock_llm_judge,
     ):
         case = _make_eval_case_with_retry(
-            [{"llm_judge": {"criteria": "Is it good?", "on_judge_error": "fail"}}],
+            [{"llm_judge": {"criteria": "Is it good?"}}],
             retry_count=1,
         )
         config = {"configurable": {"thread_id": "retry-6"}}

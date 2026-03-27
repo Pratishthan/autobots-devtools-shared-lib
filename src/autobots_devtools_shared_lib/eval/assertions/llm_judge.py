@@ -6,7 +6,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from openevals.llm import create_llm_as_judge
+from openevals.llm import create_llm_as_judge  # pyright: ignore[reportMissingImports]
 
 from autobots_devtools_shared_lib.eval.models.result import AgentOutput, AssertionResult
 
@@ -95,7 +95,6 @@ def llm_judge(agent_output: AgentOutput, config: Any) -> AssertionResult:
             passed=False,
             name="llm_judge",
             detail=f"Judge error: {type(e).__name__}: {e}",
-            inconclusive=True,
         )
 
 
@@ -194,5 +193,4 @@ def trajectory_quality(agent_output: AgentOutput, config: Any) -> AssertionResul
             passed=False,
             name="trajectory_quality",
             detail=f"Judge error: {type(e).__name__}: {e}",
-            inconclusive=True,
         )

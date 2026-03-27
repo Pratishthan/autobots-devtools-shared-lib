@@ -58,13 +58,8 @@ def _run_assertions(
             eval_fn = resolve_assertion(assertion.name)
             result = eval_fn(agent_output, assertion.config)
 
-            # Retry logic: retry failed inconclusive assertions if eligible.
-            if (
-                not result.passed
-                and result.inconclusive
-                and retry_count > 0
-                and assertion.name in retry_names
-            ):
+            # Retry logic: retry failed assertions if eligible.
+            if not result.passed and retry_count > 0 and assertion.name in retry_names:
                 for attempt in range(retry_count):
                     logger.info(
                         "Retrying %s (attempt %d/%d)", assertion.name, attempt + 1, retry_count
@@ -72,22 +67,6 @@ def _run_assertions(
                     result = eval_fn(agent_output, assertion.config)
                     if result.passed:
                         break
-
-            # on_judge_error handling: applied after retries are exhausted.
-            # If still inconclusive and on_judge_error=warn, treat as passed (log warning).
-            # If on_judge_error=fail, keep the failed result.
-            on_judge_error = getattr(assertion, "on_judge_error", "warn")
-            if not result.passed and result.inconclusive and on_judge_error == "warn":
-                logger.warning(
-                    "Assertion %s is inconclusive; treating as pass (on_judge_error=warn)",
-                    assertion.name,
-                )
-                result = AssertionResult(
-                    passed=True,
-                    name=result.name,
-                    detail=f"{result.detail} (treated as pass: on_judge_error=warn)",
-                    inconclusive=True,
-                )
 
             results.append(result)
         except Exception as e:
@@ -114,7 +93,8 @@ async def run_linear_eval(
             name=eval_case.name,
             passed=False,
             turns=[],
-            cost_report=None,
+            cost_snapshot=None,
+            cost_deltas=None,
             error="No turns defined",
         )
 
@@ -166,8 +146,8 @@ async def run_linear_eval(
                 name=eval_case.name,
                 passed=False,
                 turns=turns,
-                cost_report=None,
-                termination_reason="agent_error",
+                cost_snapshot=None,
+                cost_deltas=None,
                 error=str(e),
             )
 
@@ -176,5 +156,6 @@ async def run_linear_eval(
         name=eval_case.name,
         passed=all_turns_passed,
         turns=turns,
-        cost_report=None,  # Cost tracking wired in pytest fixture
+        cost_snapshot=None,  # Cost tracking wired in pytest fixture
+        cost_deltas=None,
     )

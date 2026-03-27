@@ -12,7 +12,7 @@ from autobots_devtools_shared_lib.eval.scoring.langfuse_scorer import post_score
 
 
 def test_post_scores_skips_when_langfuse_unavailable():
-    result = EvalResult(name="test", passed=True, turns=[], cost_report=None)
+    result = EvalResult(name="test", passed=True, turns=[], cost_snapshot=None, cost_deltas=None)
     with patch(
         "autobots_devtools_shared_lib.eval.scoring.langfuse_scorer.get_langfuse_client",
         return_value=None,
@@ -37,7 +37,8 @@ def test_post_scores_calls_score():
                 agent_message="hello",
             )
         ],
-        cost_report=None,
+        cost_snapshot=None,
+        cost_deltas=None,
     )
     with patch(
         "autobots_devtools_shared_lib.eval.scoring.langfuse_scorer.get_langfuse_client",

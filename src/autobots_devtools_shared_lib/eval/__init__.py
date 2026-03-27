@@ -3,11 +3,12 @@
 
 from autobots_devtools_shared_lib.eval.assertions.registry import register_assertion
 from autobots_devtools_shared_lib.eval.core.loader import EvalConfigError, load_eval_cases
-from autobots_devtools_shared_lib.eval.models.cost import CostReport
 from autobots_devtools_shared_lib.eval.models.eval_case import EvalCase
 from autobots_devtools_shared_lib.eval.models.result import (
     AgentOutput,
     AssertionResult,
+    CostDelta,
+    EvalCostSnapshot,
     EvalResult,
     TurnResult,
 )
@@ -15,9 +16,10 @@ from autobots_devtools_shared_lib.eval.models.result import (
 __all__ = [
     "AgentOutput",
     "AssertionResult",
-    "CostReport",
+    "CostDelta",
     "EvalCase",
     "EvalConfigError",
+    "EvalCostSnapshot",
     "EvalResult",
     "TurnResult",
     "load_eval_cases",

@@ -56,7 +56,7 @@ def test_llm_judge_default_threshold():
 
 
 def test_llm_judge_error_returns_inconclusive():
-    """When the judge LLM fails, return inconclusive result."""
+    """When the judge LLM fails, return failed result."""
     mock_evaluator = MagicMock(side_effect=RuntimeError("LLM timeout"))
     with patch(
         "autobots_devtools_shared_lib.eval.assertions.llm_judge.create_llm_as_judge",
@@ -65,7 +65,6 @@ def test_llm_judge_error_returns_inconclusive():
         output = _make_output("Some response")
         result = llm_judge(output, {"criteria": "Is it good?"})
         assert result.passed is False
-        assert result.inconclusive is True
         assert "LLM timeout" in result.detail
 
 
@@ -116,4 +115,4 @@ def test_trajectory_quality_error_returns_inconclusive():
         output = _make_output("Done")
         result = trajectory_quality(output, {"criteria": "Efficient"})
         assert result.passed is False
-        assert result.inconclusive is True
+        assert "LLM error" in result.detail

@@ -5,10 +5,10 @@ from __future__ import annotations
 
 import logging
 
-from openevals.llm import create_llm_as_judge
+from openevals.llm import create_llm_as_judge  # pyright: ignore[reportMissingImports]
 
 from autobots_devtools_shared_lib.common.observability.tracing import get_langfuse_client
-from autobots_devtools_shared_lib.eval.models.cost import (
+from autobots_devtools_shared_lib.eval.models.cost import (  # pyright: ignore[reportMissingImports]
     CostReport,
     TokenAttribution,
     ToolAttribution,
@@ -119,7 +119,7 @@ def _estimate_tokens(text: str) -> int:
     if not text:
         return 0
     try:
-        import tiktoken
+        import tiktoken  # pyright: ignore[reportMissingImports]
 
         enc = tiktoken.get_encoding("cl100k_base")
         return len(enc.encode(text))

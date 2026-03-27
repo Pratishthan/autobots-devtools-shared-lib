@@ -1,5 +1,4 @@
-# ABOUTME: Dataclasses for eval execution results.
-# ABOUTME: AgentOutput wraps invoke_agent output; AssertionResult/TurnResult/EvalResult track pass/fail.
+"""Result dataclasses for eval execution."""
 
 from __future__ import annotations
 
@@ -9,12 +8,10 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from langchain_core.messages import BaseMessage
 
-    from autobots_devtools_shared_lib.eval.models.cost import CostReport
-
 
 @dataclass
 class AgentOutput:
-    """Normalized output from invoke_agent for assertion evaluation."""
+    """Structured output from an agent invocation."""
 
     messages: list[BaseMessage]
     structured_response: dict[str, Any] | None
@@ -29,46 +26,79 @@ class AssertionResult:
     passed: bool
     name: str
     detail: str
-    inconclusive: bool = False
 
 
 @dataclass
 class TurnResult:
-    """Result of all assertions for a single conversation turn."""
+    """Result of a single conversation turn."""
 
     turn: int
     assertions: list[AssertionResult]
     passed: bool
     agent_message: str | None
+    structured_response: dict | list | None = None
     error: str | None = None
 
 
 @dataclass
+class CostDelta:
+    """Comparison of a single metric against baseline."""
+
+    metric: str
+    baseline: float
+    actual: float
+    delta_pct: float
+    status: str  # "ok" or "warning"
+
+
+@dataclass
+class EvalCostSnapshot:
+    """Cost/latency data captured from a single eval run."""
+
+    eval_name: str
+    agent: str
+    total_input_tokens: int
+    total_output_tokens: int
+    total_cost_usd: float
+    total_latency_ms: int
+    llm_calls: int
+    per_tool_tokens: dict[str, int]
+    timestamp: str
+
+
+@dataclass
 class EvalResult:
-    """Overall result of an eval case execution."""
+    """Complete result of an eval case execution."""
 
     name: str
     passed: bool
     turns: list[TurnResult]
-    cost_report: CostReport | None
-    termination_reason: str | None = None
+    cost_snapshot: EvalCostSnapshot | None
+    cost_deltas: list[CostDelta] | None
     error: str | None = None
 
     def summary(self) -> str:
         """Human-readable summary for pytest failure output."""
-        lines = [f"Eval: {self.name}"]
+        lines: list[str] = []
         status = "PASSED" if self.passed else "FAILED"
-        lines.append(f"Status: {status}")
+        lines.append(f"Eval: {self.name} — {status}")
 
         if self.error:
             lines.append(f"Error: {self.error}")
 
-        for turn in self.turns:
-            if not turn.passed:
-                lines.append(f"  Turn {turn.turn}:")
-                for a in turn.assertions:
-                    if not a.passed:
-                        flag = " (inconclusive)" if a.inconclusive else ""
-                        lines.append(f"    FAIL {a.name}: {a.detail}{flag}")
+        lines.extend(
+            f"  Turn {turn.turn} — {a.name}: {a.detail}"
+            for turn in self.turns
+            if not turn.passed
+            for a in turn.assertions
+            if not a.passed
+        )
+
+        if self.cost_deltas:
+            warnings = [d for d in self.cost_deltas if d.status == "warning"]
+            lines.extend(
+                f"  Cost warning: {w.metric} {w.baseline} → {w.actual} ({w.delta_pct:+.1f}%)"
+                for w in warnings
+            )
 
         return "\n".join(lines)
