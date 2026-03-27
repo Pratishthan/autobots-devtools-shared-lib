@@ -42,7 +42,17 @@ def test_dynagent_user_name_is_optional():
     assert "user_name" not in Dynagent.__required_keys__
 
 
+def test_dynagent_has_mcp_auth():
+    assert "mcp_auth" in Dynagent.__annotations__
+
+
+def test_dynagent_mcp_auth_is_optional():
+    """mcp_auth must be NotRequired for MCP token storage."""
+    assert "mcp_auth" in Dynagent.__optional_keys__
+    assert "mcp_auth" not in Dynagent.__required_keys__
+
+
 def test_dynagent_only_adds_agent_name_session_id_user_name():
-    """Dynagent extends AgentState with routing/identity keys only."""
+    """Dynagent extends AgentState with routing/identity keys and mcp_auth."""
     own_fields = set(Dynagent.__annotations__.keys()) - set(AgentState.__annotations__.keys())
-    assert own_fields == {"agent_name", "session_id", "user_name"}
+    assert own_fields == {"agent_name", "session_id", "user_name", "mcp_auth"}
