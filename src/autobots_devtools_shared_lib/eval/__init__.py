@@ -3,7 +3,11 @@
 
 from autobots_devtools_shared_lib.eval.assertions.registry import register_assertion
 from autobots_devtools_shared_lib.eval.core.loader import EvalConfigError, load_eval_cases
-from autobots_devtools_shared_lib.eval.models.eval_case import EvalCase
+from autobots_devtools_shared_lib.eval.models.eval_case import (
+    EvalCase,
+    SetupConfig,
+    WorkspaceFile,
+)
 from autobots_devtools_shared_lib.eval.models.result import (
     AgentOutput,
     AssertionResult,
@@ -21,7 +25,9 @@ __all__ = [
     "EvalConfigError",
     "EvalCostSnapshot",
     "EvalResult",
+    "SetupConfig",
     "TurnResult",
+    "WorkspaceFile",
     "load_eval_cases",
     "register_assertion",
 ]

@@ -6,7 +6,7 @@ from __future__ import annotations
 import pytest  # noqa: TC002
 
 from autobots_devtools_shared_lib.eval.pytest_plugin.reporting import (
-    format_terminal_summary,
+    format_cost_summary,
     write_cost_report,
 )
 
@@ -58,9 +58,9 @@ def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:  # n
 
     report_path = session.config.getoption("--eval-cost-report", default=None)
     if report_path:
-        write_cost_report(report_path, eval_results)
+        write_cost_report(eval_results, report_path)
 
     # Print terminal summary
-    summary = format_terminal_summary(eval_results)
+    summary = format_cost_summary(eval_results)
     if summary:
         print(summary)  # noqa: T201,RUF100
