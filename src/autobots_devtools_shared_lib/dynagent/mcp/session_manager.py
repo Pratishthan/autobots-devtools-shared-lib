@@ -110,7 +110,9 @@ class McpSessionManager:
         if auth_token:
             headers["Authorization"] = f"Bearer {auth_token}"
 
-        http_client = httpx.AsyncClient(headers=headers) if headers else None
+        http_client = (
+            await stack.enter_async_context(httpx.AsyncClient(headers=headers)) if headers else None
+        )
         read_stream, write_stream, _ = await stack.enter_async_context(
             streamable_http_client(config.url or "", http_client=http_client)
         )
