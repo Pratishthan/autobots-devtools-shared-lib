@@ -8,6 +8,19 @@ from typing import Any, Literal
 from pydantic import BaseModel, field_validator, model_validator
 
 
+class WorkspaceFile(BaseModel):
+    """A file to stage in the workspace before the agent runs."""
+
+    src: str
+    dest: str
+
+
+class SetupConfig(BaseModel):
+    """Pre-run workspace setup configuration."""
+
+    workspace_files: list[WorkspaceFile] = []
+
+
 class Assertion(BaseModel):
     """Single assertion parsed from YAML.
 
@@ -70,6 +83,7 @@ class EvalCase(BaseModel):
     turns: list[Turn] | None = None
     retry: RetryConfig = RetryConfig()
     cost: CostConfig = CostConfig()
+    setup: SetupConfig = SetupConfig()
 
     @field_validator("turns")
     @classmethod
