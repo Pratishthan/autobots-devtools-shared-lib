@@ -45,10 +45,6 @@ def create_base_agent(
     Returns:
         Configured LangGraph agent.
     """
-    # TODO: Wire enable_todos and progress_domain middleware (Task 5)
-    _ = enable_todos  # Will wire TodoListMiddleware when available
-    _ = progress_domain  # Will wire ProgressPersistenceMiddleware when available
-
     if checkpointer is None:
         checkpointer = InMemorySaver()
 
@@ -62,6 +58,28 @@ def create_base_agent(
 
     _middleware = inject_agent_sync if sync_mode else inject_agent_async
 
+    middleware_stack: list[Any] = [_middleware]
+
+    if enable_todos:
+        from langchain.agents.middleware import TodoListMiddleware
+
+        middleware_stack.append(TodoListMiddleware())
+
+    if progress_domain:
+        from autobots_devtools_shared_lib.dynagent.agents.progress_middleware import (
+            ProgressPersistenceMiddleware,
+        )
+
+        middleware_stack.append(ProgressPersistenceMiddleware(domain=progress_domain))
+
+    middleware_stack.append(
+        SummarizationMiddleware(
+            model=model,
+            trigger=("fraction", 0.6),
+            keep=("messages", 20),
+        ),
+    )
+
     if initial_agent_name is None:
         initial_agent_name = get_default_agent()
 
@@ -72,14 +90,7 @@ def create_base_agent(
         state_schema=state_schema,
         middleware=cast(
             "list[AgentMiddleware[Any, Any]]",
-            [
-                _middleware,
-                SummarizationMiddleware(
-                    model=model,
-                    trigger=("fraction", 0.6),
-                    keep=("messages", 20),
-                ),
-            ],
+            middleware_stack,
         ),
         checkpointer=checkpointer,
     )
