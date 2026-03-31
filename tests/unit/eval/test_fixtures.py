@@ -3,7 +3,10 @@
 
 from __future__ import annotations
 
+from typing import Any
 from unittest.mock import patch
+
+import pytest
 
 from autobots_devtools_shared_lib.eval.models.eval_case import (
     Assertion,
@@ -15,7 +18,7 @@ from autobots_devtools_shared_lib.eval.pytest_plugin.fixtures import make_dynage
 
 
 def _make_eval_case(**overrides) -> EvalCase:
-    defaults: dict = {
+    defaults: dict[str, Any] = {
         "name": "test eval",
         "agent": "model-list-extractor",
         "mode": "linear",
@@ -71,7 +74,8 @@ class TestMakeDynagentEval:
         )
         case = _make_eval_case()
         eval_fn(case)
-        mock_setup.assert_called_once_with(case.setup, mock_setup.call_args[0][1])
+        assert mock_setup.call_args[0][0] is case.setup
+        assert isinstance(mock_setup.call_args[0][1], str)  # workspace_path is a temp dir string
         mock_teardown.assert_called_once()
 
     @patch("autobots_devtools_shared_lib.eval.pytest_plugin.fixtures.post_scores")
@@ -110,3 +114,23 @@ class TestMakeDynagentEval:
 
         mock_query_cost.assert_called_once()
         assert result.cost_snapshot is snapshot
+
+    @patch("autobots_devtools_shared_lib.eval.pytest_plugin.fixtures.post_scores")
+    @patch("autobots_devtools_shared_lib.eval.pytest_plugin.fixtures.run_linear_eval")
+    @patch("autobots_devtools_shared_lib.eval.pytest_plugin.fixtures.setup_workspace")
+    @patch("autobots_devtools_shared_lib.eval.pytest_plugin.fixtures.teardown_workspace")
+    def test_teardown_called_on_runner_exception(
+        self, mock_teardown, mock_setup, mock_run, mock_post_scores
+    ):
+        mock_run.side_effect = RuntimeError("agent crashed")
+
+        eval_fn = make_dynagent_eval(
+            update_golden=False,
+            update_baseline=False,
+            no_langfuse_score=True,
+        )
+        case = _make_eval_case()
+        with pytest.raises(RuntimeError, match="agent crashed"):
+            eval_fn(case)
+
+        mock_teardown.assert_called_once()
