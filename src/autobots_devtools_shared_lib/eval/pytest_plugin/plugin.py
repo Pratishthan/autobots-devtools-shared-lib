@@ -3,8 +3,9 @@
 
 from __future__ import annotations
 
-import pytest  # noqa: TC002
+import pytest
 
+from autobots_devtools_shared_lib.eval.pytest_plugin.fixtures import make_dynagent_eval
 from autobots_devtools_shared_lib.eval.pytest_plugin.reporting import (
     format_cost_summary,
     write_cost_report,
@@ -40,6 +41,29 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         action="store_true",
         default=False,
         help="Skip posting scores to Langfuse",
+    )
+    group.addoption(
+        "--update-golden",
+        action="store_true",
+        default=False,
+        help="Update golden output files with current agent responses",
+    )
+    group.addoption(
+        "--update-baseline",
+        action="store_true",
+        default=False,
+        help="Save current cost snapshots as new baselines",
+    )
+
+
+@pytest.fixture
+def dynagent_eval(request: pytest.FixtureRequest):
+    """Fixture that provides a callable to run eval cases."""
+    config = request.config
+    return make_dynagent_eval(
+        update_golden=config.getoption("--update-golden", default=False),
+        update_baseline=config.getoption("--update-baseline", default=False),
+        no_langfuse_score=config.getoption("--eval-no-langfuse-score", default=False),
     )
 
 

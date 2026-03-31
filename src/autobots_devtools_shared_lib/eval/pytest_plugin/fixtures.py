@@ -1,39 +1,60 @@
-# ABOUTME: Pytest fixtures for the dynagent eval framework.
-# ABOUTME: Provides dynagent_eval fixture that runs eval cases and collects results.
+# ABOUTME: Factory function make_dynagent_eval for the dynagent eval pytest fixture.
+# ABOUTME: Handles workspace staging, runner dispatch, cost tracking, and teardown.
 
 from __future__ import annotations
 
+import asyncio
+import logging
+import tempfile
 import uuid
 from typing import TYPE_CHECKING
 
-import pytest
-
 from autobots_devtools_shared_lib.common.observability.trace_metadata import TraceMetadata
+from autobots_devtools_shared_lib.eval.core.cost_tracker import query_langfuse_cost
 from autobots_devtools_shared_lib.eval.core.runner import run_linear_eval
+from autobots_devtools_shared_lib.eval.core.workspace import setup_workspace, teardown_workspace
 from autobots_devtools_shared_lib.eval.models.result import EvalResult
 from autobots_devtools_shared_lib.eval.scoring.langfuse_scorer import post_scores
 
 if TYPE_CHECKING:
+    from collections.abc import Callable
+
     from langchain_core.runnables import RunnableConfig
 
     from autobots_devtools_shared_lib.eval.models.eval_case import EvalCase
 
+logger = logging.getLogger(__name__)
 
-@pytest.fixture
-def dynagent_eval(request: pytest.FixtureRequest):
-    """Core eval fixture. Runs an EvalCase and returns EvalResult.
 
-    Handles:
+def make_dynagent_eval(
+    *,
+    update_golden: bool,
+    update_baseline: bool,
+    no_langfuse_score: bool,
+) -> Callable[[EvalCase], EvalResult]:
+    """Factory that returns a sync callable to run a single eval case.
+
+    The returned callable handles:
     - Session/thread ID generation
-    - TraceMetadata creation with eval tags
-    - Running the eval (linear mode in Phase 1)
-    - Cost report collection (if tracking enabled)
-    - Langfuse score posting (unless --eval-no-langfuse-score)
-    """
-    post_langfuse = not request.config.getoption("--eval-no-langfuse-score", default=False)
+    - Workspace setup/teardown
+    - Running the eval via run_linear_eval
+    - Cost tracking via query_langfuse_cost
+    - Langfuse score posting (unless no_langfuse_score)
+    - Golden output update (when update_golden=True)
 
-    async def run(eval_case: EvalCase) -> EvalResult:
+    Args:
+        update_golden: Whether to update golden output files.
+        update_baseline: Whether to save cost snapshots as new baselines.
+        no_langfuse_score: If True, skip posting scores to Langfuse.
+
+    Returns:
+        A callable that takes an EvalCase and returns an EvalResult.
+    """
+
+    def _eval(eval_case: EvalCase) -> EvalResult:
         session_id = str(uuid.uuid4())
+        workspace_path = tempfile.mkdtemp(prefix="dynagent_eval_")
+
         config: RunnableConfig = {
             "configurable": {
                 "thread_id": session_id,
@@ -46,28 +67,47 @@ def dynagent_eval(request: pytest.FixtureRequest):
             tags=["eval", *eval_case.tags],
         )
 
-        if eval_case.mode == "linear":
-            result = await run_linear_eval(eval_case, config, trace_metadata)
-        else:
-            # Goal mode added in Phase 3
-            result = EvalResult(
-                name=eval_case.name,
-                passed=False,
-                turns=[],
-                cost_snapshot=None,
-                cost_deltas=None,
-                error="Goal-based mode not yet implemented (Phase 3)",
-            )
+        try:
+            # Stage workspace files
+            setup_workspace(eval_case.setup, workspace_path)
 
-        # Post scores to Langfuse
-        if post_langfuse:
-            post_scores(session_id, result)
+            # Run the eval
+            if eval_case.mode == "linear":
+                result = asyncio.run(run_linear_eval(eval_case, config, trace_metadata))
+            else:
+                result = EvalResult(
+                    name=eval_case.name,
+                    passed=False,
+                    turns=[],
+                    cost_snapshot=None,
+                    cost_deltas=None,
+                    error="Goal-based mode not yet implemented (Phase 3)",
+                )
 
-        # Stash for session-level report
-        if not hasattr(request.config, "_eval_cost_reports"):
-            request.config._eval_cost_reports = []  # type: ignore[attr-defined]
-        request.config._eval_cost_reports.append(result)  # type: ignore[attr-defined]
+            # Cost tracking
+            if eval_case.cost.track:
+                snapshot = query_langfuse_cost(session_id, eval_case.name, eval_case.agent)
+                if snapshot is not None:
+                    result.cost_snapshot = snapshot
+
+            # Golden output update (placeholder — save function not yet implemented)
+            if update_golden:
+                logger.info("update_golden requested for %s (not yet implemented)", eval_case.name)
+
+            # Baseline update (placeholder — CostConfig only has track: bool)
+            if update_baseline and result.cost_snapshot is not None:
+                logger.info(
+                    "update_baseline requested for %s (no baseline path in CostConfig)",
+                    eval_case.name,
+                )
+
+            # Post scores to Langfuse
+            if not no_langfuse_score:
+                post_scores(session_id, result)
+
+        finally:
+            teardown_workspace(workspace_path)
 
         return result
 
-    return run
+    return _eval
