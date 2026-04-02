@@ -13,6 +13,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+import jsonref
+
 from autobots_devtools_shared_lib.common.observability.logging_utils import get_logger
 
 logger = get_logger(__name__)
@@ -79,6 +81,21 @@ def _merge_pragmas(
         target_node["description"] = description
 
 
+def _materialize_refs(obj: Any) -> Any:
+    """Recursively convert JsonRef proxy objects into plain Python dicts/lists.
+
+    jsonref proxies pass isinstance(obj, dict) via __class__ but fail in the C-extension
+    JSON encoder which uses type(obj) is dict. Unwrap via __subject__ to get plain objects.
+    """
+    if isinstance(obj, jsonref.JsonRef):
+        return _materialize_refs(obj.__subject__)
+    if isinstance(obj, dict):
+        return {k: _materialize_refs(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_materialize_refs(v) for v in obj]
+    return obj
+
+
 def _merge_parent_schemas(parent_docs: list[dict]) -> dict:
     """Deep-merge a list of parent schema documents (domain overrides common)."""
 
@@ -122,6 +139,11 @@ def resolve_parent_with_directives(parent_paths: list[Path], directive_path: Pat
 
     merged_parent = _merge_parent_schemas(parent_docs)
 
+    if not directive_path.exists():
+        error_msg = f"Directive file not found: {directive_path}"
+        logger.error(error_msg)
+        raise FileNotFoundError(error_msg)
+
     try:
         with Path.open(directive_path) as f:
             directive_doc = json.load(f)
@@ -134,7 +156,15 @@ def resolve_parent_with_directives(parent_paths: list[Path], directive_path: Pat
     if not isinstance(entries, list):
         raise ValueError(f"'directives' must be a list in directive file '{directive_path.name}'")
 
-    merged = copy.deepcopy(merged_parent)
+    # Resolve local $ref file references so JSON Pointer directives can navigate into them.
+    # Use the last existing parent path as the base URI for relative $ref resolution.
+    base_uri = ""
+    for path in reversed(parent_paths):
+        if path.exists():
+            base_uri = path.parent.as_uri() + "/"
+            break
+    dereffed = jsonref.replace_refs(merged_parent, base_uri=base_uri, lazy_load=False)
+    merged = _materialize_refs(dereffed)
 
     sources = merged.get("x-fbp-directive-sources")
     if not isinstance(sources, list):
