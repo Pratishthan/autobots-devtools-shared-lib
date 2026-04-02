@@ -13,7 +13,8 @@ import json
 from pathlib import Path
 from typing import Any
 
-import jsonref
+from referencing import Registry, Resource
+from referencing.jsonschema import DRAFT202012
 
 from autobots_devtools_shared_lib.common.observability.logging_utils import get_logger
 
@@ -81,19 +82,43 @@ def _merge_pragmas(
         target_node["description"] = description
 
 
-def _materialize_refs(obj: Any) -> Any:
-    """Recursively convert JsonRef proxy objects into plain Python dicts/lists.
+def _retrieve_from_path(base_dir: Path):
+    """Create a retriever that loads JSON schema files relative to a base directory."""
 
-    jsonref proxies pass isinstance(obj, dict) via __class__ but fail in the C-extension
-    JSON encoder which uses type(obj) is dict. Unwrap via __subject__ to get plain objects.
+    def _retrieve(uri: str) -> Resource:
+        from urllib.parse import unquote, urlparse
+
+        parsed = urlparse(uri)
+        path = Path(unquote(parsed.path))
+        if not path.is_absolute():
+            path = base_dir / path
+        contents = json.loads(path.read_text())
+        return Resource(contents=contents, specification=DRAFT202012)
+
+    return _retrieve
+
+
+def _resolve_all_refs(schema: Any, resolver, _seen: frozenset[str] = frozenset()) -> Any:
+    """Recursively resolve all $ref in a schema, returning a plain dict.
+
+    Uses the referencing library's Resolver to look up each $ref URI,
+    then recurses into the resolved content with its updated resolver context
+    (critical for resolving relative $ref in nested files).
+
+    The ``_seen`` parameter tracks resolved URIs to prevent infinite recursion
+    from circular $ref chains.
     """
-    if isinstance(obj, jsonref.JsonRef):
-        return _materialize_refs(obj.__subject__)
-    if isinstance(obj, dict):
-        return {k: _materialize_refs(v) for k, v in obj.items()}
-    if isinstance(obj, list):
-        return [_materialize_refs(v) for v in obj]
-    return obj
+    if isinstance(schema, dict):
+        if "$ref" in schema:
+            ref = schema["$ref"]
+            if ref in _seen:
+                raise ValueError(f"Circular $ref detected: {ref}")
+            resolved = resolver.lookup(ref)
+            return _resolve_all_refs(resolved.contents, resolved.resolver, _seen | {ref})
+        return {k: _resolve_all_refs(v, resolver, _seen) for k, v in schema.items()}
+    if isinstance(schema, list):
+        return [_resolve_all_refs(item, resolver, _seen) for item in schema]
+    return schema
 
 
 def _merge_parent_schemas(parent_docs: list[dict]) -> dict:
@@ -156,15 +181,18 @@ def resolve_parent_with_directives(parent_paths: list[Path], directive_path: Pat
     if not isinstance(entries, list):
         raise ValueError(f"'directives' must be a list in directive file '{directive_path.name}'")
 
-    # Resolve local $ref file references so JSON Pointer directives can navigate into them.
-    # Use the last existing parent path as the base URI for relative $ref resolution.
-    base_uri = ""
+    # Resolve $ref file references so JSON Pointer directives can navigate into them.
+    # Determine the base directory from the last existing parent path for relative $ref.
+    base_dir = parent_paths[0].resolve().parent
     for path in reversed(parent_paths):
         if path.exists():
-            base_uri = path.parent.as_uri() + "/"
+            base_dir = path.resolve().parent
             break
-    dereffed = jsonref.replace_refs(merged_parent, base_uri=base_uri, lazy_load=False)
-    merged = _materialize_refs(dereffed)
+
+    registry: Registry = Registry(retrieve=_retrieve_from_path(base_dir))
+    base_uri = base_dir.as_uri() + "/"
+    resolver = registry.resolver(base_uri)
+    merged = _resolve_all_refs(merged_parent, resolver)
 
     sources = merged.get("x-fbp-directive-sources")
     if not isinstance(sources, list):
