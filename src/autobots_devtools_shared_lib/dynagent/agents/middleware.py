@@ -30,13 +30,16 @@ async def inject_agent_async(
 
     # Inject resolved input schemas (if any) as JSON strings using their schema keys.
     input_schemas = meta.input_schema_map.get(agent_name, {})
-    directive_values = {
+    input_directives_map = {
         schema_key: json.dumps(schema, indent=2, sort_keys=True)
         for schema_key, schema in input_schemas.items()
     }
 
+    input_directives = {"input_schemas": input_directives_map}
+    output_directives = {"output_schema": meta.output_schema_map.get(agent_name, {}) or {}}
+
     # request.state values take precedence on key collision, consistent with previous behavior.
-    combined_values = {**directive_values, **request.state}
+    combined_values = {**input_directives, **output_directives, **request.state}
     format_values = defaultdict(str, **combined_values)
     system_prompt = raw_prompt.format_map(format_values)
 
@@ -66,13 +69,16 @@ def inject_agent_sync(
 
     # Inject resolved input schemas (if any) as JSON strings using their schema keys.
     input_schemas = meta.input_schema_map.get(agent_name, {})
-    directive_values = {
+    input_directives_map = {
         schema_key: json.dumps(schema, indent=2, sort_keys=True)
         for schema_key, schema in input_schemas.items()
     }
 
+    input_directives = {"input_schemas": input_directives_map}
+    output_directives = {"output_schema": meta.output_schema_map.get(agent_name, {}) or {}}
+
     # request.state values take precedence on key collision, consistent with previous behavior.
-    combined_values = {**directive_values, **request.state}
+    combined_values = {**input_directives, **output_directives, **request.state}
     format_values = defaultdict(str, **combined_values)
     system_prompt = raw_prompt.format_map(format_values)
 
