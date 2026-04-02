@@ -1,14 +1,18 @@
 # ABOUTME: Shared streaming and rendering utilities for dynagent-based UIs.
 # ABOUTME: No imports from any use-case package (e.g. bro_chat); safe for reuse.
 
+import base64
 import json
 from collections import deque
 from collections.abc import Callable
 from contextlib import nullcontext
 from dataclasses import asdict, is_dataclass
+from datetime import datetime
+from pathlib import Path
 from typing import Any
 
 import chainlit as cl
+import requests
 from langchain_core.runnables import RunnableConfig
 from langfuse import propagate_attributes
 from langgraph.graph.state import CompiledStateGraph
@@ -95,6 +99,146 @@ def _extract_output_type(step_name: str | None) -> str | None:
 
 
 # ---------------------------------------------------------------------------
+# File upload helpers (requires Chainlit runtime)
+# ---------------------------------------------------------------------------
+
+
+async def _upload_file_to_server(
+    file_name: str,
+    file_content: bytes,
+    session_id: str,
+) -> dict[str, Any]:
+    """Upload a file to the file server.
+
+    The file server URL is derived from :class:`FileServerConfig` (host/port).
+
+    Args:
+        file_name: Original name of the file.
+        file_content: Raw bytes content of the file.
+        session_id: Chainlit session ID for collision avoidance.
+
+    Returns:
+        Response dict from the file server with path and metadata.
+    """
+    from autobots_devtools_shared_lib.common.servers.fileserver.config import FileServerConfig
+
+    file_server_url = f"http://{FileServerConfig.host}:{FileServerConfig.port}"
+
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    safe_session_id = session_id[:8]
+    unique_filename = f"temp/{safe_session_id}_{timestamp}_{file_name}"
+
+    base64_content = base64.b64encode(file_content).decode("utf-8")
+
+    payload = {"file_name": unique_filename, "file_content": base64_content}
+
+    response = requests.post(f"{file_server_url}/writeFile", json=payload, timeout=30)
+
+    if response.status_code == 200:
+        return response.json()
+
+    logger.error(f"File server returned status {response.status_code}: {response.text}")
+    raise RuntimeError(f"File server error: {response.status_code}")
+
+
+async def _process_uploaded_files(
+    user_message: cl.Message,
+    thread_id: str,
+) -> list[dict[str, Any]]:
+    """Process uploaded files attached to a Chainlit message.
+
+    Reads each file element, uploads it to the file server, and returns
+    metadata for every successfully uploaded file.  Files are staged in a
+    ``temp/`` directory on the file server — the **LLM agent** is responsible
+    for moving them to the final location via ``move_file_tool``.
+
+    The caller must verify that ``user_message`` has file elements before
+    invoking this helper.
+
+    Args:
+        user_message: Chainlit ``Message`` containing file elements.
+        thread_id: Session / thread ID used for collision-safe filenames.
+
+    Returns:
+        List of metadata dicts with keys ``original_name``, ``server_path``,
+        ``size_bytes``, and ``uploaded_at``.
+    """
+    uploaded_files_metadata: list[dict[str, Any]] = []
+
+    logger.info(f"Processing {len(user_message.elements)} uploaded file(s)")
+
+    for element in user_message.elements:
+        try:
+            file_name = element.name
+            file_path = element.path
+            if not file_path:
+                logger.warning(f"No file path for element '{file_name}', skipping")
+                continue
+            p = Path(file_path)
+            file_size = p.stat().st_size if p.exists() else 0
+
+            logger.info(f"Processing file: {file_name} ({file_size} bytes)")
+
+            with p.open("rb") as f:
+                file_content = f.read()
+
+            try:
+                upload_response = await _upload_file_to_server(file_name, file_content, thread_id)
+
+                uploaded_files_metadata.append(
+                    {
+                        "original_name": file_name,
+                        "server_path": upload_response.get("path"),
+                        "size_bytes": upload_response.get("size_bytes", file_size),
+                        "uploaded_at": datetime.now().isoformat(),
+                    }
+                )
+
+                await cl.Message(
+                    content=f"File '{file_name}' uploaded successfully ({file_size / 1024:.2f} KB)"
+                ).send()
+
+                logger.info(
+                    f"File uploaded successfully: {file_name} -> {upload_response.get('path')}"
+                )
+
+            except Exception as upload_error:
+                await cl.Message(content=f"Failed to upload '{file_name}': {upload_error}").send()
+                logger.exception(f"Upload error for {file_name}")
+                continue
+
+        except Exception as e:
+            await cl.Message(content=f"Error processing file '{element.name}': {e}").send()
+            logger.exception(f"File processing error for {element.name}")
+            continue
+
+    return uploaded_files_metadata
+
+
+def _enrich_text_with_file_metadata(
+    text_input: str, uploaded_files_metadata: list[dict[str, Any]]
+) -> str:
+    """Append uploaded file metadata to the user's text input.
+
+    Args:
+        text_input: Original user message text.
+        uploaded_files_metadata: List returned by :func:`_process_uploaded_files`.
+
+    Returns:
+        Enriched text with file paths appended, or the original text if no files.
+    """
+    if not uploaded_files_metadata:
+        return text_input
+
+    file_info = "\n".join(
+        f"- {f['original_name']} (Path: {f['server_path']})" for f in uploaded_files_metadata
+    )
+    upload_files_meta = f"{text_input}\n\n[Uploaded files:\n{file_info}]"
+    logger.info(f"Files Meta: {upload_files_meta}")
+    return upload_files_meta
+
+
+# ---------------------------------------------------------------------------
 # Async streaming helper (requires Chainlit runtime)
 # ---------------------------------------------------------------------------
 
@@ -106,6 +250,7 @@ async def stream_agent_events(
     on_structured_output: Callable[[dict[str, Any], str | None], str] | None = None,
     enable_tracing: bool = True,
     trace_metadata: TraceMetadata | None = None,
+    user_message: cl.Message | None = None,
 ) -> None:
     """Stream events from a LangGraph agent and render them in Chainlit.
 
@@ -113,6 +258,11 @@ async def stream_agent_events(
     messages.  When *on_structured_output* is provided it is called with
     ``(structured_dict, output_type)`` to produce the markdown body; otherwise
     :func:`structured_to_markdown` is used as the fallback.
+
+    When *user_message* is provided and contains file elements, uploaded files
+    are uploaded to the file server and their paths are appended to the
+    first user message in *input_state*.  Files are staged in ``temp/`` —
+    the LLM agent moves them to the final location via ``move_file_tool``.
 
     Args:
         agent: A LangGraph ``Runnable`` that supports ``astream_events``.
@@ -125,7 +275,26 @@ async def stream_agent_events(
             degrades if not configured).
         trace_metadata: Optional TraceMetadata instance with session_id, app_name,
             user_id, and tags. If None, uses defaults.
+        user_message: Optional raw Chainlit ``Message``. When supplied, any attached
+            file elements are uploaded to the file server and their paths are
+            appended to the user's text input.
     """
+    # --- Process file uploads if user_message has attachments ---------------
+    if user_message is not None and hasattr(user_message, "elements") and user_message.elements:
+        thread_id = input_state.get("session_id", "default")
+        uploaded_files = await _process_uploaded_files(user_message, thread_id)
+        if uploaded_files:
+            # Enrich the first user message content with file metadata
+            messages = input_state.get("messages", [])
+            if messages:
+                last_msg = messages[-1]
+                original_content = (
+                    last_msg.get("content", "") if isinstance(last_msg, dict) else str(last_msg)
+                )
+                enriched = _enrich_text_with_file_metadata(original_content, uploaded_files)
+                if isinstance(last_msg, dict):
+                    last_msg["content"] = enriched
+
     # Use provided metadata or create default
     if trace_metadata is None:
         trace_metadata = TraceMetadata.create()
@@ -160,7 +329,8 @@ async def stream_agent_events(
             tags=trace_metadata.tags,
         ):
             span_ctx = (
-                client.start_as_current_span(
+                client.start_as_current_observation(
+                    as_type="span",
                     name=f"{trace_metadata.app_name}-stream",
                     input={
                         "message_count": len(input_state.get("messages", [])),

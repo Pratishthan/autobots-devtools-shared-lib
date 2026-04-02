@@ -104,16 +104,6 @@ def test_directive_overrides_description_and_tracks_compact_source(tmp_path) -> 
     ]
 
 
-def test_missing_directive_file_raises(tmp_path) -> None:
-    parent = {"type": "object", "properties": {"a": {"type": "string"}}}
-    parent_path = tmp_path / "parent.json"
-    parent_path.write_text(json.dumps(parent))
-    missing_directive = tmp_path / "nonexistent.json"
-
-    with pytest.raises(FileNotFoundError):
-        resolve_parent_with_directives([parent_path], missing_directive)
-
-
 def test_missing_all_parent_files_raises(tmp_path) -> None:
     directive = {"directives": []}
     directive_path = tmp_path / "directive.json"

@@ -224,20 +224,23 @@ def get_resolved_input_schema_map() -> dict[str, dict[str, dict]]:
     return result
 
 
-def _resolve_output_schema_for_agent(
-    agent_name: str, cfg: AgentConfig, config_dir: Path
-) -> dict | None:
+def _resolve_output_schema_for_agent(cfg: AgentConfig, config_dir: Path) -> dict | None:
     """Resolve a single agent's output schema from output schema+directive config."""
     if cfg.output is None:
         return None
 
     # Expect at most one entry in the output map.
     for schema_name, directive_name in cfg.output.items():
-        if not schema_name or not directive_name:
+        if not schema_name:
             return None
         parent_paths = _build_parent_paths(schema_name)
-        directive_path = config_dir / "directives" / _normalize_directive_filename(directive_name)
-        return resolve_parent_with_directives(parent_paths, directive_path)
+        if directive_name:
+            directive_path = (
+                config_dir / "directives" / _normalize_directive_filename(directive_name)
+            )
+            return resolve_parent_with_directives(parent_paths, directive_path)
+
+        return resolve_parent_with_directives(parent_paths, None)
 
     return None
 
@@ -247,7 +250,7 @@ def get_resolved_output_schema_map() -> dict[str, dict | None]:
     config_dir = get_config_dir()
     agents = load_agents_config()
     return {
-        agent_name: _resolve_output_schema_for_agent(agent_name, cfg, config_dir)
+        agent_name: _resolve_output_schema_for_agent(cfg, config_dir)
         for agent_name, cfg in agents.items()
     }
 

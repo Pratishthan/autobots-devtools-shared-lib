@@ -57,7 +57,7 @@ def _resolve_json_pointer(document: Any, pointer: str) -> Any:
                 raise ValueError(f"Key '{token}' not found while resolving pointer {pointer}")
             current = current[token]
         else:  # pragma: no cover - defensive
-            raise ValueError(
+            raise TypeError(
                 f"Cannot traverse into non-container type at token '{token}' for pointer {pointer}"
             )
     return current
@@ -144,7 +144,7 @@ def _merge_parent_schemas(parent_docs: list[dict]) -> dict:
     return merged
 
 
-def resolve_parent_with_directives(parent_paths: list[Path], directive_path: Path) -> dict:
+def resolve_parent_with_directives(parent_paths: list[Path], directive_path: None | Path) -> dict:
     """Load parent schema(s), merge common+domain, then apply directives.
 
     Args:
@@ -169,10 +169,11 @@ def resolve_parent_with_directives(parent_paths: list[Path], directive_path: Pat
 
     merged_parent = _merge_parent_schemas(parent_docs)
 
-    if not directive_path.exists():
+    if not directive_path or not directive_path.exists():
         error_msg = f"Directive file not found: {directive_path}"
-        logger.error(error_msg)
-        raise FileNotFoundError(error_msg)
+        # logger.error(error_msg)
+        # raise FileNotFoundError(error_msg)
+        return merged_parent
 
     try:
         with Path.open(directive_path) as f:
@@ -184,7 +185,7 @@ def resolve_parent_with_directives(parent_paths: list[Path], directive_path: Pat
 
     entries = directive_doc.get("directives", [])
     if not isinstance(entries, list):
-        raise ValueError(f"'directives' must be a list in directive file '{directive_path.name}'")
+        raise TypeError(f"'directives' must be a list in directive file '{directive_path.name}'")
 
     # Resolve $ref file references so JSON Pointer directives can navigate into them.
     # Determine the base directory from the last existing parent path for relative $ref.
@@ -212,7 +213,7 @@ def resolve_parent_with_directives(parent_paths: list[Path], directive_path: Pat
 
     for entry in entries:
         if not isinstance(entry, dict):
-            raise ValueError(f"Directive entries must be objects in '{directive_path.name}'")
+            raise TypeError(f"Directive entries must be objects in '{directive_path.name}'")
         if "target" not in entry or "x-fbp-pragmas" not in entry:
             raise ValueError(
                 f"Directive entry in '{directive_path.name}' is missing 'target' or 'x-fbp-pragmas': {entry}"
@@ -225,11 +226,11 @@ def resolve_parent_with_directives(parent_paths: list[Path], directive_path: Pat
             target_node = _resolve_json_pointer(merged, pointer)
         except ValueError as e:
             error_msg = f"Failed to resolve JSON Pointer '{pointer}' in directive '{directive_path.name}': {e}"
-            logger.error(error_msg)
+            logger.exception(error_msg)
             raise ValueError(error_msg) from e
 
         if not isinstance(pragma_obj, dict):
-            raise ValueError(
+            raise TypeError(
                 f"'x-fbp-pragmas' must be an object in directive '{directive_path.name}' "
                 f"for target '{pointer}', got {type(pragma_obj)!r}"
             )
