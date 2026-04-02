@@ -2,7 +2,7 @@
 
 Responsible for:
 - Loading parent schema JSON docs from one or more paths (common + domain).
--,Deep-merging parents with domain overriding common.
+- Deep-merging parents with domain overriding common.
 - Applying directive JSON (directives: [...]) via JSON Pointer and x-fbp-pragmas.
 """
 
@@ -26,8 +26,13 @@ def _resolve_json_pointer(document: Any, pointer: str) -> Any:
 
     Raises ValueError if the pointer cannot be resolved.
     """
-    if pointer in ("", "/"):
+    if pointer == "":
         return document
+    if pointer == "/":
+        # RFC 6901: "/" means the key "" (empty string) in the root object
+        if isinstance(document, dict) and "" in document:
+            return document[""]
+        raise ValueError("JSON Pointer '/' targets empty-string key, but document has no such key")
 
     if not pointer.startswith("/"):
         raise ValueError(f"Invalid JSON Pointer (must start with '/'): {pointer}")
