@@ -1,5 +1,5 @@
 # ABOUTME: Singleton holding all agent configuration loaded at startup.
-# ABOUTME: Provides prompt_map, tool_map, and schema_path_map.
+# ABOUTME: Provides prompt_map, tool_map, input/output schema maps, and capabilities.
 
 from __future__ import annotations
 
@@ -14,15 +14,17 @@ class AgentMeta:
     _instance: AgentMeta | None = None
     prompt_map: dict[str, str]
     tool_map: dict[str, list[Any]]
-    schema_path_map: dict[str, str | None]
-    schema_map: dict[str, dict | None]
+    input_schema_map: dict[str, dict[str, dict]]
+    output_schema_map: dict[str, dict | None]
+    capabilities_map: dict[str, list[str]]
     default_agent: str | None
 
     def __init__(self) -> None:
         self.prompt_map = _agent_config.get_prompt_map()
         self.tool_map = _agent_config.get_tool_map()
-        self.schema_path_map = _agent_config.get_schema_path_map()
-        self.schema_map = _agent_config.get_schema_map()  # pyright: ignore[reportAttributeAccessIssue]
+        self.input_schema_map = _agent_config.get_resolved_input_schema_map()
+        self.output_schema_map = _agent_config.get_resolved_output_schema_map()
+        self.capabilities_map = _agent_config.get_capabilities_map()
         self.default_agent = _agent_config.get_default_agent()
 
     @classmethod

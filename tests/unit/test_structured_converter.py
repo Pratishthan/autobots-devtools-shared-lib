@@ -105,7 +105,7 @@ def test_create_conversion_prompt(converter):
     assert "AI: This is a test" in prompt
 
 
-def test_convert_missing_required_fields(converter, mock_model, sample_schema):
+def test_convert_missing_required_fields(converter, mock_model, sample_schema, bro_registered):
     """Test conversion handles validation errors for missing fields."""
     # Mock the structured output chain to raise an exception
     mock_structured_llm = Mock()

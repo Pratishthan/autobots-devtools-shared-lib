@@ -9,9 +9,6 @@ from autobots_devtools_shared_lib.dynagent.agents.agent_config_utils import (
     _reset_agent_config,
 )
 from autobots_devtools_shared_lib.dynagent.agents.agent_meta import AgentMeta
-from autobots_devtools_shared_lib.dynagent.config.dynagent_settings import (
-    get_dynagent_settings,
-)
 
 
 @pytest.fixture(autouse=True)
@@ -36,35 +33,34 @@ def reset_singleton(monkeypatch):
 
 def test_schema_resolves_for_preface_agent(bro_registered):
     meta = AgentMeta.instance()
-    assert meta.schema_path_map["preface_agent"] == "01-preface.json"
+    assert meta.output_schema_map["preface_agent"] is not None
 
 
 def test_schema_resolves_for_getting_started_agent(bro_registered):
     meta = AgentMeta.instance()
-    assert meta.schema_path_map["getting_started_agent"] == "02-getting-started.json"
+    assert meta.output_schema_map["getting_started_agent"] is not None
 
 
 def test_schema_resolves_for_features_agent(bro_registered):
     meta = AgentMeta.instance()
-    assert meta.schema_path_map["features_agent"] == "03-01-list-of-features.json"
+    assert meta.output_schema_map["features_agent"] is not None
 
 
 def test_schema_resolves_for_entity_agent(bro_registered):
     meta = AgentMeta.instance()
-    assert meta.schema_path_map["entity_agent"] == "05-entity.json"
+    assert meta.output_schema_map["entity_agent"] is not None
 
 
 def test_coordinator_has_no_schema(bro_registered):
     """Coordinator has no output_schema — convert_format should error for it."""
     meta = AgentMeta.instance()
-    assert meta.schema_path_map.get("coordinator") is None
+    assert meta.output_schema_map.get("coordinator") is None
 
 
 def test_all_schema_files_exist_on_disk(bro_registered):
-    """Every schema path in the map must point to a real file."""
+    """Every section agent should have an output schema resolved."""
     meta = AgentMeta.instance()
-    for agent, path in meta.schema_path_map.items():
-        if path is None:
+    for agent, schema in meta.output_schema_map.items():
+        if schema is None:
             continue
-        schema_file = get_dynagent_settings().dynagent_config_root_dir / "schemas" / path
-        assert schema_file.exists(), f"Schema file missing for {agent}: {schema_file}"
+        assert isinstance(schema, dict), f"Schema not resolved for {agent}"

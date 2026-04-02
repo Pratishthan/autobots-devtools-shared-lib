@@ -27,16 +27,22 @@ agents:
   preface_agent:
     section: "01-preface"
     prompt: "01-preface"
-    output_schema: "01-preface.json"
+    output:
+      schema: "01-preface.json"
+      directives: null
     approach: "qa"
     tools:
       - "read_file"
       - "update_section"
+    capabilities:
+      - "Write preface sections"
 
   entity_agent:
     section: "05-entities"
     prompt: "05-entity"
-    output_schema: "05-entity.json"
+    output:
+      schema: "05-entity.json"
+      directives: null
     approach: "template"
     dynamic: true
     tools:
@@ -89,11 +95,16 @@ class TestLoadAgentsConfig:
         assert agents["preface_agent"].approach == "qa"
         assert agents["entity_agent"].approach == "template"
 
-    def test_agent_has_output_schema(self, config_dir: Path) -> None:
-        """Agent config should have optional output schema."""
+    def test_agent_has_output(self, config_dir: Path) -> None:
+        """Agent config should have optional output schema block."""
         agents = load_agents_config()
 
-        assert agents["preface_agent"].output_schema == "01-preface.json"
+        assert agents["preface_agent"].output == {"01-preface.json": None}
+
+    def test_agent_has_capabilities(self, config_dir: Path) -> None:
+        """Agent config should parse capabilities list."""
+        agents = load_agents_config()
+        assert agents["preface_agent"].capabilities == ["Write preface sections"]
 
     def test_agent_has_dynamic_flag(self, config_dir: Path) -> None:
         """Agent config should have optional dynamic flag."""
@@ -127,5 +138,6 @@ class TestAgentConfig:
             tools=[],
         )
 
-        assert config.output_schema is None
+        assert config.output is None
+        assert config.capabilities == []
         assert config.dynamic is False

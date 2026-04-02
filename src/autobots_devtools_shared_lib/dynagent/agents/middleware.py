@@ -1,6 +1,7 @@
 # ABOUTME: Middleware that injects agent-specific prompts and tools on every LLM call.
 # ABOUTME: Reads current agent_name from state and overrides via AgentMeta.
 
+import json
 from collections import defaultdict
 from collections.abc import Awaitable, Callable
 
@@ -26,7 +27,17 @@ async def inject_agent_async(
 
     # Format prompt safely — missing placeholders become empty strings
     raw_prompt = meta.prompt_map.get(agent_name, "")
-    format_values = defaultdict(str, **request.state)
+
+    # Inject resolved input schemas (if any) as JSON strings using their schema keys.
+    input_schemas = meta.input_schema_map.get(agent_name, {})
+    directive_values = {
+        schema_key: json.dumps(schema, indent=2, sort_keys=True)
+        for schema_key, schema in input_schemas.items()
+    }
+
+    # request.state values take precedence on key collision, consistent with previous behavior.
+    combined_values = {**directive_values, **request.state}
+    format_values = defaultdict(str, **combined_values)
     system_prompt = raw_prompt.format_map(format_values)
 
     tools = meta.tool_map.get(agent_name, [])
@@ -52,7 +63,17 @@ def inject_agent_sync(
 
     # Format prompt safely — missing placeholders become empty strings
     raw_prompt = meta.prompt_map.get(agent_name, "")
-    format_values = defaultdict(str, **request.state)
+
+    # Inject resolved input schemas (if any) as JSON strings using their schema keys.
+    input_schemas = meta.input_schema_map.get(agent_name, {})
+    directive_values = {
+        schema_key: json.dumps(schema, indent=2, sort_keys=True)
+        for schema_key, schema in input_schemas.items()
+    }
+
+    # request.state values take precedence on key collision, consistent with previous behavior.
+    combined_values = {**directive_values, **request.state}
+    format_values = defaultdict(str, **combined_values)
     system_prompt = raw_prompt.format_map(format_values)
 
     tools = meta.tool_map.get(agent_name, [])

@@ -1,0 +1,70 @@
+{
+  "title": "Domain Logical Processing Units",
+  "type": "object",
+  "properties": {
+    "pipeline": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string",
+          "description": "Domain-specific version string for this logical pipeline."
+        },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "owner": {
+              "type": "string",
+              "description": "Domain owner for logical processing."
+            },
+            "labels": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Domain-specific labels for the pipeline."
+            },
+            "criticality": {
+              "type": "string",
+              "enum": ["low", "medium", "high"],
+              "description": "How critical this logical pipeline is to the product."
+            }
+          },
+          "required": ["owner", "criticality"]
+        }
+      }
+    },
+    "units": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "unitName": {
+            "type": "string",
+            "description": "Short name for the logical unit within this domain."
+          },
+          "businessLogic": {
+            "type": "string",
+            "description": "Narrative description of the domain-specific business logic."
+          },
+          "inputs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                }
+              },
+              "required": ["name", "type"]
+            }
+          }
+        },
+        "required": ["unitName", "businessLogic"]
+      }
+    }
+  },
+  "required": ["pipeline", "units"]
+}

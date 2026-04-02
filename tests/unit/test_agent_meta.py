@@ -48,12 +48,12 @@ def test_prompt_map_values_are_non_empty_strings(bro_registered):
         assert len(prompt) > 0, f"{name} has empty prompt"
 
 
-def test_schema_path_map_coordinator_is_none(bro_registered):
+def test_output_schema_map_coordinator_is_none(bro_registered):
     meta = AgentMeta.instance()
-    assert meta.schema_path_map.get("coordinator") is None
+    assert meta.output_schema_map.get("coordinator") is None
 
 
-def test_schema_path_map_section_agents_populated(bro_registered):
+def test_output_schema_map_section_agents_populated(bro_registered):
     meta = AgentMeta.instance()
     for agent in (
         "preface_agent",
@@ -61,7 +61,7 @@ def test_schema_path_map_section_agents_populated(bro_registered):
         "features_agent",
         "entity_agent",
     ):
-        assert meta.schema_path_map.get(agent) is not None, f"{agent} schema_path_map is None"
+        assert meta.output_schema_map.get(agent) is not None, f"{agent} output schema is None"
 
 
 def test_tool_map_has_all_agents(bro_registered):
@@ -77,29 +77,28 @@ def test_tool_map_values_are_non_empty_lists(bro_registered):
         assert len(tools) > 0, f"{name} has no tools"
 
 
-def test_schema_map_has_all_agents(bro_registered):
-    """schema_map should have entries for all agents."""
+def test_output_schema_map_has_all_agents(bro_registered):
+    """output_schema_map should have entries for all agents."""
     meta = AgentMeta.instance()
     agent_list = get_agent_list()
-    assert set(meta.schema_map.keys()) == set(agent_list)
+    assert set(meta.output_schema_map.keys()) == set(agent_list)
 
 
-def test_schema_map_values_are_dicts_or_none(bro_registered):
-    """schema_map values should be dicts (parsed schemas) or None."""
+def test_output_schema_map_values_are_dicts_or_none(bro_registered):
+    """output_schema_map values should be dicts (resolved schemas) or None."""
     meta = AgentMeta.instance()
 
-    for agent_name, schema in meta.schema_map.items():
+    for agent_name, schema in meta.output_schema_map.items():
         if schema is None:
             continue
         assert isinstance(schema, dict), f"{agent_name} schema is not a dict"
         assert "type" in schema, f"{agent_name} schema missing 'type' field"
 
 
-def test_schema_map_matches_schema_path_map_structure(bro_registered):
-    """Agents with schema paths should have schemas, others should have None."""
+def test_input_and_output_schema_maps_have_all_agents(bro_registered):
+    """Input and output schema maps should be keyed by agent names."""
     meta = AgentMeta.instance()
+    agent_list = set(get_agent_list())
 
-    for agent_name in get_agent_list():
-        has_path = meta.schema_path_map.get(agent_name) is not None
-        has_schema = meta.schema_map.get(agent_name) is not None
-        assert has_path == has_schema, f"{agent_name}: schema_path_map and schema_map inconsistent"
+    assert set(meta.input_schema_map.keys()) == agent_list
+    assert set(meta.output_schema_map.keys()) == agent_list

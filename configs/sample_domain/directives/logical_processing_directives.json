@@ -1,0 +1,46 @@
+{
+  "id": "logical_processing_directives",
+  "title": "Logical Processing Directives",
+  "directives": [
+    {
+      "target": "/properties/pipeline/properties/metadata/properties/labels",
+      "x-fbp-pragmas": {
+        "nurture": [
+          "Use labels to express domain, product area, and experiment flags.",
+          "Prefer a small, stable set of labels reused across units."
+        ]
+      },
+      "description": "Guidance for choosing pipeline metadata labels."
+    },
+    {
+      "target": "/properties/pipeline/properties/metadata/properties/criticality",
+      "x-fbp-pragmas": {
+        "nurture": [
+          "Classify pipelines conservatively as high criticality when they can impact money, data integrity, or compliance.",
+          "Use medium for user-facing but recoverable behavior, and low for purely diagnostic flows."
+        ]
+      },
+      "description": "Guidance for assessing pipeline criticality."
+    },
+    {
+      "target": "/properties/units/items/properties/unitName",
+      "x-fbp-pragmas": {
+        "nurture": [
+          "Generate concise, unique unit names.",
+          "Prefer imperative verbs for behavior-oriented units."
+        ]
+      },
+      "description": "Naming guidance for logical processing units."
+    },
+    {
+      "target": "/properties/units/items/properties/businessLogic",
+      "x-fbp-pragmas": {
+        "nurture": [
+          "Summarize the core decision logic.",
+          "Avoid implementation details such as specific libraries."
+        ]
+      },
+      "description": "Content guidance for unit business logic."
+    }
+  ]
+}
