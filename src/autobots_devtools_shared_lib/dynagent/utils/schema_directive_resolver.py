@@ -29,10 +29,9 @@ def _resolve_json_pointer(document: Any, pointer: str) -> Any:
     if pointer == "":
         return document
     if pointer == "/":
-        # RFC 6901: "/" means the key "" (empty string) in the root object
-        if isinstance(document, dict) and "" in document:
-            return document[""]
-        raise ValueError("JSON Pointer '/' targets empty-string key, but document has no such key")
+        # Directive convention: "/" means the root document, not the RFC 6901 empty-string key.
+        # Schemas in this codebase never have an empty-string key, so treat "/" as root.
+        return document
 
     if not pointer.startswith("/"):
         raise ValueError(f"Invalid JSON Pointer (must start with '/'): {pointer}")
@@ -144,6 +143,99 @@ def _merge_parent_schemas(parent_docs: list[dict]) -> dict:
     return merged
 
 
+def _flatten_directive_entries(
+    entries: list[dict],
+    directive_dir: Path,
+    link_target: str = "",
+    _seen: frozenset[str] = frozenset(),
+    _sources: list[dict] | None = None,
+) -> list[tuple[str, dict, str | None]]:
+    """Flatten directive entries, resolving ``$ref`` links recursively.
+
+    Entries with ``$ref`` load the referenced directive file and rebase its entries
+    under the linking entry's ``target``. Recursion is guarded by ``_seen``.
+
+    Rebasing rule:
+        - Referenced ``/``            → ``link_target`` (or ``/`` at top level)
+        - Referenced ``/properties/x`` → ``link_target + /properties/x``
+
+    Args:
+        entries: The ``directives`` list from a directive document.
+        directive_dir: Directory for resolving relative ``$ref`` paths.
+        link_target: JSON Pointer prefix for all targets in ``entries``.
+            Empty string means no rebasing (top-level call).
+        _seen: Resolved directive file paths — guards against circular references.
+        _sources: Optional list; each loaded directive file appends its metadata here.
+
+    Returns:
+        Flat list of ``(pointer, pragma_obj, description)`` tuples.
+    """
+    result: list[tuple[str, dict, str | None]] = []
+
+    for entry in entries:
+        if not isinstance(entry, dict):
+            raise TypeError(f"Directive entries must be objects, got {type(entry)!r}")
+
+        has_ref = "$ref" in entry
+        has_pragmas = "x-fbp-pragmas" in entry
+
+        if not has_ref and not has_pragmas:
+            raise ValueError(
+                f"Directive entry must have 'x-fbp-pragmas' or '$ref' "
+                f"(target={entry.get('target')!r}): {entry}"
+            )
+
+        entry_target: str = entry.get("target", "/")
+
+        # Compute the absolute JSON Pointer for this entry.
+        if entry_target == "/":
+            abs_target = link_target if link_target else "/"
+        else:
+            abs_target = (link_target + entry_target) if link_target else entry_target
+
+        # Emit this entry's own x-fbp-pragmas at abs_target.
+        if has_pragmas:
+            result.append((abs_target, entry["x-fbp-pragmas"], entry.get("description")))
+
+        # Resolve $ref: load the referenced directive file and rebase its entries.
+        if has_ref:
+            ref: str = entry["$ref"]
+            ref_path = (directive_dir / ref).resolve()
+            ref_uri = str(ref_path)
+
+            if ref_uri in _seen:
+                raise ValueError(f"Circular $ref in directives detected: {ref!r}")
+
+            try:
+                ref_doc = json.loads(ref_path.read_text())
+            except (OSError, json.JSONDecodeError) as e:
+                raise ValueError(f"Failed to load directive $ref {ref!r}: {e}") from e
+
+            if _sources is not None:
+                _sources.append(
+                    {
+                        "id": ref_doc.get("id", ref_path.stem),
+                        "title": ref_doc.get("title", ref_path.stem),
+                    }
+                )
+
+            sub_entries = ref_doc.get("directives", [])
+            if not isinstance(sub_entries, list):
+                raise TypeError(f"'directives' in {ref!r} must be a list")
+
+            result.extend(
+                _flatten_directive_entries(
+                    sub_entries,
+                    ref_path.parent,
+                    abs_target,
+                    _seen | {ref_uri},
+                    _sources,
+                )
+            )
+
+    return result
+
+
 def resolve_parent_with_directives(parent_paths: list[Path], directive_path: None | Path) -> dict:
     """Load parent schema(s), merge common+domain, then apply directives.
 
@@ -211,16 +303,18 @@ def resolve_parent_with_directives(parent_paths: list[Path], directive_path: Non
     }
     sources.append(directive_source)
 
-    for entry in entries:
-        if not isinstance(entry, dict):
-            raise TypeError(f"Directive entries must be objects in '{directive_path.name}'")
-        if "target" not in entry or "x-fbp-pragmas" not in entry:
-            raise ValueError(
-                f"Directive entry in '{directive_path.name}' is missing 'target' or 'x-fbp-pragmas': {entry}"
+    transitive_sources: list[dict] = []
+    flat_entries = _flatten_directive_entries(
+        entries, directive_path.parent, _sources=transitive_sources
+    )
+    sources.extend(transitive_sources)
+
+    for pointer, pragma_obj, description in flat_entries:
+        if not isinstance(pragma_obj, dict):
+            raise TypeError(
+                f"'x-fbp-pragmas' must be an object in directive '{directive_path.name}' "
+                f"for target '{pointer}', got {type(pragma_obj)!r}"
             )
-        pointer = entry["target"]
-        pragma_obj = entry["x-fbp-pragmas"]
-        description = entry.get("description")
 
         try:
             target_node = _resolve_json_pointer(merged, pointer)
@@ -228,12 +322,6 @@ def resolve_parent_with_directives(parent_paths: list[Path], directive_path: Non
             error_msg = f"Failed to resolve JSON Pointer '{pointer}' in directive '{directive_path.name}': {e}"
             logger.exception(error_msg)
             raise ValueError(error_msg) from e
-
-        if not isinstance(pragma_obj, dict):
-            raise TypeError(
-                f"'x-fbp-pragmas' must be an object in directive '{directive_path.name}' "
-                f"for target '{pointer}', got {type(pragma_obj)!r}"
-            )
 
         _merge_pragmas(target_node, pragma_obj, description)
 
