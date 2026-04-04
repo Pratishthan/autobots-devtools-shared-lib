@@ -91,9 +91,10 @@ def _retrieve_from_path(base_dir: Path):
 
     def _retrieve(uri: str) -> Resource:
         from urllib.parse import unquote, urlparse
+        from urllib.request import url2pathname
 
         parsed = urlparse(uri)
-        path = Path(unquote(parsed.path))
+        path = Path(url2pathname(unquote(parsed.path)))
         if not path.is_absolute():
             path = base_dir / path
         contents = json.loads(path.read_text())
