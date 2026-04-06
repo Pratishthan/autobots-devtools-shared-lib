@@ -1,6 +1,8 @@
 # ABOUTME: Tests for workspace file staging and teardown.
 # ABOUTME: Validates file copying, directory creation, and cleanup.
+import json
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
@@ -20,54 +22,91 @@ def fixture_dir(tmp_path) -> Path:
     return fixtures
 
 
-class TestSetupWorkspace:
-    def test_creates_workspace_dir(self, tmp_path, fixture_dir):
-        workspace = tmp_path / "workspace"
+class TestSetupWorkspaceWithFileServer:
+    def test_calls_move_file_for_each_workspace_file(self, tmp_path):
+        state = {"user_name": "alice", "repo_name": "my-repo", "jira_number": "MER-42"}
         config = SetupConfig(
             workspace_files=[
-                WorkspaceFile(
-                    src=str(fixture_dir / "input.md"),
-                    dest="docs/FeatureLLD/MER-99999---Party.md",
-                )
+                WorkspaceFile(src="/fixtures/input.md", dest="docs/LLD.md"),
+                WorkspaceFile(src="/fixtures/meta.json", dest="meta/models.json"),
             ]
         )
-        setup_workspace(config, str(workspace))
-        assert workspace.exists()
-        assert (workspace / "docs/FeatureLLD/MER-99999---Party.md").exists()
-        content = (workspace / "docs/FeatureLLD/MER-99999---Party.md").read_text()
-        assert "Party" in content
+        with patch("autobots_devtools_shared_lib.eval.core.workspace.move_file") as mock_move:
+            mock_move.return_value = "File moved successfully"
+            setup_workspace(config, str(tmp_path / "workspace"), state=state)
 
-    def test_stages_multiple_files(self, tmp_path, fixture_dir):
+        assert mock_move.call_count == 2
+        mock_move.assert_any_call(
+            "/fixtures/input.md",
+            str(tmp_path / "workspace" / "docs/LLD.md"),
+            json.dumps(state),
+        )
+        mock_move.assert_any_call(
+            "/fixtures/meta.json",
+            str(tmp_path / "workspace" / "meta/models.json"),
+            json.dumps(state),
+        )
+
+    def test_empty_state_passes_empty_json(self, tmp_path):
+        config = SetupConfig(workspace_files=[WorkspaceFile(src="/fixtures/f.md", dest="f.md")])
+        with patch("autobots_devtools_shared_lib.eval.core.workspace.move_file") as mock_move:
+            mock_move.return_value = "File moved successfully"
+            setup_workspace(config, str(tmp_path / "ws"))
+
+        mock_move.assert_called_once_with(
+            "/fixtures/f.md",
+            str(tmp_path / "ws" / "f.md"),
+            "{}",
+        )
+
+    def test_no_files_no_move_called(self, tmp_path):
+        config = SetupConfig()
+        with patch("autobots_devtools_shared_lib.eval.core.workspace.move_file") as mock_move:
+            setup_workspace(config, str(tmp_path / "ws"))
+        mock_move.assert_not_called()
+
+    def test_raises_on_file_server_error(self, tmp_path):
+        config = SetupConfig(workspace_files=[WorkspaceFile(src="/fixtures/f.md", dest="f.md")])
+        with patch("autobots_devtools_shared_lib.eval.core.workspace.move_file") as mock_move:
+            mock_move.return_value = "Error moving file: HTTP 404 - Not Found"
+            with pytest.raises(RuntimeError, match="File server failed to stage"):
+                setup_workspace(config, str(tmp_path / "ws"))
+
+
+class TestSetupWorkspace:
+    def test_creates_workspace_dir(self, tmp_path):
+        workspace = tmp_path / "workspace"
+        config = SetupConfig(
+            workspace_files=[WorkspaceFile(src="/fixtures/input.md", dest="docs/LLD.md")]
+        )
+        with patch(
+            "autobots_devtools_shared_lib.eval.core.workspace.move_file",
+            return_value="File moved successfully",
+        ):
+            setup_workspace(config, str(workspace))
+        assert workspace.exists()
+
+    def test_calls_move_for_multiple_files(self, tmp_path):
         workspace = tmp_path / "workspace"
         config = SetupConfig(
             workspace_files=[
-                WorkspaceFile(
-                    src=str(fixture_dir / "input.md"),
-                    dest="docs/LLD.md",
-                ),
-                WorkspaceFile(
-                    src=str(fixture_dir / "meta.json"),
-                    dest="meta/models.json",
-                ),
+                WorkspaceFile(src="/fixtures/input.md", dest="docs/LLD.md"),
+                WorkspaceFile(src="/fixtures/meta.json", dest="meta/models.json"),
             ]
         )
-        setup_workspace(config, str(workspace))
-        assert (workspace / "docs/LLD.md").exists()
-        assert (workspace / "meta/models.json").exists()
+        with patch(
+            "autobots_devtools_shared_lib.eval.core.workspace.move_file",
+            return_value="File moved successfully",
+        ) as mock_move:
+            setup_workspace(config, str(workspace))
+        assert mock_move.call_count == 2
 
     def test_empty_setup(self, tmp_path):
         workspace = tmp_path / "workspace"
         config = SetupConfig()
-        setup_workspace(config, str(workspace))
-        assert workspace.exists()
-
-    def test_missing_src_raises(self, tmp_path):
-        workspace = tmp_path / "workspace"
-        config = SetupConfig(
-            workspace_files=[WorkspaceFile(src="/nonexistent/file.md", dest="docs/LLD.md")]
-        )
-        with pytest.raises(FileNotFoundError, match="nonexistent"):
+        with patch("autobots_devtools_shared_lib.eval.core.workspace.move_file"):
             setup_workspace(config, str(workspace))
+        assert workspace.exists()
 
 
 class TestTeardownWorkspace:
