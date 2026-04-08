@@ -35,11 +35,12 @@ def _make_eval_case(**overrides) -> EvalCase:
 
 
 class TestMakeDynagentEval:
+    @pytest.mark.asyncio
     @patch("autobots_devtools_shared_lib.eval.pytest_plugin.fixtures.post_scores")
     @patch("autobots_devtools_shared_lib.eval.pytest_plugin.fixtures.run_linear_eval")
     @patch("autobots_devtools_shared_lib.eval.pytest_plugin.fixtures.setup_workspace")
     @patch("autobots_devtools_shared_lib.eval.pytest_plugin.fixtures.teardown_workspace")
-    def test_calls_runner(self, mock_teardown, mock_setup, mock_run, mock_post_scores):
+    async def test_calls_runner(self, mock_teardown, mock_setup, mock_run, mock_post_scores):
         from autobots_devtools_shared_lib.eval.models.result import EvalResult
 
         mock_run.return_value = EvalResult(
@@ -52,15 +53,18 @@ class TestMakeDynagentEval:
             no_langfuse_score=False,
         )
         case = _make_eval_case()
-        result = eval_fn(case)
+        result = await eval_fn(case)
         assert result.passed is True
         mock_run.assert_called_once()
 
+    @pytest.mark.asyncio
     @patch("autobots_devtools_shared_lib.eval.pytest_plugin.fixtures.post_scores")
     @patch("autobots_devtools_shared_lib.eval.pytest_plugin.fixtures.run_linear_eval")
     @patch("autobots_devtools_shared_lib.eval.pytest_plugin.fixtures.setup_workspace")
     @patch("autobots_devtools_shared_lib.eval.pytest_plugin.fixtures.teardown_workspace")
-    def test_calls_workspace_setup(self, mock_teardown, mock_setup, mock_run, mock_post_scores):
+    async def test_calls_workspace_setup(
+        self, mock_teardown, mock_setup, mock_run, mock_post_scores
+    ):
         from autobots_devtools_shared_lib.eval.models.result import EvalResult
 
         mock_run.return_value = EvalResult(
@@ -73,17 +77,18 @@ class TestMakeDynagentEval:
             no_langfuse_score=False,
         )
         case = _make_eval_case()
-        eval_fn(case)
+        await eval_fn(case)
         assert mock_setup.call_args[0][0] is case.setup
         assert isinstance(mock_setup.call_args[0][1], str)  # workspace_path is a temp dir string
         mock_teardown.assert_called_once()
 
+    @pytest.mark.asyncio
     @patch("autobots_devtools_shared_lib.eval.pytest_plugin.fixtures.post_scores")
     @patch("autobots_devtools_shared_lib.eval.pytest_plugin.fixtures.query_langfuse_cost")
     @patch("autobots_devtools_shared_lib.eval.pytest_plugin.fixtures.run_linear_eval")
     @patch("autobots_devtools_shared_lib.eval.pytest_plugin.fixtures.setup_workspace")
     @patch("autobots_devtools_shared_lib.eval.pytest_plugin.fixtures.teardown_workspace")
-    def test_cost_tracking_sets_snapshot(
+    async def test_cost_tracking_sets_snapshot(
         self, mock_teardown, mock_setup, mock_run, mock_query_cost, mock_post_scores
     ):
         from autobots_devtools_shared_lib.eval.models.result import EvalCostSnapshot, EvalResult
@@ -110,16 +115,17 @@ class TestMakeDynagentEval:
             no_langfuse_score=True,
         )
         case = _make_eval_case(cost=CostConfig(track=True))
-        result = eval_fn(case)
+        result = await eval_fn(case)
 
         mock_query_cost.assert_called_once()
         assert result.cost_snapshot is snapshot
 
+    @pytest.mark.asyncio
     @patch("autobots_devtools_shared_lib.eval.pytest_plugin.fixtures.post_scores")
     @patch("autobots_devtools_shared_lib.eval.pytest_plugin.fixtures.run_linear_eval")
     @patch("autobots_devtools_shared_lib.eval.pytest_plugin.fixtures.setup_workspace")
     @patch("autobots_devtools_shared_lib.eval.pytest_plugin.fixtures.teardown_workspace")
-    def test_teardown_called_on_runner_exception(
+    async def test_teardown_called_on_runner_exception(
         self, mock_teardown, mock_setup, mock_run, mock_post_scores
     ):
         mock_run.side_effect = RuntimeError("agent crashed")
@@ -131,6 +137,6 @@ class TestMakeDynagentEval:
         )
         case = _make_eval_case()
         with pytest.raises(RuntimeError, match="agent crashed"):
-            eval_fn(case)
+            await eval_fn(case)
 
         mock_teardown.assert_called_once()

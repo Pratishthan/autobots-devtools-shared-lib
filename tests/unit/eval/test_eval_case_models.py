@@ -95,6 +95,22 @@ def test_cost_config_defaults():
     """CostConfig has sensible defaults."""
     c = CostConfig.model_validate({})
     assert c.track is False
+    assert c.baseline is None
+    assert c.thresholds == {}
+
+
+def test_cost_config_with_baseline_and_thresholds():
+    """CostConfig accepts baseline path and thresholds."""
+    c = CostConfig.model_validate(
+        {
+            "track": True,
+            "baseline": "fixtures/cost_baseline.json",
+            "thresholds": {"input_tokens": 20, "cost_usd": 25},
+        }
+    )
+    assert c.track is True
+    assert c.baseline == "fixtures/cost_baseline.json"
+    assert c.thresholds == {"input_tokens": 20, "cost_usd": 25}
 
 
 def test_retry_config_defaults():

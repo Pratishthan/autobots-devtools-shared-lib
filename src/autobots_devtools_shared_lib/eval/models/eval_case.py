@@ -56,6 +56,8 @@ class CostConfig(BaseModel):
     """Cost tracking configuration."""
 
     track: bool = False
+    baseline: str | None = None
+    thresholds: dict[str, float] = {}
 
 
 class RetryConfig(BaseModel):

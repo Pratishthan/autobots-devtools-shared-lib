@@ -3,11 +3,9 @@
 
 from __future__ import annotations
 
-import asyncio
 import logging
-import tempfile
 import uuid
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from autobots_devtools_shared_lib.common.observability.trace_metadata import TraceMetadata
 from autobots_devtools_shared_lib.eval.core.cost_tracker import query_langfuse_cost
@@ -17,7 +15,7 @@ from autobots_devtools_shared_lib.eval.models.result import EvalResult
 from autobots_devtools_shared_lib.eval.scoring.langfuse_scorer import post_scores
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import Callable, Coroutine
 
     from langchain_core.runnables import RunnableConfig
 
@@ -31,8 +29,8 @@ def make_dynagent_eval(
     update_golden: bool,
     update_baseline: bool,
     no_langfuse_score: bool,
-) -> Callable[[EvalCase], EvalResult]:
-    """Factory that returns a sync callable to run a single eval case.
+) -> Callable[[EvalCase], Coroutine[Any, Any, EvalResult]]:
+    """Factory that returns an async callable to run a single eval case.
 
     The returned callable handles:
     - Session/thread ID generation
@@ -48,12 +46,12 @@ def make_dynagent_eval(
         no_langfuse_score: If True, skip posting scores to Langfuse.
 
     Returns:
-        A callable that takes an EvalCase and returns an EvalResult.
+        An async callable that takes an EvalCase and returns an EvalResult.
     """
 
-    def _eval(eval_case: EvalCase) -> EvalResult:
+    async def _eval(eval_case: EvalCase) -> EvalResult:
         session_id = str(uuid.uuid4())
-        workspace_path = tempfile.mkdtemp(prefix="dynagent_eval_")
+        workspace_path = "/Users/shruthi/Projects/workspace/khushboo-2802394_infosys/fbp-core-genai-sanity-MER-9999"
 
         config: RunnableConfig = {
             "configurable": {
@@ -73,7 +71,7 @@ def make_dynagent_eval(
 
             # Run the eval
             if eval_case.mode == "linear":
-                result = asyncio.run(run_linear_eval(eval_case, config, trace_metadata))
+                result = await run_linear_eval(eval_case, config, trace_metadata)
             else:
                 result = EvalResult(
                     name=eval_case.name,

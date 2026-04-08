@@ -84,6 +84,20 @@ def test_schema_match_fails(tmp_path):
     assert result.passed is False
 
 
+def test_schema_match_inline_dict_passes():
+    output = _make_output('{"models": ["Party"]}')
+    schema = {"type": "object", "required": ["models"]}
+    result = schema_match(output, schema)
+    assert result.passed is True
+
+
+def test_schema_match_inline_dict_fails():
+    output = _make_output('{"items": ["Party"]}')
+    schema = {"type": "object", "required": ["models"]}
+    result = schema_match(output, schema)
+    assert result.passed is False
+
+
 def test_tool_called_passes():
     output = _make_output(
         "done",

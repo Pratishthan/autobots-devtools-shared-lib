@@ -88,11 +88,15 @@ def json_match(agent_output: AgentOutput, config: Any) -> AssertionResult:
 
 
 def schema_match(agent_output: AgentOutput, config: Any) -> AssertionResult:
-    """Validate agent response JSON against a JSON schema file."""
+    """Validate agent response JSON against a JSON schema (dict or file path)."""
     text = _last_ai_content(agent_output)
-    schema_path = Path(str(config))
     try:
-        schema = json.loads(schema_path.read_text())
+        # If config is already a dict, use it directly; otherwise treat as file path
+        if isinstance(config, dict):
+            schema = config
+        else:
+            schema_path = Path(str(config))
+            schema = json.loads(schema_path.read_text())
         data = json.loads(text)
         js.validate(instance=data, schema=schema)
         return AssertionResult(passed=True, name="response_matches_schema", detail="Valid")

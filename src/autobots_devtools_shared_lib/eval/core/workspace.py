@@ -22,11 +22,14 @@ def setup_workspace(config: SetupConfig, workspace_path: str) -> None:
     Raises:
         FileNotFoundError: If a source fixture file does not exist.
     """
+    import os
+
+    app_root_path = os.getenv("APP_ROOT_PATH", "")
     workspace = Path(workspace_path)
     workspace.mkdir(parents=True, exist_ok=True)
 
     for wf in config.workspace_files:
-        src = Path(wf.src)
+        src = Path(app_root_path, wf.src)
         if not src.exists():
             raise FileNotFoundError(
                 f"Fixture file not found: {src}. "
