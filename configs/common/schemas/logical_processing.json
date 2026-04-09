@@ -1,0 +1,38 @@
+{
+  "title": "Common Logical Processing Base",
+  "type": "object",
+  "properties": {
+    "pipeline": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string",
+          "description": "Semantic version of the logical processing pipeline definition."
+        },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "owner": {
+              "type": "string",
+              "description": "Owning team or persona for this logical pipeline."
+            },
+            "labels": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Generic labels applied to the pipeline."
+            }
+          },
+          "required": ["owner"]
+        }
+      },
+      "required": ["version"]
+    },
+    "commonNotes": {
+      "type": "string",
+      "description": "Shared common schema extension merged before domain schema."
+    }
+  },
+  "required": ["pipeline"]
+}

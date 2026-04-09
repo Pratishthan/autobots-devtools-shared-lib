@@ -43,7 +43,7 @@ def output_format_converter(
     )
 
     meta = AgentMeta.instance()
-    schema = meta.schema_map.get(agent_name)  # pyright: ignore[reportAttributeAccessIssue]
+    schema = meta.output_schema_map.get(agent_name)  # pyright: ignore[reportAttributeAccessIssue]
 
     if schema is None:
         return f"Error: no output schema configured for agent '{agent_name}'"

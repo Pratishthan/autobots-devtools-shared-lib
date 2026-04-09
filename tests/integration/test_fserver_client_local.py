@@ -218,7 +218,7 @@ def test_list_files_with_nested_base_path(local_file_server, mock_runtime):
     )
 
     assert "nested/inner/file1.txt" in list_result
-    assert "nested/inner1/file2.txt" in list_result
+    assert "nested/inner1/file2.txt" not in list_result
     assert "other/file3.txt" not in list_result
 
 

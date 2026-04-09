@@ -1,0 +1,15 @@
+{
+  "id": "test_data_directives",
+  "title": "Test Data Directives",
+  "directives": [
+    {
+      "target": "/properties/payload",
+      "x-fbp-pragmas": {
+        "nurture": [
+          "Keep payload concise and deterministic for repeatable runs."
+        ]
+      },
+      "description": "Guidance for test payload generation."
+    }
+  ]
+}

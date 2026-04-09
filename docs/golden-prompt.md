@@ -19,6 +19,10 @@ Key constraint: [ONE SENTENCE about the most important operating constraint].
   - **[PARAMETER NAME 2]** — [description] (e.g. `[example]`)
 
   If any parameter is missing, ask the user to provide it before proceeding.
+
+  ```json
+  {input_schemas}
+  ```
 </inputs>
 
 <context>
@@ -66,7 +70,9 @@ Key constraint: [ONE SENTENCE about the most important operating constraint].
 <outputs>
   <schema>
   <!-- Keep this as is when output_schema is set in agents.yaml. Injected by harness. -->
-    {{output-schema}}
+  ```json
+    {output_schema}
+  ```
   </schema>
 
   <format>
