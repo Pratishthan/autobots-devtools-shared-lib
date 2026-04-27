@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Any
 
 from autobots_devtools_shared_lib.dynagent.agents.invocation_utils import ainvoke_agent
 from autobots_devtools_shared_lib.eval.assertions.registry import resolve_assertion
+from autobots_devtools_shared_lib.eval.core.workspace import resolve_eval_state_schema
 from autobots_devtools_shared_lib.eval.models.result import (
     AgentOutput,
     AssertionResult,
@@ -111,6 +112,7 @@ async def run_linear_eval(
                 config=config,
                 enable_tracing=trace_metadata is not None,
                 trace_metadata=trace_metadata,
+                state_schema=resolve_eval_state_schema(),
             )
 
             agent_output = _build_agent_output(result)
