@@ -1,8 +1,11 @@
 # ABOUTME: Unit tests for dynadoc render engine.
 # ABOUTME: Covers leaf, composite, depth-N, strict and lenient modes.
 
+from pathlib import Path
+
 import pytest
 
+from autobots_devtools_shared_lib.dynadoc import render_document
 from autobots_devtools_shared_lib.dynadoc.engine import render_tree
 from autobots_devtools_shared_lib.dynadoc.errors import (
     MalformedJsonError,
@@ -247,3 +250,23 @@ def test_leaf_to_passthrough_subtree_yields_identical_output():
     leaf_md = render_tree(leaf_docs["d"], load_json, load_template, strict=True).md
     refactored_md = render_tree(refactored_docs["d"], load_json, load_template, strict=True).md
     assert leaf_md == refactored_md == "[VAL]"
+
+
+# --- public entry point ---
+
+
+_BRO_CONFIG = Path(__file__).resolve().parent.parent.parent.parent / "configs" / "bro"
+
+
+def test_render_document_end_to_end(monkeypatch):
+    monkeypatch.setattr(
+        "autobots_devtools_shared_lib.dynagent.agents.agent_config_utils.get_config_dir",
+        lambda: _BRO_CONFIG,
+    )
+
+    def load_json(_: str) -> dict:
+        return {"who": "world"}
+
+    result = render_document("smoke_e2e", load_json=load_json, strict=True)
+    assert result.md.strip() == "hello world"
+    assert result.errors == []

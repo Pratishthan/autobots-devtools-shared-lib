@@ -14,7 +14,7 @@ from autobots_devtools_shared_lib.dynadoc.errors import (
     RenderResult,
     UndefinedVariableError,
 )
-from autobots_devtools_shared_lib.dynadoc.manifest import Node
+from autobots_devtools_shared_lib.dynadoc.manifest import Node, find_document, parse_manifest
 
 logger = get_logger(__name__)
 
@@ -167,3 +167,24 @@ def _render_with_template(
         raise DynadocError(
             f"Template syntax error in '{template_name}' for node '{node.path}': {e}"
         ) from e
+
+
+def render_document(
+    document_name: str,
+    load_json: JsonLoader,
+    strict: bool = True,
+) -> RenderResult:
+    """Top-level entry point.
+
+    Looks up the document in the active domain's dynadoc.yaml and renders it.
+    Templates and the manifest are resolved from DYNAGENT_CONFIG_ROOT_DIR.
+    """
+    from autobots_devtools_shared_lib.dynagent.agents.agent_config_utils import (
+        load_render_manifest,
+        load_template,
+    )
+
+    raw = load_render_manifest()
+    documents = parse_manifest(raw)
+    node = find_document(documents, document_name)
+    return render_tree(node, load_json, load_template, strict=strict)
