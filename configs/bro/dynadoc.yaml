@@ -1,0 +1,4 @@
+documents:
+  smoke:
+    json: smoke.json
+    template: sample.md.j2
