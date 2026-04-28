@@ -39,6 +39,7 @@ def _register_builtins() -> None:
         llm_judge,
         trajectory_quality,
     )
+    from autobots_devtools_shared_lib.eval.assertions.written_file import written_file_matches
 
     _REGISTRY.update(
         cast(
@@ -56,6 +57,7 @@ def _register_builtins() -> None:
                 "llm_judge": llm_judge,
                 "trajectory_quality": trajectory_quality,
                 "golden_match": golden_match,
+                "written_file_matches": written_file_matches,
             },
         )
     )

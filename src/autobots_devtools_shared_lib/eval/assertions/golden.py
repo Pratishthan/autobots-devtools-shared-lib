@@ -31,21 +31,38 @@ class JsonDiff:
         return "\n".join(lines)
 
 
-def _diff_json(reference: Any, actual: Any, path: str = "") -> JsonDiff:
-    """Recursive deep diff between two JSON-like structures."""
+def _diff_json(
+    reference: Any,
+    actual: Any,
+    path: str = "",
+    ignore_fields: list[str] | None = None,
+) -> JsonDiff:
+    """Recursive deep diff between two JSON-like structures.
+
+    Args:
+        reference: Expected JSON value.
+        actual: Actual JSON value from agent output.
+        path: Dot-path prefix used in diff messages (internal).
+        ignore_fields: Key names to skip at any level of the dict tree.
+    """
+    ignore = set(ignore_fields or [])
     diff = JsonDiff()
 
     if isinstance(reference, dict) and isinstance(actual, dict):
         for key in reference:
+            if key in ignore:
+                continue
             child_path = f"{path}.{key}" if path else key
             if key not in actual:
                 diff.missing.append(f"{child_path}: {json.dumps(reference[key])}")
             else:
-                child = _diff_json(reference[key], actual[key], child_path)
+                child = _diff_json(reference[key], actual[key], child_path, ignore_fields)
                 diff.missing.extend(child.missing)
                 diff.unexpected.extend(child.unexpected)
                 diff.changed.extend(child.changed)
         for key in actual:
+            if key in ignore:
+                continue
             child_path = f"{path}.{key}" if path else key
             if key not in reference:
                 diff.unexpected.append(f"{child_path}: {json.dumps(actual[key])}")
@@ -58,7 +75,7 @@ def _diff_json(reference: Any, actual: Any, path: str = "") -> JsonDiff:
             elif i >= len(reference):
                 diff.unexpected.append(f"{child_path}: {json.dumps(actual[i])}")
             else:
-                child = _diff_json(reference[i], actual[i], child_path)
+                child = _diff_json(reference[i], actual[i], child_path, ignore_fields)
                 diff.missing.extend(child.missing)
                 diff.unexpected.extend(child.unexpected)
                 diff.changed.extend(child.changed)
@@ -135,7 +152,7 @@ def golden_match(output: AgentOutput, config: Any) -> AssertionResult:
     actual = output.structured_response
 
     if mode == "exact":
-        diff = _diff_json(reference, actual)
+        diff = _diff_json(reference, actual, ignore_fields=ignore_fields)
         if diff.has_differences:
             return AssertionResult(
                 passed=False,
