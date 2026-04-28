@@ -248,6 +248,8 @@ async def stream_agent_events(
     input_state: dict[str, Any],
     config: RunnableConfig,
     on_structured_output: Callable[[dict[str, Any], str | None], str] | None = None,
+    on_agent_start: Callable[[str], None] | None = None,
+    on_tool_end: Callable[[str, dict, str], None] | None = None,
     enable_tracing: bool = True,
     trace_metadata: TraceMetadata | None = None,
     user_message: cl.Message | None = None,
@@ -258,6 +260,10 @@ async def stream_agent_events(
     messages.  When *on_structured_output* is provided it is called with
     ``(structured_dict, output_type)`` to produce the markdown body; otherwise
     :func:`structured_to_markdown` is used as the fallback.
+
+    When *on_agent_start* is provided it is called with the agent name (the
+    LangGraph node name, e.g. ``"background_and_scope_agent"``) each time a
+    sub-agent node starts executing.  Use this to drive In Progress UI updates.
 
     When *user_message* is provided and contains file elements, uploaded files
     are uploaded to the file server and their paths are appended to the
@@ -271,6 +277,10 @@ async def stream_agent_events(
         config: LangChain ``RunnableConfig`` (thread_id, callbacks, etc.).
         on_structured_output: Optional formatter callback.  Signature:
             ``(data: dict, output_type: str | None) -> str``.
+        on_agent_start: Optional callback fired when a sub-agent node begins.
+            Signature: ``(agent_name: str) -> None``.
+        on_tool_end: Optional callback fired when any tool completes successfully.
+            Signature: ``(tool_name: str, tool_input: dict, tool_output: str) -> None``.
         enable_tracing: Whether to enable Langfuse tracing (default True, gracefully
             degrades if not configured).
         trace_metadata: Optional TraceMetadata instance with session_id, app_name,
@@ -344,6 +354,7 @@ async def stream_agent_events(
                 msg = cl.Message(content="")
                 tool_steps: dict[str, cl.Step] = {}
                 tool_step_queue: deque[str] = deque(maxlen=3)
+                tool_inputs: dict[str, tuple[str, dict]] = {}  # run_id -> (tool_name, input)
                 structured_response_count = 0
 
                 await msg.send()
@@ -355,8 +366,19 @@ async def stream_agent_events(
                 ):
                     kind = event["event"]
 
+                    # --- sub-agent node start -----------------------------------------
+                    if kind == "on_chain_start" and on_agent_start:
+                        node_name = event.get("name", "")
+                        # Only fire for sub-agent nodes (names ending in _agent),
+                        # not for the top-level graph or coordinator.
+                        if node_name.endswith("_agent") and node_name != "coordinator_agent":
+                            try:
+                                on_agent_start(node_name)
+                            except Exception:
+                                logger.warning("on_agent_start callback raised for '%s'", node_name, exc_info=True)
+
                     # --- token streaming ----------------------------------------------
-                    if kind == "on_chat_model_stream":
+                    elif kind == "on_chat_model_stream":
                         chunk = event.get("data", {}).get("chunk")
                         content = chunk.content if chunk and hasattr(chunk, "content") else None
                         if content:
@@ -377,6 +399,7 @@ async def stream_agent_events(
                         tool_name = event.get("name", "unknown")
                         tool_input = event["data"].get("input", {})
                         run_id = event.get("run_id")
+                        tool_inputs[run_id] = (tool_name, tool_input)
 
                         # Remove oldest step if we're at max capacity
                         if len(tool_step_queue) >= 3:
@@ -400,6 +423,13 @@ async def stream_agent_events(
                             step = tool_steps[run_id]
                             step.output = str(output)[:1000]  # Limit output length
                             await step.update()
+
+                        if on_tool_end and run_id in tool_inputs:
+                            t_name, t_input = tool_inputs.pop(run_id)
+                            try:
+                                on_tool_end(t_name, t_input, str(output))
+                            except Exception:
+                                logger.warning("on_tool_end callback raised for '%s'", t_name, exc_info=True)
 
                     # --- chain end (structured output) ---------------------------------
                     elif kind == "on_chain_end":

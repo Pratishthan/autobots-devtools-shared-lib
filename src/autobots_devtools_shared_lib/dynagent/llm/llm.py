@@ -9,11 +9,20 @@ from autobots_devtools_shared_lib.dynagent.config.dynagent_settings import (
 )
 
 
+_GEMINI_PROFILES: dict[str, int] = {
+    "gemini-3.1-flash-lite-preview": 1_000_000,
+    "gemini-3.0-flash-lite-preview": 1_000_000,
+}
+
+
 def _build_gemini(model: str, temperature: float, api_key: str) -> BaseChatModel:
     """Build a Google Gemini chat model."""
     from langchain_google_genai import ChatGoogleGenerativeAI
 
-    return ChatGoogleGenerativeAI(model=model, temperature=temperature, api_key=api_key or None)
+    kwargs: dict = {"model": model, "temperature": temperature, "api_key": api_key or None}
+    if model in _GEMINI_PROFILES:
+        kwargs["profile"] = {"max_input_tokens": _GEMINI_PROFILES[model]}
+    return ChatGoogleGenerativeAI(**kwargs)
 
 
 def _build_anthropic(model: str, temperature: float, api_key: str) -> BaseChatModel:
