@@ -78,8 +78,7 @@ class TestMakeDynagentEval:
         )
         case = _make_eval_case()
         await eval_fn(case)
-        assert mock_setup.call_args[0][0] is case.setup
-        assert mock_setup.call_args[1].get("state") is None  # no state in eval case
+        mock_setup.assert_called_once_with(case.setup, state=None)
         mock_teardown.assert_called_once()
 
     @pytest.mark.asyncio
