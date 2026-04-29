@@ -66,13 +66,76 @@ There is no shared retrieval primitive today. Each agent would otherwise reinven
 
 ## Components
 
-### `KGStore` (port) — `kg/ports.py`
+### Port — `kg/ports.py`
 
-Pure Protocol; engine-agnostic. Returns plain dataclasses (`Node`, `Edge`, `Subgraph`, `Path`, `ScoredNode`) — never driver types.
+Two Protocols, split by capability. `KGService` only ever sees the read port; the loader composes both.
+
+Returns plain dataclasses — never driver types.
+
+**Domain types:**
 
 ```python
-class KGStore(Protocol):
-    # Structural
+@dataclass(frozen=True)
+class Node:
+    stable_id: str
+    label: str                              # e.g. "Service", "DataModel"
+    properties: dict[str, Any]
+    content_hash: str | None = None
+    summary: str | None = None
+    embedding_meta: dict[str, str] | None = None  # {"model_version": ..., "prompt_version": ...}
+
+@dataclass(frozen=True)
+class Edge:
+    source_id: str
+    target_id: str
+    edge_type: str
+    properties: dict[str, Any] = field(default_factory=dict)
+
+@dataclass(frozen=True)
+class Subgraph:
+    nodes: list[Node]
+    edges: list[Edge]
+
+@dataclass(frozen=True)
+class Path:
+    nodes: list[Node]
+    edges: list[Edge]
+
+@dataclass(frozen=True)
+class ScoredNode:
+    node: Node
+    score: float
+
+@dataclass(frozen=True)
+class NodeSummary:
+    stable_id: str
+    label: str
+    name: str
+    summary: str
+    key_properties: dict[str, Any]          # subset suitable for compact display
+
+@dataclass(frozen=True)
+class RequirementDecomposition:
+    candidates: list[ScoredNode]
+    candidate_subgraphs: dict[str, Subgraph]   # keyed by candidate stable_id
+```
+
+**Filter type** — typed, not free-form `dict`:
+
+```python
+@dataclass(frozen=True)
+class NodeFilter:
+    properties: dict[str, str | int | bool | None] = field(default_factory=dict)
+    labels: list[str] = field(default_factory=list)
+    exclude_ids: list[str] = field(default_factory=list)
+```
+
+Adapters translate `NodeFilter` to engine-specific predicates. Free-form `dict` filters are forbidden — keeps Cypher out of upper layers (enforced via type-check).
+
+**Read port:**
+
+```python
+class KGReadStore(Protocol):
     def get_node(self, stable_id: str) -> Node | None: ...
     def neighbors(self, stable_id: str, edge_types: list[str] | None,
                   direction: Literal["out","in","both"]) -> list[Edge]: ...
@@ -80,43 +143,76 @@ class KGStore(Protocol):
                  edge_types: list[str] | None,
                  direction: Literal["out","in","both"]) -> Subgraph: ...
     def find_paths(self, source: str, target: str, max_depth: int) -> list[Path]: ...
-
-    # Discovery
     def semantic_search(self, query_vec: list[float],
                         node_types: list[str] | None,
-                        filters: dict | None,
+                        filters: NodeFilter | None,
                         k: int) -> list[ScoredNode]: ...
-
-    # Ingestion
-    def upsert_node(self, node: Node) -> None: ...
-    def upsert_edge(self, edge: Edge) -> None: ...
-    def delete_node(self, stable_id: str, *, force: bool = False) -> None: ...
-    def diff_outgoing_edges(self, stable_id: str,
-                            new_edges: list[Edge]) -> tuple[list[Edge], list[Edge]]: ...
+    def get_dependents(self, stable_id: str) -> list[Edge]: ...   # for tombstone safety
 ```
 
-### `Neo4jKGStore` adapter — `kg/adapters/neo4j_store.py`
+**Write port** (loader-only):
 
-Implements `KGStore` for Neo4j 5.x. Owns: driver session pooling, Cypher, vector index management (one per node label), retry policy. Translates each port call to Cypher; never lets `neo4j.Record` escape.
+```python
+class KGWriteStore(Protocol):
+    def begin_batch(self) -> "KGBatch": ...      # context manager: commit on __exit__, rollback on exception
+
+class KGBatch(Protocol):
+    def upsert_node(self, node: Node) -> None: ...
+    def upsert_edge(self, edge: Edge) -> None: ...
+    def delete_node(self, stable_id: str, *, force: bool = False) -> list[Edge]:
+        """Delete node. If incoming edges exist and force is False, raise
+        DependentsExistError carrying the incoming Edge list. Returns the list
+        of edges actually removed."""
+    def diff_outgoing_edges(self, stable_id: str,
+                            new_edges: list[Edge]) -> tuple[list[Edge], list[Edge]]:
+        """Returns (to_add, to_remove). Caller applies via upsert_edge / delete on edges."""
+    def commit(self) -> None: ...
+    def rollback(self) -> None: ...
+```
+
+**Concrete store** combines both:
+
+```python
+class KGStore(KGReadStore, KGWriteStore, Protocol): ...
+```
+
+`KGService` is constructed with `KGReadStore` (cannot upcast to write). Loader is constructed with `KGStore`.
 
 ### `Embedder` — `kg/embedding/`
 
-Lightweight client used by both loader and `KGService`. Owns model name, dimension, batching, retry. Single source of truth for embedding configuration.
+Lightweight client used by both loader (write-side) and `KGService` (query-side). Single source of truth for embedding configuration.
+
+```python
+class Embedder(Protocol):
+    @property
+    def model_version(self) -> str: ...     # stamped onto every embedding for compatibility checks
+    @property
+    def dim(self) -> int: ...
+
+    def embed(self, text: str) -> list[float]: ...
+    def embed_batch(self, texts: list[str]) -> list[list[float]]: ...
+```
+
+**Compatibility enforcement:** every embedding stored carries `model_version` (in `Node.embedding_meta`). On startup, `KGService` records its `embedder.model_version`; if a `semantic_search` result's stored embedding has a different model_version, the service logs and skips the result. Loader refuses to write if its `Embedder.model_version` mismatches embeddings already in the store unless `--reembed-all` is passed.
+
+### `Neo4jKGStore` adapter — `kg/adapters/neo4j_store.py`
+
+Implements `KGStore` (both read and write) for Neo4j 5.x. Owns: driver session pooling, Cypher, vector index management (one per node label), retry policy, transactional batches. Translates each port call to Cypher; never lets `neo4j.Record` escape.
 
 ### `KGService` — `kg/service.py`
 
-Read-only business-level recipes. Composed with `KGStore` and `Embedder`.
+Read-only business-level recipes. Composed with `KGReadStore` and `Embedder` — cannot reach write methods.
 
 ```python
 class KGService:
-    def __init__(self, store: KGStore, embedder: Embedder): ...
+    def __init__(self, store: KGReadStore, embedder: Embedder): ...
 
     def get_subgraph(self, stable_id: str, depth: int = 2,
                      edge_types: list[str] | None = None) -> Subgraph: ...
     def get_dependencies(self, service_id: str) -> Subgraph: ...
     def get_node_summary(self, stable_id: str) -> NodeSummary: ...
     def semantic_search(self, query: str, node_types: list[str] | None = None,
-                        filters: dict | None = None, k: int = 10) -> list[ScoredNode]: ...
+                        filters: NodeFilter | None = None, k: int = 10) -> list[ScoredNode]: ...
     def decompose_requirement(self, text: str) -> RequirementDecomposition: ...
     def impact_topdown(self, product_id: str) -> Subgraph: ...
     def impact_bottomup(self, node_id: str) -> Subgraph: ...
@@ -126,16 +222,23 @@ class KGService:
 
 ### Loader — `kg/loader/`
 
-CLI entry: `pay-kg load --ids X,Y,Z [--allow-stubs] [--tombstone …]`.
+CLI entry: `kg-load --ids X,Y,Z [--allow-stubs] [--tombstone …] [--force] [--reembed-all]`.
+
+Neutral binary name (no app-specific prefix); shared-lib hosts it, all consuming apps use the same command.
 
 Modules:
 - `artifact_reader.py` — reads KBE JSON files by stable ID.
 - `summarizer.py` — per-node-type prompt → LLM → short intent paragraph. Cached by content hash.
 - `differ.py` — content-hash gate + outgoing-edge diff.
-- `pipeline.py` — orchestrates: read → diff → summarize → embed → upsert (via `KGStore`).
+- `pipeline.py` — orchestrates: read → diff → summarize → embed → upsert. Wraps the whole batch in `KGWriteStore.begin_batch()` for transactional rollback on failure.
 - `cli.py` — argument parsing.
 
-Loader uses the same `Embedder` instance as `KGService`. Loader writes via the port; never bypasses to the adapter directly.
+Loader uses the same `Embedder` instance as `KGService` (factory injection). Loader writes via the port; never bypasses to the adapter directly. All writes happen inside a `KGBatch` context manager so partial-failure rollback is enforced by the port, not by ad-hoc loader logic.
+
+**Tombstone handling lives in the loader**, not in `delete_node`. Sequence:
+1. Loader calls `read_store.get_dependents(stable_id)`.
+2. If non-empty and `--force` not set: print dependents, exit non-zero.
+3. Otherwise: open batch, call `batch.delete_node(stable_id, force=True)` (which still raises `DependentsExistError` if state changed mid-flight — defense in depth), commit.
 
 ### Tool wrappers — `kg/tools.py`
 
@@ -174,9 +277,11 @@ Per stable ID in the input list:
 4. Embed `summary` (+ structured fields) → `embedding`.
 5. Upsert node `{properties, content_hash, summary, embedding, prompt_version, model_version}`.
 6. Diff outgoing edges → DELETE removed, MERGE new.
-7. Strict mode (default): any unresolved edge target → fail batch with rollback. `--allow-stubs` creates `:Stub` placeholder.
+7. Strict mode (default): any unresolved edge target → batch raises, `KGBatch.__exit__` rolls back. `--allow-stubs` creates `:Stub` placeholder.
 
-Tombstones via `--tombstone`: refuse if incoming edges exist unless `--force`.
+The whole batch is wrapped in `with store.begin_batch() as batch:`; commit happens on clean exit. Any exception (LLM failure, embedder failure, unresolved reference) triggers rollback — no partial state visible.
+
+Tombstones: loader pre-checks dependents via `KGReadStore.get_dependents`; refuses unless `--force`. See Loader §Tombstone handling.
 
 ### Retrieval — Nurture (structural)
 
@@ -250,25 +355,29 @@ Stable IDs:
 
 ```python
 from autobots_devtools_shared_lib.kg import (
-    KGStore, KGService, Node, Edge, Subgraph, Path, ScoredNode,
+    KGStore, KGReadStore, KGWriteStore, KGBatch, KGService,
+    Node, Edge, Subgraph, Path, ScoredNode, NodeSummary,
+    NodeFilter, RequirementDecomposition, DependentsExistError,
 )
 from autobots_devtools_shared_lib.kg.adapters.neo4j_store import Neo4jKGStore
 from autobots_devtools_shared_lib.kg.embedding import Embedder
 from autobots_devtools_shared_lib.kg.tools import (
-    kg_get_subgraph, kg_get_dependencies, kg_semantic_search,
-    kg_decompose_requirement, kg_impact_topdown, kg_impact_bottomup,
+    kg_get_subgraph, kg_get_dependencies, kg_get_node_summary,
+    kg_semantic_search, kg_decompose_requirement,
+    kg_impact_topdown, kg_impact_bottomup,
 )
 ```
 
-CLI: `pay-kg load --ids …` (entry point in shared-lib; binary name reflects current pilot consumer).
+CLI: `kg-load --ids …` (neutral name; shared-lib entry point used by all consuming apps).
 
 ## Testing
 
+**Port conformance suite** — `tests/contract/test_kgstore_conformance.py`. Parameterized over every `KGStore` implementation (today: `FakeKGStore`, `Neo4jKGStore`). Asserts the contract: upsert/get round-trip, traverse depth/direction/edge-type filters, `NodeFilter` semantics, `semantic_search` ranking, edge diffing, batch commit/rollback, `delete_node` raises `DependentsExistError`, etc. Adding a new adapter means making this suite pass — directly underwrites the engine-swap success criterion.
+
 **Unit:**
-- Adapter — table-driven against ephemeral Neo4j (testcontainers): upsert/get round-trip, traverse with depth/edge filters, vector search ranking, edge diffing.
-- `KGService` — uses `FakeKGStore` (in-memory port impl in `tests/fakes/`): re-ranking, decompose orchestration, hydration shape.
-- Loader components — `differ` (hash gate, edge-diff), `summarizer` (mock LLM), `embedder` (mock embedding).
-- Tools — given a `KGService`, each tool returns expected JSON shape.
+- `KGService` — uses `FakeKGStore` (in-memory port impl in `tests/fakes/`): re-ranking, decompose orchestration, hydration shape, `model_version` mismatch handling.
+- Loader components — `differ` (hash gate, edge-diff), `summarizer` (mock LLM), `embedder` (mock embedding), pipeline rollback on injected failure.
+- Tools — given a `KGService`, each tool returns expected JSON shape (one test per tool, including `kg_get_node_summary`).
 
 **Integration:**
 - Loader end-to-end on a tiny fixture KG (3–5 artifacts) → real Neo4j → assert nodes/edges/embeddings present.
@@ -284,9 +393,11 @@ Markers: `unit`, `integration`, `slow` (workspace convention).
 - Cypher (or any engine-specific query language) lives **only** in adapter files.
 - `KGStore` returns plain dataclasses — no driver types escape.
 - Tools call `KGService`; never the store directly.
-- Loader writes via the port; never bypasses to the adapter directly.
-- `KGService` is read-only at runtime; all write paths go through the loader.
-- `Embedder` is shared between loader and `KGService`; both must use the same model.
+- Loader writes via the write port; never bypasses to the adapter directly.
+- **Read/write split is typed:** `KGService` is constructed with `KGReadStore` and cannot upcast to write methods. Only the loader receives a full `KGStore`. Enforced by pyright.
+- All loader writes happen inside a `KGBatch` context manager; transactional rollback on any failure.
+- **Filters are typed:** `NodeFilter` dataclass is the only filter shape crossing the port. Free-form `dict` filters are forbidden.
+- `Embedder` is shared between loader and `KGService` via injection; both must use the same model. Stored embeddings carry `model_version`; mismatches are detected at runtime.
 - Shared lib MUST NOT import from any consuming app package.
 
 ## Success Criteria
