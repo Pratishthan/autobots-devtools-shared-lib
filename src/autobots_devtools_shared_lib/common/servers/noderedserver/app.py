@@ -300,19 +300,25 @@ async def create_instance(body: CreateInstanceRequest) -> CreateInstanceResponse
 
 @app.post("/kill-instance")
 async def kill_instance(body: KillInstanceRequest) -> KillInstanceResponse:
-    """Kill a running Node-RED instance by its id."""
-    logger.info("kill-instance called id=%s", body.id)
+    """Kill a running Node-RED instance by workspace_base_path."""
+    instance_id: str = (body.workspace_context.get("workspace_base_path") or "").strip()
+    if not instance_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="workspace_context.workspace_base_path is required and cannot be empty.",
+        )
+    logger.info("kill-instance called id=%s", instance_id)
 
-    entry = _registry.get(body.id)
+    entry = _registry.get(instance_id)
     if entry is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Instance '{body.id}' not found",
+            detail=f"Instance '{instance_id}' not found",
         )
 
     _, process = entry
-    await _kill_instance(body.id, process)
-    del _registry[body.id]
+    await _kill_instance(instance_id, process)
+    del _registry[instance_id]
 
-    logger.info("kill-instance success id=%s", body.id)
-    return KillInstanceResponse(message=f"Instance {body.id} killed successfully")
+    logger.info("kill-instance success id=%s", instance_id)
+    return KillInstanceResponse(message=f"Instance {instance_id} killed successfully")

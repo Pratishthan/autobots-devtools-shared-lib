@@ -44,14 +44,11 @@ class CreateInstanceResponse(BaseModel):
 
 
 class KillInstanceRequest(BaseModel):
-    id: str = Field(..., description="Instance ID (workspace_base_path) to kill.")
-
-    @field_validator("id")
-    @classmethod
-    def validate_id(cls, v: str) -> str:
-        if not v or not v.strip():
-            raise ValueError("id cannot be empty")
-        return v.strip()
+    workspace_context: dict[str, Any] = Field(
+        ...,
+        description="Workspace scoping context. Must include `workspace_base_path`.",
+        json_schema_extra={"examples": [{"workspace_base_path": "alice/my-project-JIRA-42"}]},
+    )
 
 
 class KillInstanceResponse(BaseModel):
