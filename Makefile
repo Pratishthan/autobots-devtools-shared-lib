@@ -1,4 +1,4 @@
-.PHONY: help install install-dev install-hooks test test-cov lint format check-format type-check clean all-checks build publish
+.PHONY: help install install-dev install-hooks test test-cov lint format check-format type-check clean all-checks build publish node-red-server file-server
 
 # Default target
 help:
@@ -19,6 +19,8 @@ help:
 	@echo "  make build            - Build the package"
 	@echo "  make publish          - Publish package to PyPI"
 	@echo "  make update-deps      - Update dependencies"
+	@echo "  make file-server      - Run the file server (port 9002)"
+	@echo "  make node-red-server  - Run the Node-RED instance manager (port 9003)"
 
 # Use system/global poetry and tools from parent venv
 VENV = ../.venv
@@ -105,6 +107,15 @@ build:
 # Publish to PyPI (requires authentication)
 publish:
 	$(POETRY) publish
+
+# Run the file server
+file-server:
+	$(PYTHON) -m uvicorn autobots_devtools_shared_lib.common.servers.fileserver.app:app \
+		--reload --host 0.0.0.0 --port 9002
+
+# Run the Node-RED instance manager server (host/port read from node-red-config.yaml)
+node-red-server:
+	$(PYTHON) -m autobots_devtools_shared_lib.common.servers.noderedmanagerserver
 
 # Update dependencies
 update-deps:
