@@ -103,7 +103,7 @@ except FileNotFoundError:
     _environments = {}
 
 
-class NodeRedServerConfig:
+class NodeRedManagerServerConfig:
     """Configuration for the Node-RED instance manager server."""
 
     # All settings loaded from YAML

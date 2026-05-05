@@ -25,7 +25,7 @@ from fastapi import FastAPI, HTTPException, status
 
 from autobots_devtools_shared_lib.common.observability.logging_utils import get_logger
 from autobots_devtools_shared_lib.common.servers.noderedmanagerserver.config import (
-    NodeRedServerConfig,
+    NodeRedManagerServerConfig,
     TemplateConfig,
 )
 from autobots_devtools_shared_lib.common.servers.noderedmanagerserver.models import (
@@ -37,7 +37,7 @@ from autobots_devtools_shared_lib.common.servers.noderedmanagerserver.models imp
 )
 
 logger = get_logger(__name__)
-config = NodeRedServerConfig()
+config = NodeRedManagerServerConfig()
 
 # In-memory registry: instance_id -> (InstanceInfo, subprocess handle)
 _registry: dict[str, tuple[InstanceInfo, asyncio.subprocess.Process]] = {}
@@ -131,7 +131,7 @@ async def lifespan(_app: FastAPI):
         [f"{t.name}[{t.min_port}-{t.max_port}]" for t in config.environments.values()],
     )
     try:
-        NodeRedServerConfig.validate()
+        NodeRedManagerServerConfig.validate()
     except ValueError:
         logger.exception("Node-RED server config invalid")
         raise

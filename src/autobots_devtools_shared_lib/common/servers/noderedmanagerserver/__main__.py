@@ -3,11 +3,11 @@
 import uvicorn
 
 from autobots_devtools_shared_lib.common.servers.noderedmanagerserver.config import (
-    NodeRedServerConfig,
+    NodeRedManagerServerConfig,
 )
 
 if __name__ == "__main__":
-    cfg = NodeRedServerConfig()
+    cfg = NodeRedManagerServerConfig()
     uvicorn.run(
         "autobots_devtools_shared_lib.common.servers.noderedmanagerserver.app:app",
         host=cfg.node_red_manager_server_host,
