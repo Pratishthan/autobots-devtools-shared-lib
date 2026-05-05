@@ -212,7 +212,7 @@ def list_instances() -> dict[str, Any]:
     return {"instances": instances, "count": len(instances)}
 
 
-@app.post("/create-instance", status_code=status.HTTP_201_CREATED)
+@app.post("/create-instance")
 async def create_instance(body: CreateInstanceRequest) -> CreateInstanceResponse:
     """
     Launch a new Node-RED instance.
@@ -241,12 +241,13 @@ async def create_instance(body: CreateInstanceRequest) -> CreateInstanceResponse
         )
     instance_id = workspace_base_path
 
-    # 2. Reject duplicate — an instance for this workspace is already running
+    # 2. Return existing instance if one is already running for this workspace
     if instance_id in _registry:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=f"An instance for workspace '{workspace_base_path}' is already running.",
+        existing_info, _ = _registry[instance_id]
+        logger.info(
+            "create-instance reusing existing id=%s url=%s", existing_info.id, existing_info.url
         )
+        return CreateInstanceResponse(id=existing_info.id, url=existing_info.url)
 
     # 3. Validate environment name
     environment = config.environments.get(body.environment_name)
