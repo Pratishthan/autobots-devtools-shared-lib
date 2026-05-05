@@ -76,7 +76,7 @@ my-template/
 make node-red-server
 
 # Or directly
-python -m autobots_devtools_shared_lib.common.servers.noderedserver
+python -m autobots_devtools_shared_lib.common.servers.noderedmanagerserver
 ```
 
 ## Environment Variables

@@ -8,7 +8,7 @@ Templates are configured in a YAML file (default: node-red-config.yaml in cwd):
   NODE_RED_CONFIG_FILE=/path/to/node-red-config.yaml
 
 Run:
-  uvicorn autobots_devtools_shared_lib.common.servers.noderedserver.app:app \
+  uvicorn autobots_devtools_shared_lib.common.servers.noderedmanagerserver.app:app \
       --reload --host 0.0.0.0 --port 9003
 Or: make node-red-server (from autobots-devtools-shared-lib)
 """
@@ -24,11 +24,11 @@ from typing import Any
 from fastapi import FastAPI, HTTPException, status
 
 from autobots_devtools_shared_lib.common.observability.logging_utils import get_logger
-from autobots_devtools_shared_lib.common.servers.noderedserver.config import (
+from autobots_devtools_shared_lib.common.servers.noderedmanagerserver.config import (
     NodeRedServerConfig,
     TemplateConfig,
 )
-from autobots_devtools_shared_lib.common.servers.noderedserver.models import (
+from autobots_devtools_shared_lib.common.servers.noderedmanagerserver.models import (
     CreateInstanceRequest,
     CreateInstanceResponse,
     InstanceInfo,
