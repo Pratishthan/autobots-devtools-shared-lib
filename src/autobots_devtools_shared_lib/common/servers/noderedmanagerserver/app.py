@@ -227,7 +227,7 @@ async def create_instance(body: CreateInstanceRequest) -> CreateInstanceResponse
         body.workspace_context,
     )
 
-    # 1. Extract and validate workspace_base_path — used as the instance ID
+    # 1. Extract and validate workspace_base_path
     workspace_base_path: str = (body.workspace_context.get("workspace_base_path") or "").strip()
     if not workspace_base_path:
         raise HTTPException(
@@ -239,7 +239,8 @@ async def create_instance(body: CreateInstanceRequest) -> CreateInstanceResponse
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="workspace_base_path cannot contain '..'",
         )
-    instance_id = workspace_base_path
+    # Instance ID scoped per environment so the same workspace can run multiple environments
+    instance_id = f"{body.environment_name}/{workspace_base_path}"
 
     # 2. Return existing instance if one is already running for this workspace
     if instance_id in _registry:
@@ -302,12 +303,13 @@ async def create_instance(body: CreateInstanceRequest) -> CreateInstanceResponse
 @app.post("/kill-instance")
 async def kill_instance(body: KillInstanceRequest) -> KillInstanceResponse:
     """Kill a running Node-RED instance by workspace_base_path."""
-    instance_id: str = (body.workspace_context.get("workspace_base_path") or "").strip()
-    if not instance_id:
+    workspace_base_path: str = (body.workspace_context.get("workspace_base_path") or "").strip()
+    if not workspace_base_path:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="workspace_context.workspace_base_path is required and cannot be empty.",
         )
+    instance_id = f"{body.environment_name}/{workspace_base_path}"
     logger.info("kill-instance called id=%s", instance_id)
 
     entry = _registry.get(instance_id)

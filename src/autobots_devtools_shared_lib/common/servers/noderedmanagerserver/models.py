@@ -49,6 +49,7 @@ class KillInstanceRequest(BaseModel):
         description="Workspace scoping context. Must include `workspace_base_path`.",
         json_schema_extra={"examples": [{"workspace_base_path": "alice/my-project-JIRA-42"}]},
     )
+    environment_name: str = Field(..., description="Name of the Node-RED environment to kill.")
 
 
 class KillInstanceResponse(BaseModel):
