@@ -5,6 +5,8 @@ node_red_manager_server_port: 9004
 
 base_path: /Users/mahi_praneeth/Desktop  # root prepended to workspace paths when resolving flows.json
 
+instance_ttl_seconds: 2700  # auto-kill instances after 45 min (override per-request via ttl_seconds)
+
 environments:
   - name: process-manager-template
     path: /Users/mahi_praneeth/Desktop/process-manager-node-red-template
@@ -26,3 +28,11 @@ environments:
 #   "template_name": "compose-engine-template"
 # }
 # Resolves flows.json to: base_path/userName/repoName-jira/external-files/flows.json
+
+# {
+#   "workspace_context": {
+#     "workspace_base_path": "proj-1"
+#   },
+#   "flows_json_path": "flows.json",
+#   "environment_name": "process-manager-template"
+# }

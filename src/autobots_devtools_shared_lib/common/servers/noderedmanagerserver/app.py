@@ -19,7 +19,7 @@ import os
 import subprocess
 import sys
 from contextlib import asynccontextmanager
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -41,8 +41,8 @@ from autobots_devtools_shared_lib.common.servers.noderedmanagerserver.models imp
 logger = get_logger(__name__)
 config = NodeRedManagerServerConfig()
 
-# In-memory registry: instance_id -> (InstanceInfo, subprocess handle)
-_registry: dict[str, tuple[InstanceInfo, asyncio.subprocess.Process]] = {}
+# In-memory registry: instance_id -> (InstanceInfo, subprocess handle, TTL task)
+_registry: dict[str, tuple[InstanceInfo, asyncio.subprocess.Process, asyncio.Task[None]]] = {}
 
 
 # ---------------------------------------------------------------------------
@@ -64,7 +64,7 @@ async def _is_port_available(port: int) -> bool:
 
 async def _find_available_port(template: TemplateConfig) -> int:
     """Scan sequentially within the template's port range; skip ports used by tracked instances."""
-    used_ports = {info.port for info, _ in _registry.values()}
+    used_ports = {info.port for info, _, _ in _registry.values()}
     for port in range(template.min_port, template.max_port + 1):
         if port in used_ports:
             continue
@@ -145,6 +145,20 @@ async def _kill_instance(instance_id: str, process: asyncio.subprocess.Process) 
         await process.wait()
 
 
+async def _ttl_kill(instance_id: str, ttl_seconds: int) -> None:
+    """Background task: auto-kill an instance after its TTL expires."""
+    try:
+        await asyncio.sleep(ttl_seconds)
+    except asyncio.CancelledError:
+        return  # killed manually before TTL; nothing to do
+    entry = _registry.pop(instance_id, None)
+    if entry is None:
+        return  # already removed (e.g. manual kill lost the race)
+    _, process, _ = entry
+    logger.info("TTL expired for instance %s, killing", instance_id)
+    await _kill_instance(instance_id, process)
+
+
 # ---------------------------------------------------------------------------
 # Lifespan
 # ---------------------------------------------------------------------------
@@ -169,7 +183,9 @@ async def lifespan(_app: FastAPI):
     yield
 
     logger.info("Node-RED server shutting down, terminating %d instance(s)", len(_registry))
-    tasks = [_kill_instance(iid, proc) for iid, (_, proc) in _registry.items()]
+    for _, _, ttl_task in _registry.values():
+        ttl_task.cancel()
+    tasks = [_kill_instance(iid, proc) for iid, (_, proc, _) in _registry.items()]
     if tasks:
         await asyncio.gather(*tasks, return_exceptions=True)
     _registry.clear()
@@ -236,8 +252,10 @@ def list_instances() -> dict[str, Any]:
             "environment_name": info.environment_name,
             "url": info.url,
             "pid": info.pid,
+            "created_at": info.created_at.isoformat(),
+            "expires_at": info.expires_at.isoformat(),
         }
-        for info, _ in _registry.values()
+        for info, _, _ in _registry.values()
     ]
     return {"instances": instances, "count": len(instances)}
 
@@ -274,11 +292,13 @@ async def create_instance(body: CreateInstanceRequest) -> CreateInstanceResponse
 
     # 2. Return existing instance if one is already running for this workspace
     if instance_id in _registry:
-        existing_info, _ = _registry[instance_id]
+        existing_info, _, _ = _registry[instance_id]
         logger.info(
             "create-instance reusing existing id=%s url=%s", existing_info.id, existing_info.url
         )
-        return CreateInstanceResponse(id=existing_info.id, url=existing_info.url)
+        return CreateInstanceResponse(
+            id=existing_info.id, url=existing_info.url, expires_at=existing_info.expires_at
+        )
 
     # 3. Validate environment name
     environment = config.environments.get(body.environment_name)
@@ -317,6 +337,9 @@ async def create_instance(body: CreateInstanceRequest) -> CreateInstanceResponse
         ) from e
 
     # 7. Register and return
+    ttl = body.ttl_seconds if body.ttl_seconds is not None else config.instance_ttl_seconds
+    created_at = datetime.now(UTC)
+    expires_at = created_at + timedelta(seconds=ttl)
     url = f"http://{config.node_red_manager_server_host}:{port}/{instance_id}"
     info = InstanceInfo(
         id=instance_id,
@@ -324,10 +347,15 @@ async def create_instance(body: CreateInstanceRequest) -> CreateInstanceResponse
         environment_name=body.environment_name,
         url=url,
         pid=process.pid or 0,
+        created_at=created_at,
+        expires_at=expires_at,
     )
-    _registry[instance_id] = (info, process)
-    logger.info("create-instance success id=%s url=%s pid=%s", instance_id, url, process.pid)
-    return CreateInstanceResponse(id=instance_id, url=url)
+    ttl_task = asyncio.create_task(_ttl_kill(instance_id, ttl))
+    _registry[instance_id] = (info, process, ttl_task)
+    logger.info(
+        "create-instance success id=%s url=%s pid=%s ttl=%ss", instance_id, url, process.pid, ttl
+    )
+    return CreateInstanceResponse(id=instance_id, url=url, expires_at=expires_at)
 
 
 @app.post("/kill-instance")
@@ -349,7 +377,8 @@ async def kill_instance(body: KillInstanceRequest) -> KillInstanceResponse:
             detail=f"Instance '{instance_id}' not found",
         )
 
-    _, process = entry
+    _, process, ttl_task = entry
+    ttl_task.cancel()
     await _kill_instance(instance_id, process)
     del _registry[instance_id]
 

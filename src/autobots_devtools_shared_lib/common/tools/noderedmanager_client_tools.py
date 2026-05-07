@@ -72,24 +72,30 @@ def create_instance_tool(
     workspace_base_path: str = "",
     flows_json_path: str = "",
     environment_name: str = "",
+    ttl_seconds: int | None = None,
 ) -> str:
     """
     Launch a new Node-RED instance for the given workspace.
 
-    Returns the instance id and URL. If an instance already exists for this workspace,
-    the existing one is returned without launching a new process.
+    Returns the instance id, URL, and expiry time. If an instance already exists for this
+    workspace, the existing one is returned without launching a new process.
+
+    ttl_seconds overrides the server default TTL (45 min). The instance is auto-killed after
+    the TTL expires.
     """
     logger.info(
-        "[tools] Creating Node-RED instance workspace=%r flows=%r environment=%r",
+        "[tools] Creating Node-RED instance workspace=%r flows=%r environment=%r ttl=%s",
         workspace_base_path,
         flows_json_path,
         environment_name,
+        ttl_seconds,
     )
     try:
         result = create_instance(
             workspace_base_path,
             flows_json_path,
             environment_name,
+            ttl_seconds=ttl_seconds,
             session_id=_session_id_from_runtime(runtime),
         )
         _check_result(result, "create_instance")

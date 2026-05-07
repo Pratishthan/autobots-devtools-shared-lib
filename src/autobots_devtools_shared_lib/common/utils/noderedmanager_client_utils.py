@@ -95,6 +95,7 @@ def create_instance(
     workspace_base_path: str,
     flows_json_path: str,
     environment_name: str,
+    ttl_seconds: int | None = None,
     session_id: str | None = None,
 ) -> str:
     """
@@ -107,23 +108,27 @@ def create_instance(
         workspace_base_path: Workspace path (e.g. 'user/repo-JIRA-42').
         flows_json_path: Relative path to flows.json within the workspace directory.
         environment_name: Name of the Node-RED environment template to use.
+        ttl_seconds: TTL in seconds before the instance is auto-killed. Uses server default if None.
         session_id: Optional session ID for trace correlation.
 
     Returns:
-        Success message with instance id and url.
+        Success message with instance id, url, and expiry time.
     """
     logger.info(
-        "Creating Node-RED instance workspace=%r flows=%r environment=%r",
+        "Creating Node-RED instance workspace=%r flows=%r environment=%r ttl=%s",
         workspace_base_path,
         flows_json_path,
         environment_name,
+        ttl_seconds,
     )
     try:
-        payload = {
+        payload: dict = {
             "workspace_context": {"workspace_base_path": workspace_base_path},
             "flows_json_path": flows_json_path,
             "environment_name": environment_name,
         }
+        if ttl_seconds is not None:
+            payload["ttl_seconds"] = ttl_seconds
         with (
             traced_http_call(
                 "noderedManagerCreateInstance", session_id=session_id
@@ -151,9 +156,12 @@ def create_instance(
         return f"Error creating instance: {e!s}"
     else:
         logger.info(
-            "Node-RED instance created/reused: id=%s url=%s", result.get("id"), result.get("url")
+            "Node-RED instance created/reused: id=%s url=%s expires_at=%s",
+            result.get("id"),
+            result.get("url"),
+            result.get("expires_at"),
         )
-        return f"Instance created: id={result['id']} url={result['url']}"
+        return f"Instance created: id={result['id']} url={result['url']} expires_at={result['expires_at']}"
 
 
 def kill_instance(

@@ -22,10 +22,10 @@ class TemplateConfig:
 
 def _load_yaml_config(
     config_file: Path,
-) -> tuple[str, str, str, int, dict[str, TemplateConfig]]:
+) -> tuple[str, str, str, int, int, dict[str, TemplateConfig]]:
     """
     Load node-red-config.yaml and return
-    (node_red_executable, base_path, manager_host, manager_port, environments_by_name).
+    (node_red_executable, base_path, manager_host, manager_port, instance_ttl_seconds, environments_by_name).
 
     Expected YAML structure::
 
@@ -37,6 +37,9 @@ def _load_yaml_config(
         # Host and port for the manager server itself and for building instance URLs.
         node_red_manager_server_host: 0.0.0.0   # optional, defaults to "0.0.0.0"
         node_red_manager_server_port: 9003       # optional, defaults to 9003
+
+        # Seconds before an idle instance is auto-killed. Optional, defaults to 2700 (45 min).
+        instance_ttl_seconds: 2700
 
         environments:
           - name: compose-engine-template
@@ -64,6 +67,7 @@ def _load_yaml_config(
         data.get("node_red_manager_server_host", "0.0.0.0") or "0.0.0.0"  # noqa: S104
     )
     manager_port: int = int(data.get("node_red_manager_server_port", 9003))
+    instance_ttl_seconds: int = int(data.get("instance_ttl_seconds", 2700))
 
     raw_environments: list[dict] = data.get("environments") or []
     environments: dict[str, TemplateConfig] = {}
@@ -83,7 +87,14 @@ def _load_yaml_config(
             max_port=max_port,
         )
 
-    return node_red_executable, base_path, manager_host, manager_port, environments
+    return (
+        node_red_executable,
+        base_path,
+        manager_host,
+        manager_port,
+        instance_ttl_seconds,
+        environments,
+    )
 
 
 # Resolve config file path from env var; default to node-red-config.yaml in cwd.
@@ -92,14 +103,20 @@ _config_file = Path(os.getenv("NODE_RED_CONFIG_FILE", "node-red-config.yaml"))
 # Load at module import time so config is available immediately.
 # If the file is absent the server will fail fast during lifespan startup (validate() call).
 try:
-    _node_red_executable, _base_path, _manager_host, _manager_port, _environments = (
-        _load_yaml_config(_config_file)
-    )
+    (
+        _node_red_executable,
+        _base_path,
+        _manager_host,
+        _manager_port,
+        _instance_ttl_seconds,
+        _environments,
+    ) = _load_yaml_config(_config_file)
 except FileNotFoundError:
     _node_red_executable = "node-red"
     _base_path = ""
     _manager_host = "0.0.0.0"  # noqa: S104
     _manager_port = 9003
+    _instance_ttl_seconds = 2700
     _environments = {}
 
 
@@ -111,6 +128,7 @@ class NodeRedManagerServerConfig:
     base_path: str = _base_path
     node_red_manager_server_host: str = _manager_host
     node_red_manager_server_port: int = _manager_port
+    instance_ttl_seconds: int = _instance_ttl_seconds
     environments: dict[str, TemplateConfig] = _environments
 
     @classmethod
