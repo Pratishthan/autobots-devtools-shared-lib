@@ -16,6 +16,8 @@ Or: make node-red-server (from autobots-devtools-shared-lib)
 import asyncio
 import contextlib
 import os
+import subprocess
+import sys
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 from pathlib import Path
@@ -86,26 +88,54 @@ async def _launch_node_red(
 
     INSTANCE_ID is passed as an env var so the environment's settings.js can set
     httpAdminRoot and httpNodeRoot to '/<instance_id>' for URL isolation.
+
+    On Windows, node-red is installed as a .cmd batch file and cannot be executed
+    directly by create_subprocess_exec — it must be routed through cmd.exe.
+    CREATE_NEW_PROCESS_GROUP assigns a new process group so taskkill /T can target
+    the entire tree (cmd.exe + node-red child) during cleanup.
     """
     env = {**os.environ, "FLOW": flows_json_path, "INSTANCE_ID": instance_id}
+    node_red_args = ["-u", str(template.path), "--port", str(port)]
+    if sys.platform == "win32":
+        cmd = ["cmd", "/c", config.node_red_executable, *node_red_args]
+        extra_kwargs: dict = {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}
+    else:
+        cmd = [config.node_red_executable, *node_red_args]
+        extra_kwargs = {}
     return await asyncio.create_subprocess_exec(
-        config.node_red_executable,
-        "-u",
-        str(template.path),
-        "--port",
-        str(port),
+        *cmd,
         env=env,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
+        **extra_kwargs,
     )
 
 
 async def _kill_instance(instance_id: str, process: asyncio.subprocess.Process) -> None:
-    """SIGTERM the process; escalate to SIGKILL after 5 seconds."""
+    """Terminate the process and its children.
+
+    On Unix: SIGTERM with a 5s grace period, then SIGKILL.
+    On Windows: taskkill /F /T kills the entire process tree (cmd.exe + node-red child)
+    because process.terminate() only kills cmd.exe, leaving node-red orphaned.
+    """
     try:
-        process.terminate()  # SIGTERM on Unix
-        await asyncio.wait_for(process.wait(), timeout=5.0)
-        logger.info("Instance %s terminated gracefully", instance_id)
+        if sys.platform == "win32":
+            killer = await asyncio.create_subprocess_exec(
+                "taskkill",
+                "/F",
+                "/T",
+                "/PID",
+                str(process.pid),
+                stdout=asyncio.subprocess.DEVNULL,
+                stderr=asyncio.subprocess.DEVNULL,
+            )
+            await killer.wait()
+            await process.wait()
+            logger.info("Instance %s terminated (Windows taskkill)", instance_id)
+        else:
+            process.terminate()  # SIGTERM on Unix
+            await asyncio.wait_for(process.wait(), timeout=5.0)
+            logger.info("Instance %s terminated gracefully", instance_id)
     except ProcessLookupError:
         logger.info("Instance %s process already gone (pid=%s)", instance_id, process.pid)
     except TimeoutError:
