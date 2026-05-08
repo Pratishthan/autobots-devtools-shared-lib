@@ -1,5 +1,6 @@
 """Pydantic request/response models for the Node-RED instance manager API."""
 
+from datetime import datetime
 from typing import Any
 
 from pydantic import BaseModel, Field, field_validator
@@ -20,6 +21,11 @@ class CreateInstanceRequest(BaseModel):
         description="Relative path to flows.json within the workspace directory.",
     )
     environment_name: str = Field(..., description="Name of the Node-RED environment to use.")
+    ttl_seconds: int | None = Field(
+        default=None,
+        description="TTL in seconds before the instance is auto-killed. Uses server default if not provided.",
+        ge=1,
+    )
 
     @field_validator("flows_json_path")
     @classmethod
@@ -41,6 +47,9 @@ class CreateInstanceRequest(BaseModel):
 class CreateInstanceResponse(BaseModel):
     id: str = Field(..., description="Instance ID (workspace_base_path).")
     url: str = Field(..., description="URL to access the Node-RED instance (includes port).")
+    expires_at: datetime = Field(
+        ..., description="UTC datetime when this instance will be auto-killed."
+    )
 
 
 class KillInstanceRequest(BaseModel):
@@ -62,3 +71,5 @@ class InstanceInfo(BaseModel):
     environment_name: str
     url: str
     pid: int
+    created_at: datetime
+    expires_at: datetime
