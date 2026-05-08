@@ -10,6 +10,27 @@ from autobots_devtools_shared_lib.common.observability.trace_propagation import 
 logger = get_logger(__name__)
 
 NODE_RED_MANAGER_HOST = os.getenv("NODE_RED_MANAGER_HOST", "localhost")
+
+
+def _http_error_str(prefix: str, e: httpx.HTTPStatusError) -> str:
+    """Format an HTTPStatusError into a standardised error string.
+
+    Parses the JSON body to include the server's error_code (if present) so
+    consumers can compare against exception constants without re-raising:
+
+        if FlowsFileNotFoundError.ERROR_CODE in result: ...
+    """
+    try:
+        body = e.response.json()
+        error_code = body.get("error_code", "")
+        detail = body.get("detail", e.response.text)
+    except Exception:
+        error_code = ""
+        detail = e.response.text
+    code_part = f" [{error_code}]" if error_code else ""
+    return f"Error {prefix}: HTTP {e.response.status_code}{code_part} - {detail}"
+
+
 NODE_RED_MANAGER_PORT = os.getenv("NODE_RED_MANAGER_PORT", "9003")
 NODE_RED_MANAGER_BASE_URL = f"http://{NODE_RED_MANAGER_HOST}:{NODE_RED_MANAGER_PORT}"
 
@@ -43,7 +64,7 @@ def get_health(session_id: str | None = None) -> str:
             e.response.status_code,
             e.response.text,
         )
-        return f"Error getting health: HTTP {e.response.status_code} - {e.response.text}"
+        return _http_error_str("getting health", e)
     except Exception as e:
         logger.exception("Error getting Node-RED manager health")
         return f"Error getting health: {e!s}"
@@ -81,7 +102,7 @@ def list_instances(session_id: str | None = None) -> str:
             e.response.status_code,
             e.response.text,
         )
-        return f"Error listing instances: HTTP {e.response.status_code} - {e.response.text}"
+        return _http_error_str("listing instances", e)
     except Exception as e:
         logger.exception("Error listing Node-RED instances")
         return f"Error listing instances: {e!s}"
@@ -150,7 +171,7 @@ def create_instance(
             e.response.status_code,
             e.response.text,
         )
-        return f"Error creating instance: HTTP {e.response.status_code} - {e.response.text}"
+        return _http_error_str("creating instance", e)
     except Exception as e:
         logger.exception("Error creating Node-RED instance workspace=%r", workspace_base_path)
         return f"Error creating instance: {e!s}"
@@ -209,7 +230,7 @@ def kill_instance(
             e.response.status_code,
             e.response.text,
         )
-        return f"Error killing instance: HTTP {e.response.status_code} - {e.response.text}"
+        return _http_error_str("killing instance", e)
     except Exception as e:
         logger.exception(
             "Error killing Node-RED instance workspace=%r environment=%r",

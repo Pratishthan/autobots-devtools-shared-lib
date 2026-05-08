@@ -23,12 +23,23 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI
+from fastapi.requests import Request
+from fastapi.responses import JSONResponse
 
 from autobots_devtools_shared_lib.common.observability.logging_utils import get_logger
 from autobots_devtools_shared_lib.common.servers.noderedmanagerserver.config import (
     NodeRedManagerServerConfig,
     TemplateConfig,
+)
+from autobots_devtools_shared_lib.common.servers.noderedmanagerserver.exceptions import (
+    FlowsFileNotFoundError,
+    InstanceNotFoundError,
+    InvalidWorkspacePathError,
+    NoAvailablePortError,
+    NodeRedLaunchError,
+    NodeRedManagerError,
+    UnknownEnvironmentError,
 )
 from autobots_devtools_shared_lib.common.servers.noderedmanagerserver.models import (
     CreateInstanceRequest,
@@ -70,7 +81,7 @@ async def _find_available_port(template: TemplateConfig) -> int:
             continue
         if await _is_port_available(port):
             return port
-    raise RuntimeError(
+    raise NoAvailablePortError(
         f"No available ports in range [{template.min_port}, {template.max_port}] "
         f"for environment '{template.name}'. All ports are occupied."
     )
@@ -209,6 +220,37 @@ app = FastAPI(
 )
 
 
+@app.exception_handler(NodeRedManagerError)
+async def _node_red_manager_error_handler(
+    _request: Request, exc: NodeRedManagerError
+) -> JSONResponse:
+    """Convert domain exceptions to HTTP JSON responses."""
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail, "error_code": exc.ERROR_CODE},
+    )
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+
+def _resolve_instance_id(workspace_context: dict, environment_name: str) -> str:
+    """Validate workspace_base_path and return the scoped instance ID.
+
+    Raises InvalidWorkspacePathError if the path is missing or contains '..'.
+    """
+    workspace_base_path = (workspace_context.get("workspace_base_path") or "").strip()
+    if not workspace_base_path:
+        raise InvalidWorkspacePathError(
+            "workspace_context.workspace_base_path is required and cannot be empty."
+        )
+    if ".." in workspace_base_path:
+        raise InvalidWorkspacePathError("workspace_base_path cannot contain '..'")
+    return f"{environment_name}/{workspace_base_path}"
+
+
 # ---------------------------------------------------------------------------
 # Endpoints
 # ---------------------------------------------------------------------------
@@ -275,20 +317,8 @@ async def create_instance(body: CreateInstanceRequest) -> CreateInstanceResponse
         body.workspace_context,
     )
 
-    # 1. Extract and validate workspace_base_path
-    workspace_base_path: str = (body.workspace_context.get("workspace_base_path") or "").strip()
-    if not workspace_base_path:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="workspace_context.workspace_base_path is required and cannot be empty.",
-        )
-    if ".." in workspace_base_path:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="workspace_base_path cannot contain '..'",
-        )
-    # Instance ID scoped per environment so the same workspace can run multiple environments
-    instance_id = f"{body.environment_name}/{workspace_base_path}"
+    # 1. Validate workspace path and derive scoped instance ID
+    instance_id = _resolve_instance_id(body.workspace_context, body.environment_name)
 
     # 2. Return existing instance if one is already running for this workspace
     if instance_id in _registry:
@@ -304,37 +334,26 @@ async def create_instance(body: CreateInstanceRequest) -> CreateInstanceResponse
     environment = config.environments.get(body.environment_name)
     if environment is None:
         logger.warning("create-instance unknown environment=%s", body.environment_name)
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=(
-                f"Unknown environment '{body.environment_name}'. "
-                f"Available: {list(config.environments.keys())}"
-            ),
+        raise UnknownEnvironmentError(
+            f"Unknown environment '{body.environment_name}'. "
+            f"Available: {list(config.environments.keys())}"
         )
 
     # 4. Resolve full flows path: base_path / workspace_base_path / flows_json_path
+    workspace_base_path = instance_id.split("/", 1)[1]
     flows_path = Path(config.base_path) / workspace_base_path / body.flows_json_path
     if not flows_path.exists():
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"flows.json not found at resolved path: {flows_path}",
-        )
+        raise FlowsFileNotFoundError(f"flows.json not found at resolved path: {flows_path}")
 
-    # 5. Find next available port within this environment's port range
-    try:
-        port = await _find_available_port(environment)
-    except RuntimeError as e:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail=str(e)) from e
+    # 5. Find next available port within this environment's port range (raises NoAvailablePortError)
+    port = await _find_available_port(environment)
 
     # 6. Launch subprocess — INSTANCE_ID env var picked up by the environment's settings.js
     try:
         process = await _launch_node_red(environment, str(flows_path), port, instance_id)
     except Exception as e:
         logger.exception("create-instance failed to launch node-red")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to launch Node-RED: {e!s}",
-        ) from e
+        raise NodeRedLaunchError(f"Failed to launch Node-RED: {e!s}") from e
 
     # 7. Register and return
     ttl = body.ttl_seconds if body.ttl_seconds is not None else config.instance_ttl_seconds
@@ -361,21 +380,12 @@ async def create_instance(body: CreateInstanceRequest) -> CreateInstanceResponse
 @app.post("/kill-instance")
 async def kill_instance(body: KillInstanceRequest) -> KillInstanceResponse:
     """Kill a running Node-RED instance by workspace_base_path."""
-    workspace_base_path: str = (body.workspace_context.get("workspace_base_path") or "").strip()
-    if not workspace_base_path:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="workspace_context.workspace_base_path is required and cannot be empty.",
-        )
-    instance_id = f"{body.environment_name}/{workspace_base_path}"
+    instance_id = _resolve_instance_id(body.workspace_context, body.environment_name)
     logger.info("kill-instance called id=%s", instance_id)
 
     entry = _registry.get(instance_id)
     if entry is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Instance '{instance_id}' not found",
-        )
+        raise InstanceNotFoundError(f"Instance '{instance_id}' not found")
 
     _, process, ttl_task = entry
     ttl_task.cancel()
