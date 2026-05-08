@@ -41,7 +41,7 @@ class UnknownEnvironmentError(NodeRedManagerError):
 class FlowsFileNotFoundError(NodeRedManagerError):
     """Raised when flows.json does not exist at the resolved workspace path."""
 
-    status_code = 400
+    status_code = 404
     ERROR_CODE = "FLOWS_FILE_NOT_FOUND"
 
 
