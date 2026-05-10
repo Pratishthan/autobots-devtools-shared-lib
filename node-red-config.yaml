@@ -1,0 +1,38 @@
+# node_red_executable: /usr/local/bin/node-red  # optional, defaults to "node-red"
+
+node_red_manager_server_host: localhost
+node_red_manager_server_port: 9004
+
+base_path: /Users/mahi_praneeth/Desktop  # root prepended to workspace paths when resolving flows.json
+
+instance_ttl_seconds: 2700  # auto-kill instances after 45 min (override per-request via ttl_seconds)
+
+environments:
+  - name: process-manager-template
+    path: /Users/mahi_praneeth/Desktop/process-manager-node-red-template
+    min_port: 1880
+    max_port: 1920
+
+  - name: compose-engine-template
+    path: /Users/mahi_praneeth/Desktop/compose-engine-node-red-template
+    min_port: 1921
+    max_port: 1980
+
+
+# Example create-instance request:
+# {
+#   "workspace_context": {
+#      "workspace_base_path": "userName/repoName-jira"
+#   },
+#   "flows_json_path": "external-files/flows.json",
+#   "template_name": "compose-engine-template"
+# }
+# Resolves flows.json to: base_path/userName/repoName-jira/external-files/flows.json
+
+# {
+#   "workspace_context": {
+#     "workspace_base_path": "proj-1"
+#   },
+#   "flows_json_path": "flows.json",
+#   "environment_name": "process-manager-template"
+# }

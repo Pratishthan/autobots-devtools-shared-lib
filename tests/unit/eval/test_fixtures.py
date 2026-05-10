@@ -78,8 +78,7 @@ class TestMakeDynagentEval:
         )
         case = _make_eval_case()
         await eval_fn(case)
-        assert mock_setup.call_args[0][0] is case.setup
-        assert isinstance(mock_setup.call_args[0][1], str)  # workspace_path is a temp dir string
+        mock_setup.assert_called_once_with(case.setup, state=None)
         mock_teardown.assert_called_once()
 
     @pytest.mark.asyncio

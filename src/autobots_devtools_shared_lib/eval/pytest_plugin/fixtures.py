@@ -51,7 +51,6 @@ def make_dynagent_eval(
 
     async def _eval(eval_case: EvalCase) -> EvalResult:
         session_id = str(uuid.uuid4())
-        workspace_path = "/Users/shruthi/Projects/workspace/khushboo-2802394_infosys/fbp-core-genai-sanity-MER-9999"
 
         config: RunnableConfig = {
             "configurable": {
@@ -67,7 +66,7 @@ def make_dynagent_eval(
 
         try:
             # Stage workspace files
-            setup_workspace(eval_case.setup, workspace_path)
+            setup_workspace(eval_case.setup, state=eval_case.state or None)
 
             # Run the eval
             if eval_case.mode == "linear":
@@ -104,7 +103,7 @@ def make_dynagent_eval(
                 post_scores(session_id, result)
 
         finally:
-            teardown_workspace(workspace_path)
+            teardown_workspace("")
 
         return result
 
