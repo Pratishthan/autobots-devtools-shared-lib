@@ -12,7 +12,9 @@ from autobots_devtools_shared_lib.dynagent.agents.agent_config_utils import (
     get_prompt_map,
     get_resolved_output_schema_map,
     get_tool_map,
+    load_render_manifest,
     load_schema,
+    load_template,
 )
 
 _CONFIG_DIR = Path(__file__).resolve().parent.parent.parent / "configs" / "bro"
@@ -158,3 +160,28 @@ def test_load_schema_invalid_json_raises_error(tmp_path, monkeypatch):
 
     with pytest.raises(ValueError, match="Invalid JSON"):
         load_schema("bad.json")
+
+
+def test_load_template_returns_file_contents():
+    text = load_template("sample.md.j2")
+    assert text.strip() == "# Hello {{ name }}"
+
+
+def test_load_template_missing_raises():
+    with pytest.raises(FileNotFoundError):
+        load_template("does_not_exist.md.j2")
+
+
+def test_load_render_manifest_returns_parsed_yaml():
+    manifest = load_render_manifest()
+    assert "documents" in manifest
+    assert manifest["documents"]["smoke"]["template"] == "sample.md.j2"
+
+
+def test_load_render_manifest_missing_raises(tmp_path, monkeypatch):
+    monkeypatch.setattr(
+        "autobots_devtools_shared_lib.dynagent.agents.agent_config_utils.get_config_dir",
+        lambda: tmp_path,
+    )
+    with pytest.raises(FileNotFoundError):
+        load_render_manifest()
