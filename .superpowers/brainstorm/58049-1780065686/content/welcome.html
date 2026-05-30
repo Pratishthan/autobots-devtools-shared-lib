@@ -1,0 +1,24 @@
+<h2>Designer Canvas — what I found in the code</h2>
+<p class="subtitle">Grounding the PRD against the actual repo before we refine it</p>
+
+<div class="section">
+  <div class="label">Dynadoc (feat/dynadoc branch)</div>
+  <p><code>render_tree(node, load_json, load_template, strict)</code> already renders <strong>any Node subtree</strong> — the engine is recursive over a manifest tree. The public <code>render_document(name)</code> only exposes whole-document rendering, but single-section render is a thin new entry point, <strong>not a rewrite</strong>. (Answers Open Q1 optimistically.)</p>
+</div>
+
+<div class="section">
+  <div class="label">Identity gap</div>
+  <p>Manifest <code>Node.path</code> is a <em>structural</em> dotted path (<code>lld.data.models</code>). The PRD's identity (D6) is the <em>natural key inside the JSON</em> (<code>OverdraftCheck</code>). Dynadoc emits <strong>pure Markdown today — no node-key marker</strong>. So the marker (Open Q5) is genuinely new work in the template/wrapper layer.</p>
+</div>
+
+<div class="section">
+  <div class="label">Event stream</div>
+  <p>Today the frontend = Chainlit consuming raw LangGraph <code>astream_events</code>: <code>on_chat_model_stream</code>, <code>on_tool_start/end</code>, <code>on_chain_end</code> (carries structured output). The PRD's semantic events (<code>section_updated</code>, <code>gate_changed</code>, <code>stage_changed</code>) <strong>don't exist yet</strong> — they're a new layer derived from the raw stream.</p>
+</div>
+
+<div class="section">
+  <div class="label">Agent topology ↔ sections</div>
+  <p>Designer's <code>agents.yaml</code> confirms the mapping: <code>coordinator</code>, <code>background_and_scope</code>, <code>data_models</code>, <code>services</code>… each owns a schema + section. The PRD's "outline = pipeline" claim holds.</p>
+</div>
+
+<p class="subtitle">Next: a scope question in the terminal ↓</p>

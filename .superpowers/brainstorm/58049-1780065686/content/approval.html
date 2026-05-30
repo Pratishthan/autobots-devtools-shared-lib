@@ -1,0 +1,78 @@
+<h2>Approval input: direct events (1) vs route-through-chat (3)</h2>
+<p class="subtitle">Same buttons on screen in both. The difference is where the click <em>goes</em>. Click 1 or 3.</p>
+
+<style>
+  .sec-card { background:#1b1d20; border:1px solid #3a8; border-radius:6px; padding:12px; font-size:12px; color:#cfd; }
+  .sec-card h4 { margin:0 0 6px 0; color:#8ec; }
+  .btnrow { margin-top:10px; display:flex; gap:8px; }
+  .gbtn { background:#2e6; color:#022; border:none; border-radius:5px; padding:6px 12px; font-weight:600; font-size:12px; }
+  .rbtn { background:#2a2d31; color:#fc9; border:1px solid #a74; border-radius:5px; padding:6px 12px; font-size:12px; }
+  .flow { font-size:12px; }
+  .box { background:#23262b; border:1px solid #444; border-radius:5px; padding:8px 10px; margin:6px 0; color:#cde; }
+  .arrow { text-align:center; color:#7a9; margin:2px 0; }
+  .hot { border-color:#3a8; color:#9fd; }
+  .chatbox { background:#222a2e; border:1px solid #46a; }
+</style>
+
+<div class="section">
+  <div class="label">Shared on-screen affordance (both options)</div>
+  <div class="sec-card">
+    <h4>## Data Models — OverdraftCheck &nbsp;<span style="color:#fc6">◐ awaiting sign-off</span></h4>
+    <p class="wf-mini" style="color:#889">balance: Money, threshold: Money, breached: bool …</p>
+    <div class="btnrow">
+      <button class="gbtn">✓ Approve</button>
+      <button class="rbtn">↺ Request changes</button>
+    </div>
+  </div>
+</div>
+
+<div class="split">
+  <div class="mockup">
+    <div class="mockup-header">Option 1 · Buttons emit structured events directly</div>
+    <div class="mockup-body">
+      <div class="flow">
+        <div class="box">User clicks <strong>Approve</strong> on OverdraftCheck</div>
+        <div class="arrow">│ structured control event</div>
+        <div class="box hot">Backend control endpoint<br><span class="wf-mini">{type: gate_approve, node: OverdraftCheck}</span></div>
+        <div class="arrow">│ flips gate, advances coordinator</div>
+        <div class="box">State updated → <code>gate_changed</code> pushed → rail/section re-render</div>
+        <div class="arrow">⋮ (chat untouched)</div>
+        <div class="box chatbox">Chat stays clean — only NL turns appear here</div>
+      </div>
+      <div class="pros-cons" style="margin-top:8px">
+        <div class="pros"><h4>Pros</h4><ul><li>Clean separation: control vs conversation</li><li>No NL parsing of approvals — deterministic</li><li>Chat transcript isn't polluted with "approve" noise</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Two input channels to the backend (chat + control)</li><li>D2 reworded: "no freeform content editing" (buttons OK)</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mockup">
+    <div class="mockup-header">Option 3 · Buttons drop a message into chat</div>
+    <div class="mockup-body">
+      <div class="flow">
+        <div class="box">User clicks <strong>Approve</strong> on OverdraftCheck</div>
+        <div class="arrow">│ injects templated turn</div>
+        <div class="box chatbox hot">Chat receives a structured message<br><span class="wf-mini">"✓ Approve OverdraftCheck" (machine-tagged)</span></div>
+        <div class="arrow">│ single input channel</div>
+        <div class="box">Coordinator consumes the turn → flips gate</div>
+        <div class="arrow">│</div>
+        <div class="box">State updated → <code>gate_changed</code> pushed → re-render</div>
+      </div>
+      <div class="pros-cons" style="margin-top:8px">
+        <div class="pros"><h4>Pros</h4><ul><li>One conceptual input channel (everything is a turn)</li><li>Full audit trail — every decision is in the transcript</li><li>Click ergonomics, chat semantics</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>Transcript fills with approve/reject turns</li><li>Coordinator must reliably parse tagged turns → still deterministic only if tagged, not free NL</li><li>Round-trip through the LLM for what could be a pure state flip</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="options">
+  <div class="option" data-choice="1" onclick="toggleSelect(this)">
+    <div class="letter">1</div><div class="content"><h3>Direct structured events</h3><p>Control channel separate from chat. Deterministic, clean transcript.</p></div>
+  </div>
+  <div class="option" data-choice="3" onclick="toggleSelect(this)">
+    <div class="letter">3</div><div class="content"><h3>Route through chat</h3><p>Buttons inject tagged turns. One channel, full audit trail.</p></div>
+  </div>
+</div>
+
+<p class="subtitle">My lean: <strong>1</strong>. A gate flip is a deterministic state change; sending it through the LLM (option 3) re-introduces exactly the "every correction routes back through the prompt box" friction the PRD calls out as a problem. Keep chat for intent, controls for decisions — and log control actions to the same history so you still get the audit trail.</p>

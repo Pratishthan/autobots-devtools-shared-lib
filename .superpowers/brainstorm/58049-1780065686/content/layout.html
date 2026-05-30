@@ -1,0 +1,103 @@
+<h2>Canvas layout — where do the panels live?</h2>
+<p class="subtitle">Mental model = Cursor/Linear. The LLD canvas is the permanent center. Everything else is supporting chrome. Three arrangements of the same panels — click the one that feels right.</p>
+
+<style>
+  .wf { border:1px solid var(--border,#3a3a3a); border-radius:6px; overflow:hidden; font-size:11px; }
+  .wf-row { display:flex; }
+  .wf-stage { background:#2b3a4a; color:#cde; padding:6px 8px; text-align:center; letter-spacing:.5px; }
+  .wf-outline { background:#23262b; color:#9aa; padding:8px; width:120px; flex:0 0 120px; }
+  .wf-canvas { background:#1b1d20; color:#cfd; padding:10px; flex:1; min-height:200px; border-left:1px solid #333; border-right:1px solid #333; }
+  .wf-chat { background:#222a2e; color:#ace; padding:8px; width:150px; flex:0 0 150px; }
+  .wf-valid { background:#26301f; color:#bd9; padding:6px 8px; text-align:center; }
+  .wf-sec { background:#2a2d31; border-radius:4px; padding:6px; margin-bottom:6px; }
+  .wf-sec.active { background:#34403a; border:1px solid #5a8; }
+  .wf-tab { display:inline-block; padding:3px 7px; background:#2a2d31; border-radius:4px 4px 0 0; margin-right:2px; color:#9ad; }
+  .wf-tab.on { background:#222a2e; color:#cfe; }
+  .wf-mini { color:#778; font-size:10px; }
+</style>
+
+<div class="cards">
+
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="wf">
+        <div class="wf-stage">STAGE RAIL · Scope → Models → Services → Tests → Validate</div>
+        <div class="wf-row">
+          <div class="wf-outline"><div class="wf-mini">OUTLINE</div>
+            <div class="wf-sec">Background</div>
+            <div class="wf-sec active">Data Models ●</div>
+            <div class="wf-sec">Services</div>
+            <div class="wf-sec">Test Data</div>
+          </div>
+          <div class="wf-canvas"><strong>LLD CANVAS</strong><br><span class="wf-mini">rendered Markdown, click section to pin</span>
+            <div class="wf-sec active" style="margin-top:8px">## Data Models — OverdraftCheck ●</div>
+            <div class="wf-sec">## Services</div>
+          </div>
+          <div class="wf-chat"><div class="wf-mini">CHAT → pinned: OverdraftCheck</div><br>agent: regenerating…<br><br>[ message box ]</div>
+        </div>
+        <div class="wf-valid">VALIDATION GATES: ✓ schema  ✓ refs  ⚠ scenarios</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A · Rail-top, three columns, validation-bottom</h3>
+      <p>Stage rail = top bar, validation board = bottom bar, outline left, chat right. Canvas gets the whole middle. Most "IDE-like." Impact/redline open as overlays over the canvas.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="wf">
+        <div class="wf-row">
+          <div class="wf-outline"><div class="wf-mini">OUTLINE + STAGE</div>
+            <div class="wf-sec">✓ Background</div>
+            <div class="wf-sec active">◐ Data Models</div>
+            <div class="wf-sec">○ Services</div>
+            <div class="wf-sec">○ Test Data</div>
+            <hr style="border-color:#333">
+            <div class="wf-mini">GATES</div>
+            <div class="wf-mini">✓ schema ⚠ scenarios</div>
+          </div>
+          <div class="wf-canvas"><strong>LLD CANVAS</strong><br><span class="wf-mini">click section to pin</span>
+            <div class="wf-sec active" style="margin-top:8px">## OverdraftCheck ●</div>
+            <div class="wf-sec">## Services</div>
+            <div class="wf-sec">## Test Data</div>
+          </div>
+          <div class="wf-chat"><div class="wf-mini">CHAT → OverdraftCheck</div><br>agent working…<br><br>[ message box ]</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B · Unified left rail (outline + stage + gates), canvas, chat</h3>
+      <p>Everything navigational/status collapses into one left rail: outline doubles as the pipeline view (✓/◐/○ states) and gates live below it. Two real columns + chat. Calmest, fewest regions. Linear-like.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="wf">
+        <div class="wf-stage">STAGE RAIL</div>
+        <div class="wf-row">
+          <div class="wf-outline"><div class="wf-mini">OUTLINE</div>
+            <div class="wf-sec">Background</div>
+            <div class="wf-sec active">Data Models ●</div>
+            <div class="wf-sec">Services</div>
+          </div>
+          <div class="wf-canvas"><strong>LLD CANVAS</strong>
+            <div class="wf-sec active" style="margin-top:8px">## OverdraftCheck ●</div>
+          </div>
+          <div class="wf-chat">
+            <div><span class="wf-tab on">Chat</span><span class="wf-tab">Gates</span><span class="wf-tab">Impact</span></div>
+            <div style="background:#222a2e;padding:6px"><div class="wf-mini">→ OverdraftCheck</div>agent working…<br><br>[ box ]</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C · One tabbed right dock (Chat / Gates / Impact / Redline)</h3>
+      <p>Stage rail top, outline left, canvas center. The entire right dock is <em>tabbed</em>: chat, validation gates, impact panel, and redline are tabs of one region rather than separate always-on panels. Most screen for the canvas; context switches in the dock.</p>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle">My lean: <strong>B</strong> for everyday authoring (the outline literally IS the pipeline, fewest regions, calm), but it leans on <strong>C</strong>'s tabbed dock for the occasional panels (impact, redline) so they don't permanently steal space. We can blend. Which base layout do you want?</p>

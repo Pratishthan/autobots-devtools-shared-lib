@@ -1,0 +1,75 @@
+<h2>Frontend stack: server-driven vs React SPA</h2>
+<p class="subtitle">The canvas is a pure function render(state)→view. State is server-authoritative, frontend never mutates. Click an option when you're ready.</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>Server-driven (HTMX / Datastar + WebSocket)</h3>
+      <p>Backend owns rendering. On each <code>section_updated</code> event, the server re-renders that section's Dynadoc Markdown→HTML fragment and pushes it over WS/SSE. The browser swaps the fragment in by <code>data-node-id</code>. Thin JS only for click-to-pin and chat input.</p>
+    </div>
+  </div>
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>React SPA + FastAPI WebSocket</h3>
+      <p>FastAPI pushes structured JSON events. A React store reduces over them; components re-render. Dynadoc Markdown is rendered client-side (or server-pre-rendered HTML injected). Rich client state, virtual DOM diffing.</p>
+    </div>
+  </div>
+</div>
+
+<div class="split">
+  <div class="mockup">
+    <div class="mockup-header">A · Server-driven</div>
+    <div class="mockup-body">
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul>
+          <li><strong>One language.</strong> Stays in Python/Jinja — same world as Dynadoc templates &amp; today's Chainlit</li>
+          <li><strong>No SPA build/deploy</strong> pipeline, no node_modules, no second CI lane</li>
+          <li><strong>render(state)→view is literal</strong> — server is the single renderer; no client/server state to keep in sync</li>
+          <li>Reuses Dynadoc HTML output directly — fragment per node maps 1:1 to the swap unit</li>
+          <li>Reconnection = re-request current state &amp; re-render; trivially correct</li>
+        </ul></div>
+        <div class="cons"><h4>Cons</h4><ul>
+          <li>Rich client interactions (drag, smooth diff animations, complex impact-panel graph) are harder</li>
+          <li>Smaller talent/ecosystem vs React; fewer off-the-shelf components</li>
+          <li>Every interaction is a round-trip (fine for single-user, server-authoritative)</li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+  <div class="mockup">
+    <div class="mockup-header">B · React SPA</div>
+    <div class="mockup-body">
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul>
+          <li>Richest interaction ceiling — graph views, animations, optimistic UI</li>
+          <li>Huge ecosystem (component libs, diff viewers, graph viz)</li>
+          <li>Clear reducer model matches "frontend = reducer over event stream" framing</li>
+          <li>Natural home if Nurture/KBE later want heavier client UIs</li>
+        </ul></div>
+        <div class="cons"><h4>Cons</h4><ul>
+          <li><strong>Second language + toolchain</strong> the team doesn't run today (build, bundle, deploy, version)</li>
+          <li>Two copies of state (server truth + client store) — the sync bugs D2 was designed to <em>avoid</em></li>
+          <li>Markdown→identity markers must survive into client render; more plumbing</li>
+          <li>Higher baseline effort before first pixel; overkill for read-only + single user</li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="label">Per-panel cost (rough)</div>
+  <table style="width:100%;border-collapse:collapse">
+    <tr style="text-align:left"><th>Panel</th><th>Server-driven</th><th>React SPA</th></tr>
+    <tr><td>Read-only canvas (fragment swap)</td><td>Low — native fit</td><td>Low</td></tr>
+    <tr><td>Click-to-pin reference</td><td>Low</td><td>Low</td></tr>
+    <tr><td>Chat sidebar (streaming tokens)</td><td>Medium — SSE/WS append</td><td>Medium</td></tr>
+    <tr><td>Stage rail / validation board</td><td>Low — fragment swap on event</td><td>Low</td></tr>
+    <tr><td>Brownfield impact panel (graph)</td><td>Medium–High</td><td>Medium</td></tr>
+    <tr><td>Redline / diff view</td><td>Medium</td><td>Medium</td></tr>
+  </table>
+</div>
+
+<p class="subtitle">My lean: <strong>A (server-driven)</strong> — it's the smallest stack that fully honors D2/D3 and keeps the team in one language. The only panel where React clearly wins is the impact-panel graph, and that can be an embedded JS island (e.g. a small graph lib) inside a server-driven shell. Which way do you want to go?</p>
