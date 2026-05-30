@@ -25,7 +25,7 @@ served from a list of source paths with last-one-wins override.
 | 4 | **User scope keyed on `Dynagent.user_name`** (stable across a developer's sessions). | Beta skills persist across sessions; enables a promotion gate. |
 | 5 | **GPA hosted in the MER consumer app**; **`FserverBackend` adapter lives in shared-lib**. | GPA is developer-facing (MER = SDLC/dev workflows). Backend is the reusable piece for the later domain migration. |
 | 6 | Entry via **Chainlit + agent self-authoring**: developer describes a skill in chat, GPA writes `SKILL.md` to its user scope. | No new endpoints; lowest friction. |
-| 7 | **MVP1 = playbooks** (instructions-only, `write` create-only, no code execution). **MVP2 = scripts** (needs a sandbox backend). | De-risk; MVP1 backend interface extends to MVP2 without breaking changes. |
+| 7 | **MVP1 = playbooks** (instructions-only, `write` create-only, no code execution, no caching). **MVP2 = scripts + caching** (sandbox backend + TTL cache). | De-risk; MVP1 backend interface extends to MVP2 without breaking changes. Caching deferred since skill-sized dirs make per-turn fetches acceptable. |
 
 ## 3. Architecture
 
@@ -84,9 +84,9 @@ Method mapping (protocol → fserver client):
 | `grep(pattern, path=None, glob=None) -> GrepResult` | `ls` + read + in-process scan | No server-side search today. |
 | `glob(pattern, path="/") -> GlobResult` | `ls` + fnmatch | Client-side pattern match. |
 
-**Caching:** short-TTL (≈30–60s) cache inside the backend keyed by
-`(workspace_context, path)` for `ls`/`read`, so progressive-disclosure menu building
-doesn't cost `1 ls + N reads` per scope on every turn.
+**Caching:** deferred to MVP2. In MVP1 progressive-disclosure menu building costs
+`1 ls + N reads` per scope per turn against the fserver; acceptable for skill-sized
+dirs. A short-TTL cache keyed by `(workspace_context, path)` is added in MVP2 (see §7).
 
 **Reference (`BackendProtocol` shape, sync):**
 
@@ -153,7 +153,7 @@ agent.
    GPA writes `SKILL.md` (correct frontmatter) to `/skills/user/edn-mapper/` via the
    backend (`write`, create-only).
 2. **Discover.** Next turn, `SkillsMiddleware` lists both scopes, reads frontmatter,
-   injects the name+description menu into the system prompt (served from cache).
+   injects the name+description menu into the system prompt.
 3. **Use.** Developer asks for an EDN mapping. The model recognizes the skill from its
    description, calls the filesystem read tool to load the full `SKILL.md`, follows it.
 4. **Promote (optional, gated).** Author runs the explicit promotion step → skill
@@ -168,24 +168,25 @@ agent.
   occurrence count.
 - Missing/empty `user_name` → user scope falls back to a safe per-session area (never
   writes into team scope).
-- Cache is best-effort; a cache miss/expiry just re-fetches.
 
 ## 7. MVP Split
 
-**MVP1 (playbooks):** `FserverBackend` (`ls/read/write/edit/glob/grep` + create-only +
-cache), `CompositeBackend` scope routing, `gpa_backend_factory`, `GpaState`,
+**MVP1 (playbooks):** `FserverBackend` (`ls/read/write/edit/glob/grep` + create-only),
+`CompositeBackend` scope routing, `gpa_backend_factory`, `GpaState`,
 `create_gpa_agent` + config + Chainlit entry, agent self-authoring to user scope,
-explicit gated promotion. **No code execution.**
+explicit gated promotion. **No caching. No code execution.**
 
-**MVP2 (scripts):** skills bundle runnable `.py`; requires a `SandboxBackendProtocol`
-backend (fserver alone can't safely execute). Explicitly deferred; MVP1 backend
-interface extends without breaking changes.
+**MVP2 (scripts + caching):** skills bundle runnable `.py`; requires a
+`SandboxBackendProtocol` backend (fserver alone can't safely execute). Also adds the
+short-TTL `ls`/`read` cache keyed by `(workspace_context, path)` to cut
+progressive-disclosure round-trips. Explicitly deferred; the MVP1 backend interface
+extends to both without breaking changes.
 
 ## 8. Testing
 
 - **Unit (shared-lib):** `FserverBackend` against a mocked fserver client — every
   protocol method, create-only `write`, `edit` uniqueness / `replace_all`,
-  `ls`/`grep`/`glob` mapping, cache TTL behavior.
+  `ls`/`grep`/`glob` mapping.
 - **Integration:** `CompositeBackend` routes team vs. user to the correct
   `workspace_context`; `create_deep_agent` boots with `lm()` + `inject_agent` + factory.
 - **E2E:** the "conversation → EDN mapper" skill — author it, menu shows it, invoke it,
@@ -197,7 +198,8 @@ interface extends without breaking changes.
 - **`deepagents` is a new dependency** (not in lock). Add to MER (and shared-lib for
   the backend protocol import). Verify it resolves against pinned `langchain>=1.0`,
   `langgraph`, Python 3.12.
-- **Remote-store cost** of progressive disclosure — mitigated by the TTL cache.
+- **Remote-store cost** of progressive disclosure (`1 ls + N reads` per scope per
+  turn) — accepted in MVP1; TTL cache added in MVP2.
 - **Team-scope poisoning** — mitigated by author-only authoring + gated promotion.
 - **State divergence** (`GpaState` vs `Dynagent`) — intentional and documented.
 - `grep`/`glob` are client-side (no server search) — acceptable for skill-sized dirs.
