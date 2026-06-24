@@ -10,24 +10,26 @@ const { useState, useRef, useEffect, useCallback, useContext } = React;
 
 /* ---- Skills, registered as CopilotKit actions (useCopilotAction) ---- */
 const SKILL_ACTIONS = [
-  { name: "search_docs", icon: "book", tint: "#6766fc", hitl: false,
+  // Knowledge
+  { name: "search_docs", icon: "book", tint: "#6766fc", hitl: false, category: "Knowledge",
     description: "Search the internal wiki, policies, and runbooks; answer with cited sources.",
     parameters: ["query"], example: "What's our PTO policy for contractors?" },
-  { name: "query_warehouse", icon: "bars", tint: "#0ea5e9", hitl: true,
-    description: "Run SQL over the analytics warehouse. Sensitive schemas require approval.",
-    parameters: ["sql"], example: "Pull Q2 MRR growth and break it down by plan" },
-  { name: "slack_search", icon: "chat", tint: "#16a34a", hitl: false,
+  { name: "slack_search", icon: "chat", tint: "#16a34a", hitl: false, category: "Knowledge",
     description: "Scan Slack support channels to cluster recurring issues and themes.",
     parameters: ["channels", "window"], example: "Summarize last week's #support threads by theme" },
-  { name: "run_python", icon: "spark", tint: "#a855f7", hitl: false,
-    description: "Execute Python for analysis, math, and forecasting over retrieved data.",
-    parameters: ["code"], example: "Forecast next month's signups from recent trend" },
-  { name: "forecast", icon: "trend", tint: "#f59e0b", hitl: false,
-    description: "Project signups, revenue, and usage from historical warehouse data.",
-    parameters: ["metric", "horizon"], example: "Forecast next month's signups from recent trend" },
-  { name: "web_search", icon: "globe", tint: "#ef4444", hitl: false,
+  { name: "web_search", icon: "globe", tint: "#ef4444", hitl: false, category: "Knowledge",
     description: "Look things up on the public web and return a concise, sourced briefing.",
     parameters: ["query"], example: "Research how competitors price their team plans" },
+  // Data
+  { name: "query_warehouse", icon: "bars", tint: "#0ea5e9", hitl: true, category: "Data",
+    description: "Run SQL over the analytics warehouse. Sensitive schemas require approval.",
+    parameters: ["sql"], example: "Pull Q2 MRR growth and break it down by plan" },
+  { name: "run_python", icon: "spark", tint: "#a855f7", hitl: false, category: "Data",
+    description: "Execute Python for analysis, math, and forecasting over retrieved data.",
+    parameters: ["code"], example: "Forecast next month's signups from recent trend" },
+  { name: "forecast", icon: "trend", tint: "#f59e0b", hitl: false, category: "Data",
+    description: "Project signups, revenue, and usage from historical warehouse data.",
+    parameters: ["metric", "horizon"], example: "Forecast next month's signups from recent trend" },
 ];
 
 const SUGGESTIONS = [
@@ -49,7 +51,7 @@ function ActionRegistrar({ def }) { useCopilotAction(def); return null; }
 /* ============================================================
    Thread rail
    ============================================================ */
-function ThreadRail({ threads, activeId, onSelect, onNew, onDelete, dark, onToggleDark, actionsOpen, onToggleSkills, skillCount, collapsed, onToggleCollapse }) {
+function ThreadRail({ threads, activeId, onSelect, onNew, onDelete, dark, onToggleDark, collapsed, onToggleCollapse }) {
   const groups = [
     { label: "Today", items: [] }, { label: "Yesterday", items: [] }, { label: "Earlier", items: [] },
   ];
@@ -66,7 +68,6 @@ function ThreadRail({ threads, activeId, onSelect, onNew, onDelete, dark, onTogg
         <span className="brand-mark"><span className="glyph" /></span>
         <button className="mini-btn" onClick={onToggleCollapse} title="Expand sidebar"><Ic.sidebar /></button>
         <button className="mini-btn mini-new" onClick={onNew} title="New chat"><Ic.plus /></button>
-        <button className={"mini-btn" + (actionsOpen ? " active" : "")} onClick={onToggleSkills} title="Skills"><Ic.grid /></button>
         <div className="mini-spacer" />
         <button className="mini-btn" onClick={onToggleDark} title="Toggle theme">{dark ? <Ic.sun /> : <Ic.moon />}</button>
         <button className="mini-avatar" onClick={onToggleCollapse} title={USER.name}>{USER.initials}</button>
@@ -80,11 +81,6 @@ function ThreadRail({ threads, activeId, onSelect, onNew, onDelete, dark, onTogg
         <button className="icon-btn" onClick={onToggleCollapse} title="Collapse sidebar"><Ic.sidebar /></button>
       </div>
       <button className="rail-new" onClick={onNew}><Ic.plus /> New chat</button>
-      <button className={"rail-skills" + (actionsOpen ? " active" : "")} onClick={onToggleSkills}>
-        <span className="sk-ic"><Ic.grid /></span>
-        <span className="sk-label">Skills</span>
-        <span className="sk-count">{skillCount}</span>
-      </button>
       <div className="rail-scroll">
         {groups.filter((g) => g.items.length).map((g) => (
           <div key={g.label}>
@@ -111,35 +107,128 @@ function ThreadRail({ threads, activeId, onSelect, onNew, onDelete, dark, onTogg
 /* ============================================================
    Registered actions panel  (the useCopilotAction registry)
    ============================================================ */
-function ActionsPanel({ onTrigger }) {
+/* ---- Compact skill row ---- */
+function SkillRow({ action: a, onTrigger }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <button
+      className={"skill-row" + (open ? " skill-row-open" : "")}
+      onClick={() => { setOpen((v) => !v); }}
+      onDoubleClick={() => onTrigger(a.example)}
+    >
+      <span className="sr-ico" style={{ color: a.tint, background: `color-mix(in srgb, ${a.tint} 12%, transparent)` }}>
+        {SkillGlyph[a.icon]}
+      </span>
+      <span className="sr-name">{a.name}</span>
+      {a.hitl && <span className="sr-hitl">HITL</span>}
+      <span className="sr-try" onClick={(e) => { e.stopPropagation(); onTrigger(a.example); }} title="Try this skill">Try →</span>
+      {open && (
+        <span className="sr-detail">
+          <span className="sr-desc">{a.description}</span>
+          <span className="sr-params">{a.parameters.map((p) => <span key={p} className="sr-param">{p}</span>)}</span>
+        </span>
+      )}
+    </button>
+  );
+}
+
+function ActionsPanel({ onTrigger, collapsed, onCollapse, onExpand }) {
   const ck = useContext(CopilotKitContext);
   const actions = ck ? ck.actions : [];
+  const [query, setQuery] = useState("");
+  const [collapsedGroups, setCollapsedGroups] = useState({});
+
+  const q = query.trim().toLowerCase();
+  const filtered = q
+    ? actions.filter((a) => a.name.includes(q) || (a.description || "").toLowerCase().includes(q) || (a.category || "").toLowerCase().includes(q))
+    : actions;
+
+  // Group by category
+  const groups = filtered.reduce((acc, a) => {
+    const cat = a.category || "General";
+    if (!acc[cat]) acc[cat] = [];
+    acc[cat].push(a);
+    return acc;
+  }, {});
+
+  const toggleGroup = (cat) => setCollapsedGroups((v) => ({ ...v, [cat]: !v[cat] }));
+
+  // Collapsed: a slim rail of skill glyphs
+  if (collapsed) {
+    return (
+      <aside className="actions-rail" aria-label="Skills">
+        <button className="arail-expand" onClick={onExpand} title="Expand skills">
+          <Ic.bolt />
+          <span className="arail-badge">{actions.length}</span>
+        </button>
+        <div className="arail-icons">
+          {actions.map((a) => (
+            <button key={a.name} className="arail-ico" aria-label={a.name}
+              style={{ color: a.tint, background: `color-mix(in srgb, ${a.tint} 13%, transparent)` }}
+              onClick={() => onTrigger(a.example)}>
+              {SkillGlyph[a.icon]}
+              {a.hitl && <span className="arail-hitl" title="Human-in-the-loop" />}
+              <span className="arail-tip">
+                <span className="att-name">{a.name}{a.hitl && <span className="att-hitl">HITL</span>}</span>
+                <span className="att-desc">{a.description}</span>
+                <span className="att-try">Click to try →</span>
+              </span>
+            </button>
+          ))}
+        </div>
+        <div className="arail-foot">
+          <span className={"dot" + (ck && ck.conn === "online" ? " dot-online" : "")} title={`${actions.length} actions registered`} />
+        </div>
+      </aside>
+    );
+  }
+
   return (
     <aside className="actions-panel">
       <div className="actions-head">
-        <div className="ah-title"><Ic.bolt /> Registered actions</div>
-        <div className="ah-sub">Skills exposed to the CoAgent via <code>useCopilotAction</code>. The agent can call these; click to try one.</div>
+        <div className="ah-row">
+          <div className="ah-title"><Ic.bolt /> Skills</div>
+          <button className="ah-collapse" onClick={onCollapse} title="Collapse to rail"><Ic.sidebar /></button>
+        </div>
+        <div className="ah-search">
+          <span className="ah-search-ic"><Ic.search /></span>
+          <input
+            className="ah-search-input"
+            placeholder="Filter skills…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            spellCheck={false}
+          />
+          {query && <button className="ah-search-clear" onClick={() => setQuery("")}><Ic.x /></button>}
+        </div>
       </div>
       <div className="actions-scroll">
-        {actions.map((a) => (
-          <button key={a.name} className="action-card" onClick={() => onTrigger(a.example)}>
-            <div className="ac-top">
-              <span className="ac-ico" style={{ color: a.tint, background: `color-mix(in srgb, ${a.tint} 13%, transparent)` }}>{SkillGlyph[a.icon]}</span>
-              <span className="ac-name">{a.name}</span>
-              {a.hitl && <span className="ac-hitl">HITL</span>}
+        {Object.keys(groups).length === 0 && (
+          <div className="ap-empty">No skills match <strong>{query}</strong></div>
+        )}
+        {Object.entries(groups).map(([cat, items]) => {
+          const isCollapsed = collapsedGroups[cat];
+          return (
+            <div key={cat} className="skill-group">
+              <button className="skill-group-label" onClick={() => toggleGroup(cat)}>
+                <span>{cat}</span>
+                <span className="sg-count">{items.length}</span>
+                <span className={"sg-chev" + (isCollapsed ? " sg-chev-closed" : "")}><Ic.chev /></span>
+              </button>
+              {!isCollapsed && items.map((a) => (
+                <SkillRow key={a.name} action={a} onTrigger={onTrigger} />
+              ))}
             </div>
-            <div className="ac-desc">{a.description}</div>
-            <div className="ac-params">{a.parameters.map((p) => <span key={p} className="ac-param">{p}</span>)}</div>
-          </button>
-        ))}
+          );
+        })}
       </div>
       <div className="actions-foot">
-          <span className={"dot" + (ck && ck.conn === "online" ? " dot-online" : "")} />
-          {actions.length} actions registered
-          {ck && ck.mode === "live"
-            ? <> · <span style={{color: ck.conn === "online" ? "var(--c-green,#16a34a)" : ck.conn === "offline" ? "#ef4444" : "inherit"}}>{ck.conn === "online" ? "live · online" : ck.conn === "offline" ? "live · offline" : "live · connecting…"}</span></>
-            : " · runtime mocked"}
-        </div>
+        <span className={"dot" + (ck && ck.conn === "online" ? " dot-online" : "")} />
+        {actions.length} actions registered
+        {ck && ck.mode === "live"
+          ? <> · <span style={{color: ck.conn === "online" ? "var(--c-green,#16a34a)" : ck.conn === "offline" ? "#ef4444" : "inherit"}}>{ck.conn === "online" ? "live · online" : ck.conn === "offline" ? "live · offline" : "live · connecting…"}</span></>
+          : " · runtime mocked"}
+      </div>
     </aside>
   );
 }
@@ -196,6 +285,7 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "primaryColor": "#c0632f",
   "headerStyle": "light",
   "showActions": true,
+  "actionsCollapsed": false,
   "dark": false
 }/*EDITMODE-END*/;
 
@@ -225,19 +315,20 @@ function AppInner() {
     <div className={"ck-app" + (railOpen ? " rail-open" : "") + (collapsed ? " collapsed" : "") + (t.showActions ? "" : " no-actions")}>
       <ThreadRail threads={threads} activeId={activeId} onSelect={selectThread} onNew={newChat}
         onDelete={deleteThread} dark={t.dark} onToggleDark={() => setTweak("dark", !t.dark)}
-        actionsOpen={t.showActions} onToggleSkills={() => setTweak("showActions", !t.showActions)} skillCount={SKILL_ACTIONS.length}
         collapsed={collapsed} onToggleCollapse={() => setCollapsed((v) => !v)} />
       <div className="scrim" onClick={() => setRailOpen(false)} />
-      <div className={"workspace" + (t.showActions ? "" : " no-actions")}>
+      <div className={"workspace" + (t.showActions ? "" : " no-actions") + (t.showActions && t.actionsCollapsed ? " actions-collapsed" : "")}>
         <CopilotChat chat={chat} threads={threads} activeId={activeId} onMenu={() => setRailOpen(true)} />
-        {t.showActions && <ActionsPanel onTrigger={trigger} />}
+        {t.showActions && <ActionsPanel onTrigger={trigger} collapsed={t.actionsCollapsed}
+          onCollapse={() => setTweak("actionsCollapsed", true)}
+          onExpand={() => setTweak("actionsCollapsed", false)} />}
       </div>
 
       {/* skills registered as CopilotKit actions */}
       {SKILL_ACTIONS.map((a) => <ActionRegistrar key={a.name} def={a} />)}
       {/* the HITL confirmation action (renderAndWaitForResponse) */}
       <ActionRegistrar def={{
-        name: "confirm_warehouse_query", icon: "bars", tint: "#6766fc", hitl: true,
+        name: "confirm_warehouse_query", icon: "bars", tint: "#6766fc", hitl: true, category: "Data",
         description: "Human-in-the-loop gate. Renders an approval card and waits before the CoAgent runs a sensitive query.",
         parameters: ["sql"], example: "Pull Q2 MRR growth and break it down by plan",
       }} />
@@ -252,6 +343,7 @@ function AppInner() {
         <TweakToggle label="Dark mode" value={t.dark} onChange={(v) => setTweak("dark", v)} />
         <TweakSection label="Layout" />
         <TweakToggle label="Show actions panel" value={t.showActions} onChange={(v) => setTweak("showActions", v)} />
+        <TweakToggle label="Collapse to rail" value={t.actionsCollapsed} onChange={(v) => setTweak("actionsCollapsed", v)} />
       </TweaksPanel>
     </div>
   );
