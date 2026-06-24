@@ -92,9 +92,6 @@ def create_base_agent(
         name=initial_agent_name or "dynagent",
         tools=all_tools,
         state_schema=state_schema,
-        middleware=cast(
-            "list[AgentMiddleware[Any, Any]]",
-            build_middleware_stack(model, sync_mode=sync_mode, copilotkit=copilotkit),
-        ),
+        middleware=build_middleware_stack(model, sync_mode=sync_mode, copilotkit=copilotkit),
         checkpointer=checkpointer,
     )
