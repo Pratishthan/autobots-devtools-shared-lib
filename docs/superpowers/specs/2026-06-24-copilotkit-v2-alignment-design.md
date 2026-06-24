@@ -1,7 +1,7 @@
 # CopilotKit v2 Alignment — Design
 
 Date: 2026-06-24
-Status: Approved (decomposition + sub-project 1)
+Status: Sub-project 1 implemented · sub-project 2 detailed (implement now)
 Branch: design/react-copilotkit-ui
 
 ## Context
@@ -77,8 +77,8 @@ Browser ──(v2 CopilotKit provider @ root layout)──► /api/copilotkit/[[
 Each sub-project gets its own spec → plan → implementation cycle. The UI stays runnable
 after each. Steps 3–6 may be reordered/parallelized once 1–2 land.
 
-1. **Backend agent alignment** *(detailed below — implement now)* — emit v2-compatible events.
-2. **v2 runtime + provider skeleton** — bump to `@copilotkit/*` v2 + Next 16; convert
+1. **Backend agent alignment** *(detailed below — implemented)* — emit v2-compatible events.
+2. **v2 runtime + provider skeleton** *(detailed below — implement now)* — bump to `@copilotkit/*` v2 + Next 16; convert
    `route.ts` to `createCopilotEndpoint`/Hono with `[[...slug]]`; move provider to root
    `layout.tsx`; bare `CopilotChat` working end-to-end. **Retire `ck-*.jsx`, `app.jsx`,
    the Atlas HTML files, and `styles.css` here.** Point `LangGraphHttpAgent({url})` at the
@@ -168,3 +168,93 @@ not match anything on the frontend. Step 1 only needs to **mount at `/agent` and
 - `LangGraphAGUIAgent` API surface differs from `ag_ui_langgraph.LangGraphAgent`
   (constructor args, event emission); verify the AG-UI endpoint still streams against a
   smoke test before declaring step 1 done.
+
+**Status: implemented** (commits `425cd58`, `b37b265`). All acceptance criteria verified:
+no-arg middleware stack unchanged; `copilotkit=True` appends only `CopilotKitMiddleware()`;
+server mounts at `/agent` and logs the name; `[copilotkit-ui]` installs `copilotkit`; tests,
+lint, type-check pass.
+
+---
+
+## Sub-project 2 — v2 runtime + provider skeleton (implement now)
+
+### Scope
+
+Get **real CopilotKit v2** chatting end-to-end against the FastAPI `/agent` backend with a
+**bare `CopilotChat`**, convert the runtime route, move the provider to the root layout, and
+**delete the Atlas mock**. Nothing styled or feature-rich yet — threads, tool rendering,
+generative UI, suggestions, and MCP are steps 3–6.
+
+**Bump scope decision: minimal skeleton.** Bring in CopilotKit v2 (`1.61.0`) + `hono` + Next 16
+only. Do **not** adopt Tailwind v4 / radix / recharts / shiki here — those exist in the
+reference solely for the steps 3–6 components and are pulled in by the steps that use them.
+The page uses default v2 styles.
+
+### Changes
+
+**1. `ui/package.json` — minimal v2 bump**
+
+- `@copilotkit/react-core`, `@copilotkit/react-ui`, `@copilotkit/runtime` → `1.61.0`.
+- Add `hono` (`^4.12`).
+- `next` → `16.x`; keep `react` / `react-dom` 19.
+- No Tailwind / radix / recharts / shiki — deferred to the steps that consume them.
+
+**2. `ui/app/api/copilotkit/[[...slug]]/route.ts`** (moved from `route.ts`)
+
+- Replace v1 `copilotRuntimeNextJSAppRouterEndpoint` (POST only) with v2 `createCopilotEndpoint`
+  over Hono; export `GET` / `POST` / `PATCH` / `DELETE` via `hono/vercel` `handle`.
+- `new LangGraphHttpAgent({ url: \`${process.env.AGENT_URL || "http://localhost:8000"}/agent\` })`,
+  registered under the `default` agent key.
+- `runner: new InMemoryAgentRunner()`. **No** `COPILOTKIT_LICENSE_TOKEN` / intelligence branch
+  (step 4), and **no** `openGenerativeUI` / `a2ui` / `mcpApps` (steps 5–6).
+
+**3. `ui/app/layout.tsx` — provider at root**
+
+- Import `CopilotKit` from `@copilotkit/react-core/v2` and `@copilotkit/react-core/v2/styles.css`.
+- Wrap `{children}` in `<CopilotKit runtimeUrl="/api/copilotkit">` — no a2ui / genUI /
+  ThemeProvider props yet.
+- `suppressHydrationWarning` on `<body>` (browser-extension hydration, per reference).
+
+**4. `ui/app/page.tsx` — bare chat**
+
+- `"use client"`; render `<CopilotChat />` from `@copilotkit/react-core/v2` in a full-height
+  container. Remove the per-page `<CopilotKit>` wrapper and the `agent="coordinator"` prop
+  (the root provider owns the runtime; the route registers the agent as `default`).
+
+**5. Delete the Atlas mock**
+
+- Remove `ck-components.jsx`, `ck-runtime.jsx`, `ck-app.jsx`, `app.jsx`, `ui.jsx`,
+  `tweaks-panel.jsx`, `styles.css`, `copilotkit.css`, `Atlas × CopilotKit.html`,
+  `Atlas Chat.html`. (Recoverable from git history if needed for the later reskin.)
+- `ui/README.md`: drop the "disposable styling references" paragraph and fix the run URL (it
+  points at the now-deleted Atlas HTML) to `http://localhost:3000`.
+
+**6. Env**
+
+- `ui/.env.example`: replace `LANGGRAPH_DEPLOYMENT_URL` with `AGENT_URL=http://localhost:8000`
+  (the server mounts `/agent`; the route appends the path).
+
+### Out of scope for sub-project 2
+
+- Tool-call rendering (step 3).
+- Threads drawer + persistence / license-token choice (step 4).
+- Generative UI / A2UI + `StateStreamingMiddleware` (step 5).
+- Suggestions + MCP apps (step 6).
+- Any restyle / Tailwind adoption.
+
+### Acceptance criteria
+
+- `npm install && npm run dev` builds clean under Next 16; `npm run typecheck` passes.
+- Root-layout `CopilotKit` v2 provider renders; `page.tsx` shows a bare `CopilotChat`.
+- With the FastAPI server running and LLM creds set, a chat message streams assistant text
+  token-by-token through the v2 route → `LangGraphHttpAgent` → `/agent`.
+- Stopping the backend surfaces a clean error in chat (not a blank stream).
+- The Atlas mock files are gone and nothing in `ui/app/` imports them.
+
+### Risks
+
+- **Next 15 → 16** is the main risk in an otherwise small diff; `next.config.mjs` and
+  `tsconfig.json` may need adjustment. Treat config breakage as in-scope for this step.
+- v2 route wiring (Hono `[[...slug]]`, `InMemoryAgentRunner`) differs structurally from v1;
+  verify all four HTTP verbs route before declaring done.
+- End-to-end streaming verification requires the backend + LLM creds running locally.
