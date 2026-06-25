@@ -18,6 +18,10 @@ const runtime = new CopilotRuntime({
   runner: new InMemoryAgentRunner(),
 });
 
+// Default "multi-route" mode: serves /info, /agent/:id/run and /agent/:id/connect
+// as discrete routes. The client opts into this via `useSingleEndpoint={false}`
+// in the root layout; the /connect route is what powers thread-resume state
+// replay (STATE_SNAPSHOT), matching the langgraph-fastapi reference example.
 const app = createCopilotEndpoint({
   runtime,
   basePath: "/api/copilotkit",

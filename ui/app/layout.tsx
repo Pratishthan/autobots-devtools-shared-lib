@@ -16,7 +16,16 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         surface as a hydration mismatch on first load.
       */}
       <body suppressHydrationWarning>
-        <CopilotKit runtimeUrl="/api/copilotkit">{children}</CopilotKit>
+        {/*
+          useSingleEndpoint={false} -> REST/multi-route transport (GET /info,
+          POST /agent/:id/run, /agent/:id/connect), matching the multi-route
+          endpoint in route.ts and the langgraph-fastapi reference. Omitting it
+          defaults to true (single POST to the base URL), which 404s against a
+          multi-route endpoint.
+        */}
+        <CopilotKit runtimeUrl="/api/copilotkit" useSingleEndpoint={false}>
+          {children}
+        </CopilotKit>
       </body>
     </html>
   );
