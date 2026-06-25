@@ -3,10 +3,6 @@
 React chat UI that streams a Dynagent LangGraph agent via the AG-UI protocol.
 Two processes: a Python FastAPI AG-UI server (shared-lib) and this Next.js proxy app.
 
-The legacy `Atlas Chat.html`, `app.jsx`, `ui.jsx`, and `styles.css` files in this
-directory are disposable styling references for a future reskin — they are not part
-of the build.
-
 ## Prerequisites
 
 - The shared venv is set up (`make setup` from `ws-autobots/`).
@@ -35,7 +31,7 @@ npm install            # first run only
 npm run dev
 ```
 
-Open http://localhost:3000.
+Open http://localhost:3000
 
 ## Manual verification checklist
 
