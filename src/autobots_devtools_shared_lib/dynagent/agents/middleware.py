@@ -45,9 +45,12 @@ async def inject_agent_async(
 
     tools = meta.tool_map.get(agent_name, [])
 
+    messages = [m for m in request.messages if not isinstance(m, SystemMessage)]
+
     request = request.override(
         system_message=SystemMessage(content=system_prompt),
         tools=tools,
+        messages=messages,
     )
 
     return await handler(request)
@@ -84,9 +87,12 @@ def inject_agent_sync(
 
     tools = meta.tool_map.get(agent_name, [])
 
+    messages = [m for m in request.messages if not isinstance(m, SystemMessage)]
+
     request = request.override(
         system_message=SystemMessage(content=system_prompt),
         tools=tools,
+        messages=messages,
     )
 
     return handler(request)

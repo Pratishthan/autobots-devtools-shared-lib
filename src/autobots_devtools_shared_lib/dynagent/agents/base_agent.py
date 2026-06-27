@@ -23,11 +23,41 @@ from autobots_devtools_shared_lib.dynagent.tools.tool_registry import get_all_to
 logger = get_agent_logger(__name__)
 
 
+def build_middleware_stack(
+    model: Any,
+    *,
+    sync_mode: bool = False,
+    copilotkit: bool = False,
+) -> list[AgentMiddleware[Any, Any]]:
+    """Assemble the dynagent middleware list.
+
+    The base stack (agent-injection + summarization) is identical to the
+    historical inline list. When ``copilotkit`` is True, a trailing
+    ``CopilotKitMiddleware`` is appended so the graph emits CopilotKit/AG-UI
+    events. ``copilotkit`` is an optional extra, so it is imported lazily.
+    """
+    inject = inject_agent_sync if sync_mode else inject_agent_async
+    stack = [
+        inject,
+        SummarizationMiddleware(
+            model=model,
+            trigger=("fraction", 0.6),
+            keep=("messages", 20),
+        ),
+    ]
+    if copilotkit:
+        from copilotkit import CopilotKitMiddleware
+
+        stack.append(CopilotKitMiddleware())
+    return cast("list[AgentMiddleware[Any, Any]]", stack)
+
+
 def create_base_agent(
     checkpointer: Any = None,
     sync_mode: bool = False,
     initial_agent_name: str | None = None,
     state_schema: type[AgentState[ResponseT]] = Dynagent,
+    copilotkit: bool = False,
 ) -> CompiledStateGraph:
     """Create the dynagent base agent with middleware.
 
@@ -36,6 +66,9 @@ def create_base_agent(
             Defaults to InMemorySaver.
         sync_mode: Whether to use synchronous middleware (for batch processing).
         agent_name: Name for tracing/observability. Defaults to "dynagent".
+        copilotkit: When True, append CopilotKitMiddleware so the graph emits
+            CopilotKit/AG-UI events (used by the CopilotKit UI server).
+            Default False leaves all other call paths unchanged.
 
     Returns:
         Configured LangGraph agent.
@@ -51,8 +84,6 @@ def create_base_agent(
     # All registry tools — middleware controls which subset is active per agent
     all_tools = get_all_tools()
 
-    _middleware = inject_agent_sync if sync_mode else inject_agent_async
-
     if initial_agent_name is None:
         initial_agent_name = get_default_agent()
 
@@ -61,16 +92,6 @@ def create_base_agent(
         name=initial_agent_name or "dynagent",
         tools=all_tools,
         state_schema=state_schema,
-        middleware=cast(
-            "list[AgentMiddleware[Any, Any]]",
-            [
-                _middleware,
-                SummarizationMiddleware(
-                    model=model,
-                    trigger=("fraction", 0.6),
-                    keep=("messages", 20),
-                ),
-            ],
-        ),
+        middleware=build_middleware_stack(model, sync_mode=sync_mode, copilotkit=copilotkit),
         checkpointer=checkpointer,
     )

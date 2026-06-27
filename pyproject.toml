@@ -38,6 +38,12 @@ dev = [
     "pytest-xdist>=3.0.0",
 ]
 
+[project.optional-dependencies]
+copilotkit-ui = [
+    "ag-ui-langgraph>=0.0.42; python_version < '3.15'",
+    "copilotkit>=0.1.94; python_version < '3.15'",
+]
+
 [tool.poetry]
 packages = [
     { include = "autobots_devtools_shared_lib", from = "src" }
