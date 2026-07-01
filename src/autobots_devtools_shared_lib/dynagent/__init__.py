@@ -10,6 +10,7 @@ from autobots_devtools_shared_lib.common.utils.format_utils import output_format
 from autobots_devtools_shared_lib.dynagent.agents.agent_config_utils import get_batch_enabled_agents
 from autobots_devtools_shared_lib.dynagent.agents.agent_meta import AgentMeta
 from autobots_devtools_shared_lib.dynagent.agents.base_agent import create_base_agent
+from autobots_devtools_shared_lib.dynagent.agents.base_deepagent import create_base_deepagent
 from autobots_devtools_shared_lib.dynagent.agents.batch import (
     BatchResult,
     RecordResult,
@@ -17,7 +18,9 @@ from autobots_devtools_shared_lib.dynagent.agents.batch import (
 )
 from autobots_devtools_shared_lib.dynagent.agents.invocation_utils import (
     ainvoke_agent,
+    ainvoke_deepagent,
     invoke_agent,
+    invoke_deepagent,
 )
 from autobots_devtools_shared_lib.dynagent.config.dynagent_settings import (
     DynagentSettings,
@@ -26,22 +29,27 @@ from autobots_devtools_shared_lib.dynagent.config.dynagent_settings import (
     set_dynagent_settings,
 )
 from autobots_devtools_shared_lib.dynagent.llm.llm import lm
+from autobots_devtools_shared_lib.dynagent.models.deep_state import DynaDeepAgent
 from autobots_devtools_shared_lib.dynagent.models.state import Dynagent
 from autobots_devtools_shared_lib.dynagent.tools.tool_registry import register_usecase_tools
 
 __all__ = [
     "AgentMeta",
     "BatchResult",
+    "DynaDeepAgent",
     "Dynagent",
     "DynagentSettings",
     "LLMProvider",
     "RecordResult",
     "ainvoke_agent",
+    "ainvoke_deepagent",
     "batch_invoker",
     "create_base_agent",
+    "create_base_deepagent",
     "get_batch_enabled_agents",
     "get_dynagent_settings",
     "invoke_agent",
+    "invoke_deepagent",
     "lm",
     "make_context_tools",
     "output_format_converter",
