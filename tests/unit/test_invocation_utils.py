@@ -415,3 +415,51 @@ class TestAinvokeAgent:
 
         # Should log at start and end
         assert mock_logger.info.call_count >= 2
+
+
+# ---------------------------------------------------------------------------
+# invoke_deepagent / ainvoke_deepagent tests
+# ---------------------------------------------------------------------------
+
+
+class TestInvokeDeepagent:
+    def test_invokes_deepagent_with_correct_state(
+        self, mock_get_agent_list, mock_agent, input_state, config
+    ):
+        from unittest.mock import patch
+
+        from autobots_devtools_shared_lib.dynagent.agents.invocation_utils import (
+            invoke_deepagent,
+        )
+
+        with patch(
+            "autobots_devtools_shared_lib.dynagent.agents.base_deepagent.create_base_deepagent",
+            return_value=mock_agent,
+        ) as mock_factory:
+            _ = invoke_deepagent("coordinator", input_state, config=config, enable_tracing=False)
+
+        mock_factory.assert_called_once()
+        mock_agent.invoke.assert_called_once()
+        call_args = mock_agent.invoke.call_args
+        assert "messages" in call_args[0][0]
+        assert call_args[1]["config"] == config
+
+    async def test_ainvoke_deepagent_with_correct_state(
+        self, mock_get_agent_list, mock_agent, input_state, config
+    ):
+        from unittest.mock import patch
+
+        from autobots_devtools_shared_lib.dynagent.agents.invocation_utils import (
+            ainvoke_deepagent,
+        )
+
+        with patch(
+            "autobots_devtools_shared_lib.dynagent.agents.base_deepagent.create_base_deepagent",
+            return_value=mock_agent,
+        ) as mock_factory:
+            _ = await ainvoke_deepagent(
+                "coordinator", input_state, config=config, enable_tracing=False
+            )
+
+        mock_factory.assert_called_once()
+        mock_agent.ainvoke.assert_called_once()
