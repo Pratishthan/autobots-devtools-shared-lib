@@ -128,7 +128,7 @@ def load_agents_config() -> dict[str, AgentConfig]:
     if _GLOBAL_AGENT_CONFIG:
         return _GLOBAL_AGENT_CONFIG
     config_dir = get_config_dir()
-    config_path = Path(config_dir) / "agents.yaml"
+    config_path = Path(config_dir) / get_dynagent_settings().agents_config_filename
 
     with open(config_path) as f:  # noqa: PTH123
         data = yaml.safe_load(f)
