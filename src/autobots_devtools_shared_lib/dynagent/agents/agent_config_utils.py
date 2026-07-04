@@ -25,6 +25,9 @@ __all__ = [
     "get_capabilities_map",
     "get_config_dir",
     "get_default_agent",
+    "get_default_backend_config",
+    "get_model_profiles",
+    "get_mcp_servers_config",
     "get_prompt_map",
     "get_resolved_input_schema_map",
     "get_resolved_output_schema_map",
@@ -80,6 +83,16 @@ class AgentConfig:
     batch_enabled: bool = False
     is_default: bool = False
     max_concurrency: int | None = None
+    # --- deep-engine-only fields (ignored by the react engine) ---
+    model: str | None = None
+    skills: list[str] = field(default_factory=list)
+    memory: list[str] = field(default_factory=list)
+    interrupt_on: dict[str, Any] = field(default_factory=dict)
+    permissions: list[Any] = field(default_factory=list)
+    description: str | None = None
+    mcp_servers: list[str] = field(default_factory=list)
+    rubric: dict[str, Any] | None = None
+    debug: bool = False
 
     @classmethod
     def from_dict(cls, agent_id: str, data: dict[str, Any]) -> "AgentConfig":
@@ -127,16 +140,31 @@ class AgentConfig:
             batch_enabled=data.get("batch_enabled", False),
             is_default=data.get("is_default", False),
             max_concurrency=data.get("max_concurrency"),
+            model=data.get("model"),
+            skills=list(data.get("skills") or []),
+            memory=list(data.get("memory") or []),
+            interrupt_on=dict(data.get("interrupt_on") or {}),
+            permissions=list(data.get("permissions") or []),
+            description=data.get("description"),
+            mcp_servers=list(data.get("mcp_servers") or []),
+            rubric=data.get("rubric"),
+            debug=bool(data.get("debug", False)),
         )
 
 
 _GLOBAL_AGENT_CONFIG: dict[str, AgentConfig] = {}
+_GLOBAL_MODEL_PROFILES: dict[str, dict[str, Any]] = {}
+_GLOBAL_BACKEND_CONFIG: dict[str, Any] | None = None
+_GLOBAL_MCP_SERVERS: dict[str, dict[str, Any]] = {}
 
 
 def _reset_agent_config() -> None:
     """Clear the cached agent config — for test isolation."""
-    global _GLOBAL_AGENT_CONFIG
+    global _GLOBAL_AGENT_CONFIG, _GLOBAL_MODEL_PROFILES, _GLOBAL_BACKEND_CONFIG, _GLOBAL_MCP_SERVERS
     _GLOBAL_AGENT_CONFIG = {}
+    _GLOBAL_MODEL_PROFILES = {}
+    _GLOBAL_BACKEND_CONFIG = None
+    _GLOBAL_MCP_SERVERS = {}
 
 
 def get_config_dir() -> Path:
@@ -152,7 +180,7 @@ def get_config_dir() -> Path:
 
 def load_agents_config() -> dict[str, AgentConfig]:
     """Load agent configurations from agents.yaml."""
-    global _GLOBAL_AGENT_CONFIG
+    global _GLOBAL_AGENT_CONFIG, _GLOBAL_MODEL_PROFILES, _GLOBAL_BACKEND_CONFIG, _GLOBAL_MCP_SERVERS
     if _GLOBAL_AGENT_CONFIG:
         return _GLOBAL_AGENT_CONFIG
     config_dir = get_config_dir()
@@ -161,6 +189,10 @@ def load_agents_config() -> dict[str, AgentConfig]:
     with open(config_path) as f:  # noqa: PTH123
         data = yaml.safe_load(f)
     data = interpolate_env(data or {})
+
+    _GLOBAL_MODEL_PROFILES = data.get("models") or {}
+    _GLOBAL_BACKEND_CONFIG = data.get("default_backend")
+    _GLOBAL_MCP_SERVERS = data.get("mcp_servers") or {}
 
     agents = {}
     for agent_id, agent_data in data.get("agents", {}).items():
@@ -338,3 +370,21 @@ def get_default_agent() -> str | None:
         if cfg.is_default:
             return name
     return None
+
+
+def get_model_profiles() -> dict[str, dict[str, Any]]:
+    """Return the top-level models: block ({profile_name: {provider, name, temperature}})."""
+    load_agents_config()
+    return _GLOBAL_MODEL_PROFILES
+
+
+def get_default_backend_config() -> dict[str, Any] | None:
+    """Return the top-level default_backend: block, or None if not configured."""
+    load_agents_config()
+    return _GLOBAL_BACKEND_CONFIG
+
+
+def get_mcp_servers_config() -> dict[str, dict[str, Any]]:
+    """Return the top-level mcp_servers: block ({server_name: connection config})."""
+    load_agents_config()
+    return _GLOBAL_MCP_SERVERS
