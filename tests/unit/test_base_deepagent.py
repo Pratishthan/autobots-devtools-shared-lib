@@ -116,3 +116,15 @@ def test_resilience_middleware_always_on(patched):
 def test_model_resolved_per_agent(patched):
     bd.create_base_deepagent()
     assert patched.call_args.kwargs["model"] == "MODEL"
+
+
+def test_store_kwarg_reaches_resolve_backend(patched, fake_meta, monkeypatch):
+    seen = {}
+
+    def fake_resolve(config, override=None, store=None):
+        seen["store"] = store
+
+    monkeypatch.setattr(bd, "resolve_backend", fake_resolve)
+    sentinel = object()
+    bd.create_base_deepagent(store=sentinel)
+    assert seen["store"] is sentinel

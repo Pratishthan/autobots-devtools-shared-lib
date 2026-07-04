@@ -52,6 +52,7 @@ def create_base_deepagent(
     prompt_values: dict[str, Any] | None = None,
     subagents: Sequence[SubAgent] | None = None,
     backend: Any = None,
+    store: Any = None,
 ) -> CompiledStateGraph:
     """Create the dynagent deep-agent (deepagents-backed) engine.
 
@@ -69,6 +70,8 @@ def create_base_deepagent(
         subagents: Optional deepagents subagents (phase-2 roster mapping hook).
         backend: Live backend instance/factory override; wins over the YAML
             `default_backend`.
+        store: BaseStore for store-type backend routes; forwarded to create_deep_agent
+            in Task 15.
 
     Returns:
         A compiled deep-agent graph.
@@ -95,7 +98,7 @@ def create_base_deepagent(
         name=agent_name,
         skills=meta.skills_map.get(agent_name) or None,
         memory=meta.memory_map.get(agent_name) or None,
-        backend=resolve_backend(meta.backend_config, override=backend),
+        backend=resolve_backend(meta.backend_config, override=backend, store=store),
         subagents=list(subagents) if subagents else None,
         middleware=[ToolResilienceMiddleware()],
     )

@@ -5,9 +5,14 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-from deepagents.backends import FilesystemBackend
+from deepagents.backends import CompositeBackend, FilesystemBackend, StateBackend, StoreBackend
+from deepagents.backends.protocol import BackendProtocol
 
 from autobots_devtools_shared_lib.common.observability import get_logger
+from autobots_devtools_shared_lib.dynagent.agents.fserver_backend import (
+    FileServerBackend,
+    workspace_context_from_state,
+)
 
 logger = get_logger(__name__)
 
@@ -23,9 +28,54 @@ def _build_filesystem(cfg: dict[str, Any], **_kw: Any) -> FilesystemBackend:
     return FilesystemBackend(root_dir=root_dir, virtual_mode=True)
 
 
+def _build_store(_cfg: dict[str, Any], *, store: Any = None, **_kw: Any) -> Any:
+    if store is None:
+        msg = (
+            "Backend type 'store' requires the store= kwarg on create_base_deepagent "
+            "(a live BaseStore instance cannot be expressed in YAML)."
+        )
+        raise ValueError(msg)
+    return StoreBackend(store=store)
+
+
+def _build_fserver(_cfg: dict[str, Any], **_kw: Any) -> Any:
+    def factory(runtime: Any) -> FileServerBackend:
+        state = getattr(runtime, "state", None) or {}
+        return FileServerBackend(
+            session_id=state.get("session_id"),
+            workspace_context=workspace_context_from_state(state),
+        )
+
+    return factory
+
+
+def _build_composite(cfg: dict[str, Any], *, store: Any = None, **_kw: Any) -> Any:
+    route_configs = cfg.get("routes") or {}
+    built_routes = {
+        prefix: _build_backend(route_cfg, store=store)
+        for prefix, route_cfg in route_configs.items()
+    }
+
+    def factory(runtime: Any) -> CompositeBackend:
+        routes: dict[str, BackendProtocol] = {}
+        for prefix, backend in built_routes.items():
+            if backend is None:
+                routes[prefix] = StateBackend()
+            elif isinstance(backend, BackendProtocol):
+                routes[prefix] = backend
+            else:  # BackendFactory route (e.g. fserver): materialize per runtime
+                routes[prefix] = backend(runtime)
+        return CompositeBackend(default=StateBackend(), routes=routes)
+
+    return factory
+
+
 _BACKEND_REGISTRY: dict[str, Callable[..., Any]] = {
     "state": _build_state,
     "filesystem": _build_filesystem,
+    "fserver": _build_fserver,
+    "store": _build_store,
+    "composite": _build_composite,
 }
 
 
