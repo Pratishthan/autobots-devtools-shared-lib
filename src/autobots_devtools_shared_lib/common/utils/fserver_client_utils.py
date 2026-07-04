@@ -30,6 +30,113 @@ def _parse_workspace_context(workspace_context: str) -> dict:
         return {}
 
 
+def raw_list_files(
+    base_path: str = "",
+    workspace_context: dict | None = None,
+    session_id: str | None = None,
+) -> list:
+    """List files via the sidecar. Raises httpx errors on failure."""
+    payload: dict = {
+        "path": base_path if base_path else None,
+        "workspace_context": workspace_context or {},
+    }
+    if session_id:
+        payload.setdefault("session_id", session_id)
+    with (
+        traced_http_call("listFiles", session_id=session_id) as trace_headers,
+        httpx.Client() as client,
+    ):
+        response = client.post(
+            f"{FILE_SERVER_BASE_URL}/listFiles",
+            json=payload,
+            headers=trace_headers,
+            timeout=30.0,
+        )
+        response.raise_for_status()
+        result = response.json()
+    return result.get("files", [])
+
+
+def raw_read_file(
+    file_name: str,
+    workspace_context: dict | None = None,
+    session_id: str | None = None,
+) -> bytes:
+    """Read a file via the sidecar; returns the raw body. Raises httpx errors on failure."""
+    payload: dict = {
+        "fileName": file_name,
+        "workspace_context": workspace_context or {},
+    }
+    if session_id:
+        payload.setdefault("session_id", session_id)
+    with (
+        traced_http_call("readFile", session_id=session_id) as trace_headers,
+        httpx.Client() as client,
+    ):
+        response = client.post(
+            f"{FILE_SERVER_BASE_URL}/readFile",
+            json=payload,
+            headers=trace_headers,
+            timeout=30.0,
+        )
+        response.raise_for_status()
+        return response.content
+
+
+def raw_write_file(
+    file_name: str,
+    content: bytes,
+    workspace_context: dict | None = None,
+    session_id: str | None = None,
+) -> dict:
+    """Write a file via the sidecar; returns the result JSON. Raises httpx errors on failure."""
+    payload: dict = {
+        "file_name": file_name,
+        "file_content": base64.b64encode(content).decode("utf-8"),
+        "workspace_context": workspace_context or {},
+    }
+    if session_id:
+        payload.setdefault("session_id", session_id)
+    with (
+        traced_http_call("writeFile", session_id=session_id) as trace_headers,
+        httpx.Client() as client,
+    ):
+        response = client.post(
+            f"{FILE_SERVER_BASE_URL}/writeFile",
+            json=payload,
+            headers=trace_headers,
+            timeout=30.0,
+        )
+        response.raise_for_status()
+        return response.json()
+
+
+def raw_create_download_link(
+    file_name: str,
+    workspace_context: dict | None = None,
+    session_id: str | None = None,
+) -> bytes:
+    """Create a download link via the sidecar; returns the raw body. Raises httpx errors."""
+    payload: dict = {
+        "fileName": file_name,
+        "workspace_context": workspace_context or {},
+    }
+    if session_id:
+        payload.setdefault("session_id", session_id)
+    with (
+        traced_http_call("createDownloadLink", session_id=session_id) as trace_headers,
+        httpx.Client() as client,
+    ):
+        response = client.post(
+            f"{FILE_SERVER_BASE_URL}/createDownloadLink",
+            json=payload,
+            headers=trace_headers,
+            timeout=30.0,
+        )
+        response.raise_for_status()
+        return response.content
+
+
 def list_files(
     base_path: str = "", workspace_context: str = "{}", session_id: str | None = None
 ) -> str:
@@ -48,27 +155,7 @@ def list_files(
         "Listing files with base_path='%s', workspace_context=%s", base_path, workspace_context
     )
     try:
-        payload = {
-            "path": base_path if base_path else None,
-            "workspace_context": _parse_workspace_context(workspace_context),
-        }
-        if session_id:
-            payload.setdefault("session_id", session_id)
-
-        with (
-            traced_http_call("listFiles", session_id=session_id) as trace_headers,
-            httpx.Client() as client,
-        ):
-            response = client.post(
-                f"{FILE_SERVER_BASE_URL}/listFiles",
-                json=payload,
-                headers=trace_headers,
-                timeout=30.0,
-            )
-            response.raise_for_status()
-            result = response.json()
-
-        files = result.get("files", [])
+        files = raw_list_files(base_path, _parse_workspace_context(workspace_context), session_id)
         logger.info(f"Successfully listed {len(files)} files")
         return str(files)
     except httpx.HTTPStatusError as e:
@@ -128,37 +215,13 @@ def read_file(file_name: str, workspace_context: str = "{}", session_id: str | N
     """
     logger.info("Reading file '%s' with workspace_context=%s", file_name, workspace_context)
     try:
-        payload = {
-            "fileName": file_name,
-            "workspace_context": _parse_workspace_context(workspace_context),
-        }
-        logger.info("Payload: " + str(payload))
-        if session_id:
-            payload.setdefault("session_id", session_id)
-
-        with (
-            traced_http_call("readFile", session_id=session_id) as trace_headers,
-            httpx.Client() as client,
-        ):
-            response = client.post(
-                f"{FILE_SERVER_BASE_URL}/readFile",
-                json=payload,
-                headers=trace_headers,
-                timeout=30.0,
-            )
-            response.raise_for_status()
-            content = response.content
-
+        content = raw_read_file(file_name, _parse_workspace_context(workspace_context), session_id)
         logger.info(f"Successfully read file '{file_name}' ({len(content)} bytes)")
-
-        # Try to decode as UTF-8 for text files
         try:
             return content.decode("utf-8")
         except UnicodeDecodeError:
-            # For binary files (e.g., .xlsx, .pdf, .zip), return base64-encoded content
             logger.info(f"File '{file_name}' is binary, returning as base64")
             return base64.b64encode(content).decode("utf-8")
-
     except httpx.HTTPStatusError as e:
         logger.exception(
             f"HTTP error reading file '{file_name}': {e.response.status_code} - {e.response.text}"
@@ -186,28 +249,12 @@ def write_file(
     """
     logger.info("Writing to file '%s' with workspace_context=%s", file_name, workspace_context)
     try:
-        content_base64 = base64.b64encode(content.encode("utf-8")).decode("utf-8")
-        payload = {
-            "file_name": file_name,
-            "file_content": content_base64,
-            "workspace_context": _parse_workspace_context(workspace_context),
-        }
-        if session_id:
-            payload.setdefault("session_id", session_id)
-
-        with (
-            traced_http_call("writeFile", session_id=session_id) as trace_headers,
-            httpx.Client() as client,
-        ):
-            response = client.post(
-                f"{FILE_SERVER_BASE_URL}/writeFile",
-                json=payload,
-                headers=trace_headers,
-                timeout=30.0,
-            )
-            response.raise_for_status()
-            result = response.json()
-
+        result = raw_write_file(
+            file_name,
+            content.encode("utf-8"),
+            _parse_workspace_context(workspace_context),
+            session_id,
+        )
         logger.info(
             f"Successfully wrote file '{result['path']}' with size {result['size_bytes']} bytes"
         )
@@ -300,36 +347,15 @@ def create_download_link(
         "Creating download link for '%s' with workspace_context=%s", file_name, workspace_context
     )
     try:
-        payload = {
-            "fileName": file_name,
-            "workspace_context": _parse_workspace_context(workspace_context),
-        }
-        if session_id:
-            payload.setdefault("session_id", session_id)
-
-        with (
-            traced_http_call("createDownloadLink", session_id=session_id) as trace_headers,
-            httpx.Client() as client,
-        ):
-            response = client.post(
-                f"{FILE_SERVER_BASE_URL}/createDownloadLink",
-                json=payload,
-                headers=trace_headers,
-                timeout=30.0,
-            )
-            response.raise_for_status()
-            content = response.content
-
+        content = raw_create_download_link(
+            file_name, _parse_workspace_context(workspace_context), session_id
+        )
         logger.info(f"Successfully read file '{file_name}' ({len(content)} bytes)")
-
-        # Try to decode as UTF-8 for text files
         try:
             return content.decode("utf-8")
         except UnicodeDecodeError:
-            # For binary files (e.g., .xlsx, .pdf, .zip), return base64-encoded content
             logger.info(f"File '{file_name}' is binary, returning as base64")
             return base64.b64encode(content).decode("utf-8")
-
     except httpx.HTTPStatusError as e:
         logger.exception(
             f"HTTP error reading file '{file_name}': {e.response.status_code} - {e.response.text}"
