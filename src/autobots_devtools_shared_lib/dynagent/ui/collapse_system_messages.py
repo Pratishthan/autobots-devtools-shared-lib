@@ -38,3 +38,36 @@ async def collapse_system_messages(request, handler):
         system_message=merged_system,
     )
     return await handler(new_request)
+
+
+@wrap_model_call  # type: ignore[arg-type]
+def collapse_system_messages_sync(request, handler):
+    """Sync counterpart of `collapse_system_messages`.
+
+    LangChain's `wrap_model_call` sync hook raises `NotImplementedError` if only an
+    async function was decorated, so this mirrors `collapse_system_messages` for any
+    sync invocation path (e.g. `invoke_deepagent`) that may one day drive a graph
+    carrying this middleware. See `inject_agent_sync`/`inject_agent_async` for the
+    established pattern.
+    """
+    inline = [m for m in request.messages if isinstance(m, SystemMessage)]
+    rest = [m for m in request.messages if not isinstance(m, SystemMessage)]
+
+    base = request.system_message
+    if len(inline) == 0:
+        # No-op: no inline system messages to merge
+        merged_system = base
+    else:
+        # Merge base and inline system messages
+        parts = []
+        if base is not None:
+            parts.append(_text(base.content))
+        parts.extend(_text(m.content) for m in inline)
+        merged = "\n\n".join(p for p in parts if p)
+        merged_system = SystemMessage(content=merged) if merged else base
+
+    new_request = request.override(
+        messages=rest,
+        system_message=merged_system,
+    )
+    return handler(new_request)
