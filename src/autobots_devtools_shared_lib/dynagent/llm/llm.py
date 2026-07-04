@@ -23,14 +23,27 @@ def _build_anthropic(model: str, temperature: float, api_key: str) -> BaseChatMo
     return ChatAnthropic(model_name=model, temperature=temperature, api_key=api_key or None)  # type: ignore[call-arg]
 
 
-def lm() -> BaseChatModel:
-    """Return the default LLM instance based on the configured provider."""
+def lm(
+    model: str | None = None,
+    provider: str | None = None,
+    temperature: float | None = None,
+) -> BaseChatModel:
+    """Return an LLM instance; each argument defaults to the configured settings value."""
     settings = get_dynagent_settings()
-    if settings.llm_provider == LLMProvider.GEMINI:
-        return _build_gemini(settings.llm_model, settings.llm_temperature, settings.google_api_key)
-    if settings.llm_provider == LLMProvider.ANTHROPIC:
-        return _build_anthropic(
-            settings.llm_model, settings.llm_temperature, settings.anthropic_api_key
-        )
-    msg = f"Unsupported LLM provider: {settings.llm_provider}"
+    if provider is None:
+        resolved_provider = settings.llm_provider
+    else:
+        try:
+            resolved_provider = LLMProvider(provider)
+        except ValueError:
+            msg = f"Unsupported LLM provider: {provider}"
+            raise ValueError(msg) from None
+    resolved_model = model if model is not None else settings.llm_model
+    resolved_temperature = temperature if temperature is not None else settings.llm_temperature
+
+    if resolved_provider == LLMProvider.GEMINI:
+        return _build_gemini(resolved_model, resolved_temperature, settings.google_api_key)
+    if resolved_provider == LLMProvider.ANTHROPIC:
+        return _build_anthropic(resolved_model, resolved_temperature, settings.anthropic_api_key)
+    msg = f"Unsupported LLM provider: {resolved_provider}"
     raise ValueError(msg)
