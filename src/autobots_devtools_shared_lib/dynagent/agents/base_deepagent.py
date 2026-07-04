@@ -13,11 +13,7 @@ from langgraph.graph.state import CompiledStateGraph
 from autobots_devtools_shared_lib.common.observability import get_agent_logger
 from autobots_devtools_shared_lib.dynagent.agents.agent_config_utils import get_default_agent
 from autobots_devtools_shared_lib.dynagent.agents.agent_meta import AgentMeta
-from autobots_devtools_shared_lib.dynagent.agents.deep_backend import resolve_backend
-from autobots_devtools_shared_lib.dynagent.llm.model_resolution import resolve_agent_model
-from autobots_devtools_shared_lib.dynagent.middleware.tool_resilience import (
-    ToolResilienceMiddleware,
-)
+from autobots_devtools_shared_lib.dynagent.llm.llm import lm
 from autobots_devtools_shared_lib.dynagent.models.deep_state import DynaDeepAgent
 
 logger = get_agent_logger(__name__)
@@ -51,7 +47,6 @@ def create_base_deepagent(
     state_schema: type[DeepAgentState] = DynaDeepAgent,
     prompt_values: dict[str, Any] | None = None,
     subagents: Sequence[SubAgent] | None = None,
-    backend: Any = None,
 ) -> CompiledStateGraph:
     """Create the dynagent deep-agent (deepagents-backed) engine.
 
@@ -67,8 +62,6 @@ def create_base_deepagent(
         state_schema: Deep-agent state schema. Defaults to DynaDeepAgent.
         prompt_values: Placeholder substitution values for the system prompt.
         subagents: Optional deepagents subagents (phase-2 roster mapping hook).
-        backend: Live backend instance/factory override; wins over the YAML
-            `default_backend`.
 
     Returns:
         A compiled deep-agent graph.
@@ -85,17 +78,14 @@ def create_base_deepagent(
 
     system_prompt = _resolve_system_prompt(meta, agent_name, prompt_values)
     tools = meta.tool_map.get(agent_name, [])
+    model = lm()
 
     return create_deep_agent(
-        model=resolve_agent_model(meta, agent_name),
+        model=model,
         tools=tools,
         system_prompt=system_prompt,
         state_schema=state_schema,
         checkpointer=checkpointer,
         name=agent_name,
-        skills=meta.skills_map.get(agent_name) or None,
-        memory=meta.memory_map.get(agent_name) or None,
-        backend=resolve_backend(meta.backend_config, override=backend),
         subagents=list(subagents) if subagents else None,
-        middleware=[ToolResilienceMiddleware()],
     )
