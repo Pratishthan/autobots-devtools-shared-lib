@@ -230,6 +230,29 @@ def load_agents_config() -> dict[str, AgentConfig]:
                 )
                 raise ValueError(msg)
 
+    for agent_id, agent_cfg in agents.items():
+        if agent_cfg.rubric is None:
+            continue
+        rubric = agent_cfg.rubric
+        if not isinstance(rubric, dict):
+            msg = f"Agent '{agent_id}': rubric: must be a mapping"
+            raise TypeError(msg)
+        max_iterations = rubric.get("max_iterations", 3)
+        if (
+            not isinstance(max_iterations, int)
+            or isinstance(max_iterations, bool)
+            or not 1 <= max_iterations <= 20
+        ):
+            msg = f"Agent '{agent_id}': rubric.max_iterations must be an int in [1, 20]"
+            raise ValueError(msg)
+        rubric_model = rubric.get("model")
+        if rubric_model is not None:
+            try:
+                validate_model_ref(rubric_model, _GLOBAL_MODEL_PROFILES)
+            except ValueError as e:
+                msg = f"Agent '{agent_id}' rubric: {e}"
+                raise ValueError(msg) from e
+
     if get_dynagent_settings().agents_config_filename == "deep-agents.yaml":
         default_name = next((n for n, c in agents.items() if c.is_default), None)
         for agent_id, agent_cfg in agents.items():

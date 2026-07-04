@@ -138,3 +138,48 @@ def test_undeclared_mcp_server_reference_fails_at_load(tmp_path, monkeypatch):
     with pytest.raises(ValueError, match="github"):
         load_agents_config()
     _reset_agent_config()
+
+
+def _write_rubric_yaml(tmp_path, monkeypatch, rubric_lines: str):
+    _reset_agent_config()
+    (tmp_path / "deep-agents.yaml").write_text(
+        "agents:\n"
+        "  assistant:\n"
+        "    prompt: assistant\n"
+        "    is_default: true\n"
+        "    tools: []\n"
+        "    rubric:\n" + rubric_lines
+    )
+    monkeypatch.setattr(cfg, "get_config_dir", lambda: tmp_path)
+    settings = DynagentSettings(agents_config_filename="deep-agents.yaml")
+    monkeypatch.setattr(cfg, "get_dynagent_settings", lambda: settings)
+
+
+def test_rubric_max_iterations_out_of_range_fails(tmp_path, monkeypatch):
+    _write_rubric_yaml(tmp_path, monkeypatch, "      max_iterations: 25\n")
+    with pytest.raises(ValueError, match="max_iterations"):
+        load_agents_config()
+    _reset_agent_config()
+
+
+def test_rubric_max_iterations_non_int_fails(tmp_path, monkeypatch):
+    _write_rubric_yaml(tmp_path, monkeypatch, "      max_iterations: three\n")
+    with pytest.raises(ValueError, match="max_iterations"):
+        load_agents_config()
+    _reset_agent_config()
+
+
+def test_rubric_bad_model_ref_fails(tmp_path, monkeypatch):
+    _write_rubric_yaml(tmp_path, monkeypatch, "      model: openai:gpt-5.5\n")
+    with pytest.raises(ValueError, match="openai"):
+        load_agents_config()
+    _reset_agent_config()
+
+
+def test_valid_rubric_loads(tmp_path, monkeypatch):
+    _write_rubric_yaml(
+        tmp_path, monkeypatch, "      max_iterations: 3\n      prompt: rubric-grader\n"
+    )
+    agents = load_agents_config()
+    assert agents["assistant"].rubric == {"max_iterations": 3, "prompt": "rubric-grader"}
+    _reset_agent_config()
