@@ -134,4 +134,7 @@ def create_base_deepagent(
         backend=resolve_backend(meta.backend_config, override=backend, store=store),
         subagents=merged_subagents,
         middleware=[ToolResilienceMiddleware()],
+        response_format=meta.output_schema_map.get(agent_name) or None,
+        interrupt_on=meta.interrupt_map.get(agent_name) or None,
+        permissions=meta.permissions_map.get(agent_name) or None,
     )

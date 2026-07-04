@@ -128,3 +128,35 @@ def test_store_kwarg_reaches_resolve_backend(patched, fake_meta, monkeypatch):
     sentinel = object()
     bd.create_base_deepagent(store=sentinel)
     assert seen["store"] is sentinel
+
+
+def test_output_schema_forwarded_as_response_format(patched, fake_meta):
+    schema = {"type": "object", "properties": {"answer": {"type": "string"}}}
+    fake_meta.output_schema_map = {"assistant": schema}
+    bd.create_base_deepagent()
+    assert patched.call_args.kwargs["response_format"] == schema
+
+
+def test_no_output_schema_forwards_none(patched):
+    bd.create_base_deepagent()
+    assert patched.call_args.kwargs["response_format"] is None
+
+
+def test_interrupt_on_forwarded(patched, fake_meta):
+    fake_meta.interrupt_map = {"assistant": {"write_file": True}}
+    bd.create_base_deepagent()
+    assert patched.call_args.kwargs["interrupt_on"] == {"write_file": True}
+
+
+def test_permissions_forwarded(patched, fake_meta):
+    rules = [{"tool": "write_file", "path": "/workspace/**", "permission": "allow"}]
+    fake_meta.permissions_map = {"assistant": rules}
+    bd.create_base_deepagent()
+    assert patched.call_args.kwargs["permissions"] == rules
+
+
+def test_empty_interrupt_and_permissions_forward_none(patched):
+    bd.create_base_deepagent()
+    kwargs = patched.call_args.kwargs
+    assert kwargs["interrupt_on"] is None
+    assert kwargs["permissions"] is None
