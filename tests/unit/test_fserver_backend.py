@@ -122,3 +122,73 @@ def test_session_and_context_forwarded(monkeypatch):
     monkeypatch.setattr(fb, "raw_list_files", fake_list)
     FileServerBackend(session_id="s1", workspace_context={"jira_number": "J-1"}).ls("/")
     assert seen == {"workspace_context": {"jira_number": "J-1"}, "session_id": "s1"}
+
+
+def test_edit_replaces_unique_occurrence(fake_store):
+    fake_store["a.txt"] = b"hello world"
+    result = FileServerBackend().edit("/a.txt", "world", "sidecar")
+    assert result.error is None
+    assert result.occurrences == 1
+    assert fake_store["a.txt"] == b"hello sidecar"
+
+
+def test_edit_missing_string_errors(fake_store):
+    fake_store["a.txt"] = b"hello"
+    result = FileServerBackend().edit("/a.txt", "absent", "x")
+    assert result.error is not None
+    assert "not found" in result.error
+
+
+def test_edit_multiple_occurrences_requires_replace_all(fake_store):
+    fake_store["a.txt"] = b"x y x"
+    result = FileServerBackend().edit("/a.txt", "x", "z")
+    assert result.error is not None
+    assert "2 times" in result.error
+    assert fake_store["a.txt"] == b"x y x"
+
+
+def test_edit_replace_all(fake_store):
+    fake_store["a.txt"] = b"x y x"
+    result = FileServerBackend().edit("/a.txt", "x", "z", replace_all=True)
+    assert result.error is None
+    assert result.occurrences == 2
+    assert fake_store["a.txt"] == b"z y z"
+
+
+def test_edit_missing_file_errors(fake_store):
+    result = FileServerBackend().edit("/nope.txt", "a", "b")
+    assert result.error == "File '/nope.txt' not found"
+
+
+def test_glob_matches_pattern(fake_store):
+    fake_store["a.py"] = b""
+    fake_store["b.txt"] = b""
+    fake_store["src/c.py"] = b""
+    result = FileServerBackend().glob("*.py")
+    paths = {m["path"] for m in result.matches}
+    assert paths == {"/a.py"}
+    result = FileServerBackend().glob("**/*.py")
+    paths = {m["path"] for m in result.matches}
+    assert "/src/c.py" in paths
+
+
+def test_glob_with_base_path(fake_store):
+    fake_store["src/c.py"] = b""
+    fake_store["a.py"] = b""
+    result = FileServerBackend().glob("*.py", path="/src")
+    assert {m["path"] for m in result.matches} == {"/src/c.py"}
+
+
+def test_grep_finds_literal_matches(fake_store):
+    fake_store["a.txt"] = b"one TODO here\nclean line\nanother TODO"
+    fake_store["b.bin"] = b"\xff\xfe"
+    result = FileServerBackend().grep("TODO")
+    assert result.error is None
+    assert [(m["path"], m["line"]) for m in result.matches] == [("/a.txt", 1), ("/a.txt", 3)]
+
+
+def test_grep_glob_filter(fake_store):
+    fake_store["a.py"] = b"TODO"
+    fake_store["a.txt"] = b"TODO"
+    result = FileServerBackend().grep("TODO", glob="*.py")
+    assert {m["path"] for m in result.matches} == {"/a.py"}

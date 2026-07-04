@@ -2,6 +2,7 @@
 # ABOUTME: Direct ls/read/write/upload/download; edit/glob/grep are emulated client-side.
 
 import base64
+import fnmatch
 from collections.abc import Mapping
 from typing import Any
 
@@ -9,10 +10,14 @@ import httpx
 from deepagents.backends.protocol import (
     FILE_NOT_FOUND,
     BackendProtocol,
+    EditResult,
     FileData,
     FileDownloadResponse,
     FileInfo,
     FileUploadResponse,
+    GlobResult,
+    GrepMatch,
+    GrepResult,
     LsResult,
     ReadResult,
     WriteResult,
@@ -154,3 +159,103 @@ class FileServerBackend(BackendProtocol):
             except httpx.HTTPError as e:
                 responses.append(FileDownloadResponse(path=path, error=str(e)))
         return responses
+
+    # -- emulated methods (no sidecar endpoints; see spec §4) ----------------
+
+    def edit(
+        self,
+        file_path: str,
+        old_string: str,
+        new_string: str,
+        replace_all: bool = False,
+    ) -> EditResult:
+        try:
+            content_bytes = self._read_bytes(file_path)
+        except httpx.HTTPStatusError as e:
+            if e.response.status_code == 404:
+                return EditResult(error=f"File '{file_path}' not found")
+            return EditResult(
+                error=f"Error editing file '{file_path}': HTTP {e.response.status_code}"
+            )
+        except httpx.HTTPError as e:
+            return EditResult(error=f"Error editing file '{file_path}': {e}")
+        try:
+            content = content_bytes.decode("utf-8")
+        except UnicodeDecodeError:
+            return EditResult(error=f"Cannot edit binary file '{file_path}'")
+
+        occurrences = content.count(old_string)
+        if occurrences == 0:
+            return EditResult(error=f"String not found in file '{file_path}': '{old_string}'")
+        if occurrences > 1 and not replace_all:
+            return EditResult(
+                error=(
+                    f"String '{old_string}' appears {occurrences} times in '{file_path}'. "
+                    "Use replace_all=True, or provide a more specific string."
+                )
+            )
+        replaced = (
+            content.replace(old_string, new_string)
+            if replace_all
+            else content.replace(old_string, new_string, 1)
+        )
+        try:
+            self._write_bytes(file_path, replaced.encode("utf-8"))
+        except httpx.HTTPError as e:
+            return EditResult(error=f"Error editing file '{file_path}': {e}")
+        return EditResult(path=file_path, occurrences=occurrences if replace_all else 1)
+
+    def _files_under(self, base: str) -> list[str]:
+        normalized = base if base.endswith("/") else base + "/"
+        return [
+            _to_virtual_path(name)
+            for name in self._list_all()
+            if _to_virtual_path(name).startswith(normalized)
+        ]
+
+    @staticmethod
+    def _matches_glob(virtual: str, base: str, pattern: str) -> bool:
+        normalized = base if base.endswith("/") else base + "/"
+        relative = virtual[len(normalized) :]
+        # If pattern doesn't contain "/" or "**", it should only match files at current level.
+        # This prevents fnmatch's "*" from matching "/" across directory boundaries.
+        if "/" not in pattern and "**" not in pattern and "/" in relative:
+            return False
+        return fnmatch.fnmatch(relative, pattern) or fnmatch.fnmatch(virtual, pattern)
+
+    def glob(self, pattern: str, path: str | None = None) -> GlobResult:
+        base = path or "/"
+        try:
+            candidates = self._files_under(base)
+        except httpx.HTTPError as e:
+            return GlobResult(error=f"Error listing files: {e}")
+        matches = [
+            FileInfo(path=virtual)
+            for virtual in candidates
+            if self._matches_glob(virtual, base, pattern)
+        ]
+        return GlobResult(matches=matches)
+
+    def grep(
+        self,
+        pattern: str,
+        path: str | None = None,
+        glob: str | None = None,
+    ) -> GrepResult:
+        base = path or "/"
+        try:
+            candidates = self._files_under(base)
+        except httpx.HTTPError as e:
+            return GrepResult(error=f"Error listing files: {e}")
+        matches: list[GrepMatch] = []
+        for virtual in candidates:
+            if glob and not self._matches_glob(virtual, base, glob):
+                continue
+            try:
+                text = self._read_bytes(virtual).decode("utf-8")
+            except (httpx.HTTPError, UnicodeDecodeError):
+                continue  # unreadable or binary: skip, matching ripgrep behavior
+            for line_number, line in enumerate(text.split("\n"), start=1):
+                if pattern in line:
+                    matches.append(GrepMatch(path=virtual, line=line_number, text=line))
+        return GrepResult(matches=matches)
