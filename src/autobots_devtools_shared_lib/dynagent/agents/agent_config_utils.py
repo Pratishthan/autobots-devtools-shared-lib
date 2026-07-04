@@ -198,6 +198,20 @@ def load_agents_config() -> dict[str, AgentConfig]:
     for agent_id, agent_data in data.get("agents", {}).items():
         agents[agent_id] = AgentConfig.from_dict(agent_id, agent_data)
 
+    from autobots_devtools_shared_lib.dynagent.llm.model_resolution import (
+        validate_model_profiles,
+        validate_model_ref,
+    )
+
+    validate_model_profiles(_GLOBAL_MODEL_PROFILES)
+    for agent_id, agent_cfg in agents.items():
+        if agent_cfg.model is not None:
+            try:
+                validate_model_ref(agent_cfg.model, _GLOBAL_MODEL_PROFILES)
+            except ValueError as e:
+                msg = f"Agent '{agent_id}': {e}"
+                raise ValueError(msg) from e
+
     _GLOBAL_AGENT_CONFIG = agents
 
     logger.info(f"Loaded {len(_GLOBAL_AGENT_CONFIG)} agent configs from {config_path}")
