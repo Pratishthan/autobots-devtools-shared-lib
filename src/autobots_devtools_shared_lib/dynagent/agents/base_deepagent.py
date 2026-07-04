@@ -79,6 +79,10 @@ def create_base_deepagent(
     subagents: Sequence[SubAgent] | None = None,
     backend: Any = None,
     store: Any = None,
+    middleware: Sequence[Any] | None = None,
+    cache: Any = None,
+    context_schema: Any = None,
+    debug: bool | None = None,
 ) -> CompiledStateGraph:
     """Create the dynagent deep-agent (deepagents-backed) engine.
 
@@ -96,8 +100,11 @@ def create_base_deepagent(
         subagents: Optional deepagents subagents (phase-2 roster mapping hook).
         backend: Live backend instance/factory override; wins over the YAML
             `default_backend`.
-        store: BaseStore for store-type backend routes; forwarded to create_deep_agent
-            in Task 15.
+        store: BaseStore for store-type backend routes; cannot be YAML.
+        middleware: Caller-supplied middleware; ToolResilienceMiddleware prepended.
+        cache: Prompt cache instance; cannot be YAML.
+        context_schema: Context schema override; cannot be YAML.
+        debug: Enable debug mode; defaults to YAML agent `debug:` setting.
 
     Returns:
         A compiled deep-agent graph.
@@ -133,8 +140,12 @@ def create_base_deepagent(
         memory=meta.memory_map.get(agent_name) or None,
         backend=resolve_backend(meta.backend_config, override=backend, store=store),
         subagents=merged_subagents,
-        middleware=[ToolResilienceMiddleware()],
+        middleware=[ToolResilienceMiddleware(), *(middleware or ())],
         response_format=meta.output_schema_map.get(agent_name) or None,
         interrupt_on=meta.interrupt_map.get(agent_name) or None,
         permissions=meta.permissions_map.get(agent_name) or None,
+        store=store,
+        cache=cache,
+        context_schema=context_schema,
+        debug=debug if debug is not None else meta.debug_map.get(agent_name, False),
     )

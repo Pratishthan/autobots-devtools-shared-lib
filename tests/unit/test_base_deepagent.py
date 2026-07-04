@@ -160,3 +160,32 @@ def test_empty_interrupt_and_permissions_forward_none(patched):
     kwargs = patched.call_args.kwargs
     assert kwargs["interrupt_on"] is None
     assert kwargs["permissions"] is None
+
+
+def test_caller_middleware_appended_after_resilience(patched):
+    extra = object()
+    bd.create_base_deepagent(middleware=[extra])
+    middleware = patched.call_args.kwargs["middleware"]
+    assert isinstance(middleware[0], ToolResilienceMiddleware)
+    assert middleware[1] is extra
+
+
+def test_store_cache_context_schema_forwarded(patched):
+    store, cache, ctx = object(), object(), object()
+    bd.create_base_deepagent(store=store, cache=cache, context_schema=ctx)
+    kwargs = patched.call_args.kwargs
+    assert kwargs["store"] is store
+    assert kwargs["cache"] is cache
+    assert kwargs["context_schema"] is ctx
+
+
+def test_debug_defaults_to_yaml_flag(patched, fake_meta):
+    fake_meta.debug_map = {"assistant": True}
+    bd.create_base_deepagent()
+    assert patched.call_args.kwargs["debug"] is True
+
+
+def test_debug_kwarg_overrides_yaml(patched, fake_meta):
+    fake_meta.debug_map = {"assistant": True}
+    bd.create_base_deepagent(debug=False)
+    assert patched.call_args.kwargs["debug"] is False
