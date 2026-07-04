@@ -6,14 +6,17 @@ from unittest.mock import patch
 import pytest
 
 import autobots_devtools_shared_lib.dynagent.llm.llm as llm_mod
-from autobots_devtools_shared_lib.dynagent.config.dynagent_settings import DynagentSettings
+from autobots_devtools_shared_lib.dynagent.config.dynagent_settings import (
+    DynagentSettings,
+    LLMProvider,
+)
 from autobots_devtools_shared_lib.dynagent.llm.llm import lm
 
 
 @pytest.fixture
 def anthropic_settings(monkeypatch):
     settings = DynagentSettings(
-        llm_provider="anthropic",
+        llm_provider=LLMProvider.ANTHROPIC,
         llm_model="claude-sonnet-4-6",
         llm_temperature=0.0,
         anthropic_api_key="test-key",
