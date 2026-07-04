@@ -118,6 +118,24 @@ def test_model_resolved_per_agent(patched):
     assert patched.call_args.kwargs["model"] == "MODEL"
 
 
+def test_rubric_middleware_ordered_after_resilience(patched, fake_meta, monkeypatch):
+    rubric_mw = object()
+    monkeypatch.setattr(bd, "build_rubric_middleware", lambda _meta, _name, _model: rubric_mw)
+    extra = object()
+    bd.create_base_deepagent(middleware=[extra])
+    middleware = patched.call_args.kwargs["middleware"]
+    assert isinstance(middleware[0], ToolResilienceMiddleware)
+    assert middleware[1] is rubric_mw
+    assert middleware[2] is extra
+
+
+def test_no_rubric_no_extra_middleware(patched, monkeypatch):
+    monkeypatch.setattr(bd, "build_rubric_middleware", lambda _meta, _name, _model: None)
+    bd.create_base_deepagent()
+    middleware = patched.call_args.kwargs["middleware"]
+    assert len(middleware) == 1
+
+
 def test_store_kwarg_reaches_resolve_backend(patched, fake_meta, monkeypatch):
     seen = {}
 

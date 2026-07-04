@@ -140,3 +140,16 @@ def test_react_roster_without_descriptions_still_loads(tmp_path, monkeypatch):
     agents = load_agents_config()
     assert set(agents) == {"coordinator", "worker"}
     _reset_agent_config()
+
+
+def test_rubric_enabled_subagent_gets_middleware(patched, fake_meta, monkeypatch):
+    rubric_mw = object()
+    fake_meta.rubric_map = {"assistant": None, "researcher": {"max_iterations": 2}}
+    monkeypatch.setattr(
+        bd,
+        "build_rubric_middleware",
+        lambda _meta, name, _model: rubric_mw if name == "researcher" else None,
+    )
+    bd.create_base_deepagent()
+    sub = _subagents(patched)[0]
+    assert sub["middleware"] == [rubric_mw]

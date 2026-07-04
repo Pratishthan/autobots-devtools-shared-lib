@@ -463,3 +463,49 @@ class TestInvokeDeepagent:
 
         mock_factory.assert_called_once()
         mock_agent.ainvoke.assert_called_once()
+
+
+def test_invoke_deepagent_passes_rubric_through(monkeypatch):
+    import autobots_devtools_shared_lib.dynagent.agents.agent_config_utils as cfg
+    import autobots_devtools_shared_lib.dynagent.agents.base_deepagent as bd
+    from autobots_devtools_shared_lib.dynagent.agents.invocation_utils import invoke_deepagent
+
+    monkeypatch.setattr(cfg, "get_agent_list", lambda: ["assistant"])
+    captured: dict = {}
+
+    class FakeAgent:
+        def invoke(self, input_state, config=None):
+            captured.update(input_state)
+            return dict(input_state)
+
+    monkeypatch.setattr(bd, "create_base_deepagent", lambda **_kwargs: FakeAgent())
+    result = invoke_deepagent(
+        agent_name="assistant",
+        input_state={"messages": [], "rubric": "- answer cites a source"},
+        enable_tracing=False,
+    )
+    assert captured["rubric"] == "- answer cites a source"
+    assert result["rubric"] == "- answer cites a source"
+
+
+async def test_ainvoke_deepagent_passes_rubric_through(monkeypatch):
+    import autobots_devtools_shared_lib.dynagent.agents.agent_config_utils as cfg
+    import autobots_devtools_shared_lib.dynagent.agents.base_deepagent as bd
+    from autobots_devtools_shared_lib.dynagent.agents.invocation_utils import ainvoke_deepagent
+
+    monkeypatch.setattr(cfg, "get_agent_list", lambda: ["assistant"])
+    captured: dict = {}
+
+    class FakeAgent:
+        async def ainvoke(self, input_state, config=None):
+            captured.update(input_state)
+            return dict(input_state)
+
+    monkeypatch.setattr(bd, "create_base_deepagent", lambda **_kwargs: FakeAgent())
+    result = await ainvoke_deepagent(
+        agent_name="assistant",
+        input_state={"messages": [], "rubric": "- answer cites a source"},
+        enable_tracing=False,
+    )
+    assert captured["rubric"] == "- answer cites a source"
+    assert result["rubric"] == "- answer cites a source"
