@@ -172,10 +172,10 @@ class TestInvokeAgent:
         assert call_kwargs["sync_mode"] is True
         assert call_kwargs["initial_agent_name"] == "joke_agent"
 
-    @patch("autobots_devtools_shared_lib.dynagent.agents.invocation_utils.get_langfuse_handler")
+    @patch("autobots_devtools_shared_lib.dynagent.agents.invocation_utils._linked_langfuse_handler")
     def test_adds_langfuse_callback_when_tracing_enabled(
         self,
-        mock_get_handler,
+        mock_linked_handler,
         mock_get_agent_list,
         mock_create_base_agent,
         mock_agent,
@@ -184,7 +184,7 @@ class TestInvokeAgent:
     ):
         """Test that Langfuse handler is added to callbacks when tracing is enabled."""
         mock_handler = MagicMock()
-        mock_get_handler.return_value = mock_handler
+        mock_linked_handler.return_value = mock_handler
 
         _ = invoke_agent("coordinator", input_state, config=config, enable_tracing=True)
 
@@ -194,10 +194,10 @@ class TestInvokeAgent:
         assert "callbacks" in config_arg
         assert mock_handler in config_arg["callbacks"]
 
-    @patch("autobots_devtools_shared_lib.dynagent.agents.invocation_utils.get_langfuse_handler")
+    @patch("autobots_devtools_shared_lib.dynagent.agents.invocation_utils._linked_langfuse_handler")
     def test_preserves_existing_callbacks(
         self,
-        mock_get_handler,
+        mock_linked_handler,
         mock_get_agent_list,
         mock_create_base_agent,
         mock_agent,
@@ -209,7 +209,7 @@ class TestInvokeAgent:
         config["callbacks"] = [existing_callback]
 
         mock_handler = MagicMock()
-        mock_get_handler.return_value = mock_handler
+        mock_linked_handler.return_value = mock_handler
 
         _ = invoke_agent("coordinator", input_state, config=config, enable_tracing=True)
 
@@ -363,10 +363,10 @@ class TestAinvokeAgent:
         assert call_kwargs["initial_agent_name"] == "joke_agent"
 
     @pytest.mark.asyncio
-    @patch("autobots_devtools_shared_lib.dynagent.agents.invocation_utils.get_langfuse_handler")
+    @patch("autobots_devtools_shared_lib.dynagent.agents.invocation_utils._linked_langfuse_handler")
     async def test_adds_langfuse_callback_when_tracing_enabled_async(
         self,
-        mock_get_handler,
+        mock_linked_handler,
         mock_get_agent_list,
         mock_create_base_agent,
         mock_agent,
@@ -375,7 +375,7 @@ class TestAinvokeAgent:
     ):
         """Test that Langfuse handler is added to callbacks when tracing is enabled (async)."""
         mock_handler = MagicMock()
-        mock_get_handler.return_value = mock_handler
+        mock_linked_handler.return_value = mock_handler
 
         _ = await ainvoke_agent("coordinator", input_state, config=config, enable_tracing=True)
 
