@@ -221,6 +221,15 @@ def load_agents_config() -> dict[str, AgentConfig]:
                 msg = f"Agent '{agent_id}': {e}"
                 raise ValueError(msg) from e
 
+    for agent_id, agent_cfg in agents.items():
+        for server_name in agent_cfg.mcp_servers:
+            if server_name not in _GLOBAL_MCP_SERVERS:
+                msg = (
+                    f"Agent '{agent_id}' references undeclared MCP server '{server_name}'. "
+                    f"Declared servers: {sorted(_GLOBAL_MCP_SERVERS)}"
+                )
+                raise ValueError(msg)
+
     if get_dynagent_settings().agents_config_filename == "deep-agents.yaml":
         default_name = next((n for n, c in agents.items() if c.is_default), None)
         for agent_id, agent_cfg in agents.items():

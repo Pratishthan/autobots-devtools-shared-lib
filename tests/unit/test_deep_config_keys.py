@@ -120,3 +120,21 @@ def test_blocks_default_to_empty(tmp_path, monkeypatch):
     assert agents["a"].model is None
     assert agents["a"].skills == []
     assert agents["a"].debug is False
+
+
+def test_undeclared_mcp_server_reference_fails_at_load(tmp_path, monkeypatch):
+    _reset_agent_config()
+    (tmp_path / "deep-agents.yaml").write_text(
+        "agents:\n"
+        "  assistant:\n"
+        "    prompt: assistant\n"
+        "    is_default: true\n"
+        "    tools: []\n"
+        '    mcp_servers: ["github"]\n'
+    )
+    monkeypatch.setattr(cfg, "get_config_dir", lambda: tmp_path)
+    settings = DynagentSettings(agents_config_filename="deep-agents.yaml")
+    monkeypatch.setattr(cfg, "get_dynagent_settings", lambda: settings)
+    with pytest.raises(ValueError, match="github"):
+        load_agents_config()
+    _reset_agent_config()
