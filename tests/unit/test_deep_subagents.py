@@ -142,6 +142,35 @@ def test_react_roster_without_descriptions_still_loads(tmp_path, monkeypatch):
     _reset_agent_config()
 
 
+def test_subagent_response_format_forwarded_when_present(patched, fake_meta):
+    schema = {"type": "object", "properties": {"answer": {"type": "string"}}}
+    fake_meta.output_schema_map = {"assistant": None, "researcher": schema}
+    bd.create_base_deepagent()
+    assert _subagents(patched)[0]["response_format"] == schema
+
+
+def test_subagent_interrupt_on_forwarded_when_present(patched, fake_meta):
+    interrupt_config = {"write_file": True}
+    fake_meta.interrupt_map = {"assistant": {}, "researcher": interrupt_config}
+    bd.create_base_deepagent()
+    assert _subagents(patched)[0]["interrupt_on"] == interrupt_config
+
+
+def test_subagent_permissions_forwarded_when_present(patched, fake_meta):
+    permissions = ["read", "write"]
+    fake_meta.permissions_map = {"assistant": [], "researcher": permissions}
+    bd.create_base_deepagent()
+    assert _subagents(patched)[0]["permissions"] == permissions
+
+
+def test_subagent_omits_response_format_interrupt_permissions_when_unset(patched):
+    bd.create_base_deepagent()
+    sub = _subagents(patched)[0]
+    assert "response_format" not in sub
+    assert "interrupt_on" not in sub
+    assert "permissions" not in sub
+
+
 def test_rubric_enabled_subagent_gets_middleware(patched, fake_meta, monkeypatch):
     rubric_mw = object()
     fake_meta.rubric_map = {"assistant": None, "researcher": {"max_iterations": 2}}

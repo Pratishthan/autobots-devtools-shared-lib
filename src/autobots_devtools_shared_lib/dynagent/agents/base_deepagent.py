@@ -81,6 +81,15 @@ def _build_roster_subagents(
             subagent["model"] = subagent_model
         else:
             subagent_model = main_model  # deepagents inherits; grader needs it explicitly
+        output_schema = meta.output_schema_map.get(agent_id)
+        if output_schema:
+            subagent["response_format"] = output_schema
+        interrupt_on = meta.interrupt_map.get(agent_id)
+        if interrupt_on:
+            subagent["interrupt_on"] = interrupt_on
+        permissions = meta.permissions_map.get(agent_id)
+        if permissions:
+            subagent["permissions"] = permissions
         rubric_middleware = build_rubric_middleware(meta, agent_id, subagent_model)
         if rubric_middleware is not None:
             subagent["middleware"] = cast("list[AgentMiddleware]", [rubric_middleware])
