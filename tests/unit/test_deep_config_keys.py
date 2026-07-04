@@ -176,6 +176,24 @@ def test_rubric_bad_model_ref_fails(tmp_path, monkeypatch):
     _reset_agent_config()
 
 
+def test_rubric_not_mapping_fails(tmp_path, monkeypatch):
+    _reset_agent_config()
+    (tmp_path / "deep-agents.yaml").write_text(
+        "agents:\n"
+        "  assistant:\n"
+        "    prompt: assistant\n"
+        "    is_default: true\n"
+        "    tools: []\n"
+        "    rubric: not-a-mapping\n"
+    )
+    monkeypatch.setattr(cfg, "get_config_dir", lambda: tmp_path)
+    settings = DynagentSettings(agents_config_filename="deep-agents.yaml")
+    monkeypatch.setattr(cfg, "get_dynagent_settings", lambda: settings)
+    with pytest.raises(ValueError, match="must be a mapping"):
+        load_agents_config()
+    _reset_agent_config()
+
+
 def test_valid_rubric_loads(tmp_path, monkeypatch):
     _write_rubric_yaml(
         tmp_path, monkeypatch, "      max_iterations: 3\n      prompt: rubric-grader\n"

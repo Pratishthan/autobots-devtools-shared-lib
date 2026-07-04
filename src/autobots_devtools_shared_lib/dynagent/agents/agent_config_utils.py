@@ -236,7 +236,7 @@ def load_agents_config() -> dict[str, AgentConfig]:
         rubric = agent_cfg.rubric
         if not isinstance(rubric, dict):
             msg = f"Agent '{agent_id}': rubric: must be a mapping"
-            raise TypeError(msg)
+            raise ValueError(msg)  # noqa: TRY004 — interface contract requires ValueError, not TypeError
         max_iterations = rubric.get("max_iterations", 3)
         if (
             not isinstance(max_iterations, int)
