@@ -2,6 +2,8 @@
 # ABOUTME: Reads agents.yaml and provides typed accessors for prompts, tools, schemas.
 
 import json
+import os
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -27,10 +29,36 @@ __all__ = [
     "get_resolved_input_schema_map",
     "get_resolved_output_schema_map",
     "get_tool_map",
+    "interpolate_env",
     "load_agents_config",
     "load_prompt",
     "load_schema",
 ]
+
+_ENV_VAR_PATTERN = re.compile(r"\$\{(\w+)\}")
+
+
+def interpolate_env(value: Any) -> Any:
+    """Recursively expand ${VAR} from os.environ in config values.
+
+    Fails fast on undefined variables so misconfigured domains surface at
+    startup instead of at first tool call.
+    """
+    if isinstance(value, str):
+
+        def _sub(match: re.Match[str]) -> str:
+            var = match.group(1)
+            if var not in os.environ:
+                msg = f"Config references undefined environment variable '${{{var}}}'"
+                raise ValueError(msg)
+            return os.environ[var]
+
+        return _ENV_VAR_PATTERN.sub(_sub, value)
+    if isinstance(value, dict):
+        return {key: interpolate_env(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [interpolate_env(item) for item in value]
+    return value
 
 
 @dataclass
@@ -132,6 +160,7 @@ def load_agents_config() -> dict[str, AgentConfig]:
 
     with open(config_path) as f:  # noqa: PTH123
         data = yaml.safe_load(f)
+    data = interpolate_env(data or {})
 
     agents = {}
     for agent_id, agent_data in data.get("agents", {}).items():
