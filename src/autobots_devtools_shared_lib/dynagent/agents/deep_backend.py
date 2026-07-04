@@ -20,7 +20,7 @@ def _build_filesystem(cfg: dict[str, Any], **_kw: Any) -> FilesystemBackend:
     root_dir = cfg.get("root_dir")
     if root_dir:
         Path(root_dir).mkdir(parents=True, exist_ok=True)
-    return FilesystemBackend(root_dir=root_dir)
+    return FilesystemBackend(root_dir=root_dir, virtual_mode=True)
 
 
 _BACKEND_REGISTRY: dict[str, Callable[..., Any]] = {

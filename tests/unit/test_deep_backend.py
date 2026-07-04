@@ -24,7 +24,7 @@ def test_filesystem_type_builds_backend_and_creates_root(tmp_path):
 
 
 def test_override_instance_wins(tmp_path):
-    sentinel = FilesystemBackend(root_dir=str(tmp_path))
+    sentinel = FilesystemBackend(root_dir=str(tmp_path), virtual_mode=True)
     resolved = resolve_backend({"type": "state"}, override=sentinel)
     assert resolved is sentinel
 
