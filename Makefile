@@ -27,7 +27,11 @@ VENV = ../.venv
 PYTHON = $(VENV)/bin/python
 POETRY = poetry
 PRE_COMMIT = $(VENV)/bin/pre-commit
-PYTEST = $(VENV)/bin/pytest
+# DYNAGENT_CONFIG_ROOT_DIR/AGENTS_CONFIG_FILENAME are meant to be set per-domain
+# for app runs (see CLAUDE.md); this repo's own unit tests are domain-agnostic
+# and must not inherit them from the invoking shell, or dozens of unrelated
+# tests fail trying to load a domain's agent config.
+PYTEST = env -u DYNAGENT_CONFIG_ROOT_DIR -u AGENTS_CONFIG_FILENAME $(VENV)/bin/pytest
 RUFF = $(VENV)/bin/ruff
 PYRIGHT = $(VENV)/bin/pyright
 
