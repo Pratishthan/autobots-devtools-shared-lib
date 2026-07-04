@@ -96,7 +96,7 @@ def test_top_level_model_profiles():
 
 
 def test_top_level_default_backend():
-    assert get_default_backend_config() == {"type": "filesystem", "root_dir": "/tmp/ws"}
+    assert get_default_backend_config() == {"type": "filesystem", "root_dir": "/tmp/ws"}  # noqa: S108
 
 
 def test_top_level_mcp_servers():
