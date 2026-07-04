@@ -199,6 +199,10 @@ def load_agents_config() -> dict[str, AgentConfig]:
         data = yaml.safe_load(f)
     data = interpolate_env(data or {})
 
+    _GLOBAL_MODEL_PROFILES = data.get("models") or {}
+    _GLOBAL_BACKEND_CONFIG = data.get("default_backend")
+    _GLOBAL_MCP_SERVERS = data.get("mcp_servers") or {}
+
     agents = {}
     for agent_id, agent_data in data.get("agents", {}).items():
         agents[agent_id] = AgentConfig.from_dict(agent_id, agent_data)
