@@ -14,6 +14,7 @@ from autobots_devtools_shared_lib.common.observability import get_agent_logger
 from autobots_devtools_shared_lib.dynagent.agents.agent_config_utils import get_default_agent
 from autobots_devtools_shared_lib.dynagent.agents.agent_meta import AgentMeta
 from autobots_devtools_shared_lib.dynagent.agents.deep_backend import resolve_backend
+from autobots_devtools_shared_lib.dynagent.agents.deep_mcp import load_mcp_tools
 from autobots_devtools_shared_lib.dynagent.llm.model_resolution import resolve_agent_model
 from autobots_devtools_shared_lib.dynagent.middleware.tool_resilience import (
     ToolResilienceMiddleware,
@@ -61,7 +62,10 @@ def _build_roster_subagents(
             name=agent_id,
             description=meta.description_map.get(agent_id) or "",
             system_prompt=_resolve_system_prompt(meta, agent_id, prompt_values),
-            tools=meta.tool_map.get(agent_id, []),
+            tools=[
+                *meta.tool_map.get(agent_id, []),
+                *load_mcp_tools(meta.mcp_map.get(agent_id, []), meta.mcp_servers_config),
+            ],
         )
         if meta.skills_map.get(agent_id):
             subagent["skills"] = meta.skills_map[agent_id]
@@ -120,7 +124,10 @@ def create_base_deepagent(
     logger.info(f"create_base_deepagent: main agent = {agent_name}")
 
     system_prompt = _resolve_system_prompt(meta, agent_name, prompt_values)
-    tools = meta.tool_map.get(agent_name, [])
+    tools = [
+        *meta.tool_map.get(agent_name, []),
+        *load_mcp_tools(meta.mcp_map.get(agent_name, []), meta.mcp_servers_config),
+    ]
 
     merged: dict[str, Any] = {
         s["name"]: s for s in _build_roster_subagents(meta, agent_name, prompt_values)

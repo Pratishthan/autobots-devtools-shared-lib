@@ -189,3 +189,13 @@ def test_debug_kwarg_overrides_yaml(patched, fake_meta):
     fake_meta.debug_map = {"assistant": True}
     bd.create_base_deepagent(debug=False)
     assert patched.call_args.kwargs["debug"] is False
+
+
+def test_mcp_tools_merged_into_agent_tools(patched, fake_meta, monkeypatch):
+    mcp_tool = object()
+    fake_meta.mcp_map = {"assistant": ["atlassian"]}
+    fake_meta.mcp_servers_config = {"atlassian": {"transport": "stdio"}}
+    monkeypatch.setattr(bd, "load_mcp_tools", lambda _names, _config: [mcp_tool])
+    bd.create_base_deepagent()
+    tools = patched.call_args.kwargs["tools"]
+    assert tools == ["tool_a", "tool_b", mcp_tool]
