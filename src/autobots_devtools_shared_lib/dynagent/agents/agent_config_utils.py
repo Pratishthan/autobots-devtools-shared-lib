@@ -221,6 +221,16 @@ def load_agents_config() -> dict[str, AgentConfig]:
                 msg = f"Agent '{agent_id}': {e}"
                 raise ValueError(msg) from e
 
+    if get_dynagent_settings().agents_config_filename == "deep-agents.yaml":
+        default_name = next((n for n, c in agents.items() if c.is_default), None)
+        for agent_id, agent_cfg in agents.items():
+            if agent_id != default_name and not agent_cfg.description:
+                msg = (
+                    f"Agent '{agent_id}': non-default deep-agent roster entries require a "
+                    "description: (deepagents' task tool uses it for delegation)"
+                )
+                raise ValueError(msg)
+
     _GLOBAL_AGENT_CONFIG = agents
 
     logger.info(f"Loaded {len(_GLOBAL_AGENT_CONFIG)} agent configs from {config_path}")

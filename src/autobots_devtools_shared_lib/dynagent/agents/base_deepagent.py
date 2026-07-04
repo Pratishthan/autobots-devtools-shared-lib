@@ -45,6 +45,32 @@ def _resolve_system_prompt(
     return raw_prompt.format_map(defaultdict(str, values))
 
 
+def _build_roster_subagents(
+    meta: AgentMeta, main_agent_name: str, prompt_values: dict[str, Any] | None
+) -> list[SubAgent]:
+    """Map every non-default roster entry to a deepagents SubAgent.
+
+    "model" is set only when the entry configures one; omitting it makes
+    deepagents inherit the main agent's model (the spec's inheritance rule).
+    """
+    subagents: list[SubAgent] = []
+    for agent_id in meta.prompt_map:
+        if agent_id == main_agent_name:
+            continue
+        subagent = SubAgent(
+            name=agent_id,
+            description=meta.description_map.get(agent_id) or "",
+            system_prompt=_resolve_system_prompt(meta, agent_id, prompt_values),
+            tools=meta.tool_map.get(agent_id, []),
+        )
+        if meta.skills_map.get(agent_id):
+            subagent["skills"] = meta.skills_map[agent_id]
+        if meta.model_map.get(agent_id):
+            subagent["model"] = resolve_agent_model(meta, agent_id)
+        subagents.append(subagent)
+    return subagents
+
+
 def create_base_deepagent(
     checkpointer: Any = None,
     initial_agent_name: str | None = None,
@@ -89,6 +115,13 @@ def create_base_deepagent(
     system_prompt = _resolve_system_prompt(meta, agent_name, prompt_values)
     tools = meta.tool_map.get(agent_name, [])
 
+    merged: dict[str, Any] = {
+        s["name"]: s for s in _build_roster_subagents(meta, agent_name, prompt_values)
+    }
+    for kwarg_subagent in subagents or []:
+        merged[kwarg_subagent["name"]] = kwarg_subagent  # kwarg wins on collision
+    merged_subagents = list(merged.values()) or None
+
     return create_deep_agent(
         model=resolve_agent_model(meta, agent_name),
         tools=tools,
@@ -99,6 +132,6 @@ def create_base_deepagent(
         skills=meta.skills_map.get(agent_name) or None,
         memory=meta.memory_map.get(agent_name) or None,
         backend=resolve_backend(meta.backend_config, override=backend, store=store),
-        subagents=list(subagents) if subagents else None,
+        subagents=merged_subagents,
         middleware=[ToolResilienceMiddleware()],
     )
