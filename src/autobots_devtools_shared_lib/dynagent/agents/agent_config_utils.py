@@ -24,13 +24,22 @@ __all__ = [
     "get_batch_enabled_agents",
     "get_capabilities_map",
     "get_config_dir",
+    "get_debug_map",
     "get_default_agent",
     "get_default_backend_config",
+    "get_description_map",
+    "get_interrupt_map",
+    "get_mcp_map",
     "get_mcp_servers_config",
+    "get_memory_map",
+    "get_model_map",
     "get_model_profiles",
+    "get_permissions_map",
     "get_prompt_map",
     "get_resolved_input_schema_map",
     "get_resolved_output_schema_map",
+    "get_rubric_map",
+    "get_skills_map",
     "get_tool_map",
     "interpolate_env",
     "load_agents_config",
@@ -384,6 +393,51 @@ def get_default_agent() -> str | None:
         if cfg.is_default:
             return name
     return None
+
+
+def get_model_map() -> dict[str, str | None]:
+    """Return {agent_name: model ref (profile / inline / bare) or None}."""
+    return {name: c.model for name, c in load_agents_config().items()}
+
+
+def get_skills_map() -> dict[str, list[str]]:
+    """Return {agent_name: skill source paths}."""
+    return {name: c.skills for name, c in load_agents_config().items()}
+
+
+def get_memory_map() -> dict[str, list[str]]:
+    """Return {agent_name: memory (AGENTS.md) paths}."""
+    return {name: c.memory for name, c in load_agents_config().items()}
+
+
+def get_interrupt_map() -> dict[str, dict[str, Any]]:
+    """Return {agent_name: interrupt_on config}."""
+    return {name: c.interrupt_on for name, c in load_agents_config().items()}
+
+
+def get_permissions_map() -> dict[str, list[Any]]:
+    """Return {agent_name: filesystem permission rules}."""
+    return {name: c.permissions for name, c in load_agents_config().items()}
+
+
+def get_description_map() -> dict[str, str | None]:
+    """Return {agent_name: subagent description or None}."""
+    return {name: c.description for name, c in load_agents_config().items()}
+
+
+def get_mcp_map() -> dict[str, list[str]]:
+    """Return {agent_name: referenced MCP server names}."""
+    return {name: c.mcp_servers for name, c in load_agents_config().items()}
+
+
+def get_debug_map() -> dict[str, bool]:
+    """Return {agent_name: debug flag}."""
+    return {name: c.debug for name, c in load_agents_config().items()}
+
+
+def get_rubric_map() -> dict[str, dict[str, Any] | None]:
+    """Return {agent_name: raw rubric config or None}."""
+    return {name: c.rubric for name, c in load_agents_config().items()}
 
 
 def get_model_profiles() -> dict[str, dict[str, Any]]:
