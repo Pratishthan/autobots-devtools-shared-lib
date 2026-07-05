@@ -14,6 +14,7 @@ from autobots_devtools_shared_lib.dynagent.agents.base_deepagent import create_b
 from autobots_devtools_shared_lib.dynagent.ui.collapse_system_messages import (
     collapse_system_messages,
 )
+from autobots_devtools_shared_lib.dynagent.ui.rail_stream import RailAGUIAgent
 
 logger = get_logger(__name__)
 
@@ -33,7 +34,9 @@ ALLOWED_ORIGINS = [
 def create_copilotkit_app(agent_name: str | None = None, path: str = "/agent") -> FastAPI:
     """Build a FastAPI app serving a dynagent DEEP-agent graph over the AG-UI protocol."""
     from ag_ui_langgraph import add_langgraph_fastapi_endpoint
-    from copilotkit import CopilotKitMiddleware, LangGraphAGUIAgent
+    from copilotkit import CopilotKitMiddleware
+
+    from autobots_devtools_shared_lib.dynagent.agents.agent_meta import AgentMeta
 
     graph_id = agent_name or get_default_agent() or "dynagent"
 
@@ -49,10 +52,13 @@ def create_copilotkit_app(agent_name: str | None = None, path: str = "/agent") -
     else:
         graph = graph.with_config({"recursion_limit": 50})
 
-    agent = LangGraphAGUIAgent(
+    mcp_servers = set(AgentMeta.instance().mcp_servers_config.keys())
+    agent = RailAGUIAgent(
         name=graph_id,
         description="Dynagent deep-agent coordinator served over AG-UI.",
         graph=graph,
+        mcp_servers=mcp_servers,
+        main_agent_name=agent_name or get_default_agent(),
     )
 
     app = FastAPI(title=f"Dynagent AG-UI ({graph_id})")
