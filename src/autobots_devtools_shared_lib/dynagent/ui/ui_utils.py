@@ -353,8 +353,8 @@ class ChainlitStepRenderer:
         owner = self._attr.owner(event)
         parent_id: str | None = None
         if not self._attr.is_main(owner):
-            parent_step = self._agent_steps.get(owner or "")
-            parent_id = parent_step.id if parent_step is not None else None
+            parent_step = await self._get_or_create_agent_step(owner)
+            parent_id = parent_step.id
         else:
             # Main-agent top-level tool step: subject to eviction.
             if len(self._main_tool_queue) >= 3:

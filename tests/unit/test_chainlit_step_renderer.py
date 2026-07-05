@@ -149,6 +149,19 @@ async def test_main_tool_eviction_removes_oldest_beyond_three(patched):
     assert set(r._tool_steps) == {"tool-1", "tool-2", "tool-3"}
 
 
+async def test_subagent_tool_steps_are_never_evicted(patched):
+    r = ui_utils.ChainlitStepRenderer(on_structured_output=None)
+    await r.start()
+    await r.dispatch(_stream("assistant", "m", "hi"))
+    await r.dispatch(_stream("weather_expert", "w", "..."))  # creates the subagent step
+    for i in range(5):
+        await r.dispatch(_tool_start("weather_expert", f"sub-tool-{i}", f"spike_tools__t{i}", {}))
+    for i in range(5):
+        run_id = f"sub-tool-{i}"
+        assert run_id in r._tool_steps
+        assert r._tool_steps[run_id].removed is False
+
+
 async def test_subagent_step_collapses_on_task_end(patched):
     r = ui_utils.ChainlitStepRenderer(on_structured_output=None)
     await r.start()
