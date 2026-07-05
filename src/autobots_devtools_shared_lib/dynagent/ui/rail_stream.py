@@ -37,6 +37,25 @@ async def project_stream(
     """
     proj = ActivityProjection(mcp_servers, main_agent_name)
     t0: float | None = None
+
+    def _flush_delta() -> StateDeltaEvent | None:
+        """Consume any pending rail change and materialise it as a STATE_DELTA."""
+        if not proj.dirty:
+            return None
+        proj.dirty = False
+        try:
+            snap = proj.snapshot()
+        except Exception:
+            logger.warning("activity projection snapshot failed; dropping delta", exc_info=True)
+            return None
+        return StateDeltaEvent(
+            type=EventType.STATE_DELTA,
+            delta=[
+                {"op": "add", "path": "/activity", "value": snap["activity"]},
+                {"op": "add", "path": "/stats", "value": snap["stats"]},
+            ],
+        )
+
     async for event in inner:
         data = _to_dict(event)
         now = time.monotonic() * 1000
@@ -48,28 +67,27 @@ async def project_stream(
         except Exception:
             logger.warning("activity projection observe failed; dropping delta", exc_info=True)
             proj.dirty = False
+
+        # RUN_FINISHED is terminal: AG-UI rejects any event after it, so the final
+        # rail delta (carrying end-of-run latency/stats) must be flushed *before* it.
+        if data.get("type") == "RUN_FINISHED":
+            delta = _flush_delta()
+            if delta is not None:
+                yield delta
+            yield event
+            if on_run_finished is not None:
+                thread_id = data.get("thread_id")
+                if thread_id:
+                    try:
+                        await on_run_finished(thread_id)
+                    except Exception:
+                        logger.warning("on_run_finished(touch) failed", exc_info=True)
+            continue
+
         yield event
-        if data.get("type") == "RUN_FINISHED" and on_run_finished is not None:
-            thread_id = data.get("thread_id")
-            if thread_id:
-                try:
-                    await on_run_finished(thread_id)
-                except Exception:
-                    logger.warning("on_run_finished(touch) failed", exc_info=True)
-        if proj.dirty:
-            proj.dirty = False
-            try:
-                snap = proj.snapshot()
-            except Exception:
-                logger.warning("activity projection snapshot failed; dropping delta", exc_info=True)
-                continue
-            yield StateDeltaEvent(
-                type=EventType.STATE_DELTA,
-                delta=[
-                    {"op": "add", "path": "/activity", "value": snap["activity"]},
-                    {"op": "add", "path": "/stats", "value": snap["stats"]},
-                ],
-            )
+        delta = _flush_delta()
+        if delta is not None:
+            yield delta
 
 
 class RailAGUIAgent(LangGraphAGUIAgent):
