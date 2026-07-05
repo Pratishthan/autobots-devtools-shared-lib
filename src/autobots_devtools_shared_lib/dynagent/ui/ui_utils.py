@@ -98,6 +98,29 @@ def _extract_output_type(step_name: str | None) -> str | None:
     return step_name.replace("_agent", "").replace("_", "")
 
 
+def _extract_token_fragments(chunk: Any) -> list[str]:
+    """Return the ordered text fragments in a streamed chat-model chunk.
+
+    Handles string content, a list of string / ``.text`` / ``{"text": ...}`` blocks,
+    and returns ``[]`` for empty or content-less chunks.
+    """
+    content = getattr(chunk, "content", None)
+    if not content:
+        return []
+    if isinstance(content, str):
+        return [content]
+    fragments: list[str] = []
+    if isinstance(content, list):
+        for block in content:
+            if isinstance(block, str):
+                fragments.append(block)
+            elif hasattr(block, "text"):
+                fragments.append(block.text)
+            elif isinstance(block, dict) and "text" in block:
+                fragments.append(block["text"])
+    return fragments
+
+
 # ---------------------------------------------------------------------------
 # File upload helpers (requires Chainlit runtime)
 # ---------------------------------------------------------------------------
