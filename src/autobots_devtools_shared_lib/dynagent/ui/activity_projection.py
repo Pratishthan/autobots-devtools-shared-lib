@@ -6,6 +6,8 @@ from collections.abc import Iterable
 from dataclasses import dataclass, field
 from typing import Any
 
+from autobots_devtools_shared_lib.dynagent.ui.stream_attribution import StreamAttribution
+
 _INFO = "var(--info)"  # sub-agent dot
 _ACCENT = "var(--accent)"  # main-agent tool dot
 
@@ -32,6 +34,24 @@ def _format_sub(running: bool, ms: int | None, tokens: int | None) -> str:
     return " · ".join(parts)
 
 
+def _find_tool_call_id(output: Any) -> str | None:
+    """Recursively find a ToolMessage's tool_call_id in a RAW on_tool_end output."""
+    if isinstance(output, dict):
+        tcid = output.get("tool_call_id")
+        if isinstance(tcid, str):
+            return tcid
+        for value in output.values():
+            found = _find_tool_call_id(value)
+            if found:
+                return found
+    elif isinstance(output, list):
+        for value in output:
+            found = _find_tool_call_id(value)
+            if found:
+                return found
+    return None
+
+
 @dataclass
 class _Tool:
     name: str
@@ -51,6 +71,9 @@ class ActivityProjection:
         self._main_agent_name = main_agent_name
         self._first_agent: str | None = None
         self._run_agent: dict[str, str] = {}  # run_id -> lc_agent_name
+        self._attr = StreamAttribution()
+        self._model_dispatch: dict[str, str] = {}  # subagent model run_id -> dispatch run_id
+        self._toolu_dispatch: dict[str, str] = {}  # AG-UI toolu id -> dispatch run_id
         self._tools: dict[str, _Tool] = {}  # tool_call_id -> _Tool
         self._order: list[str] = []  # tool_call_id in start order
         self._tokens: dict[str, int] = {}  # agent name -> summed total_tokens
@@ -102,7 +125,13 @@ class ActivityProjection:
                     self.dirty = True
 
     def _observe_raw(self, raw: dict[str, Any]) -> None:
+        self._attr.observe(raw)
         name = str(raw.get("event") or "")
+
+        if name == "on_tool_end" and raw.get("name") == "task":
+            self._record_toolu_dispatch(raw)
+            return
+
         if not name.startswith("on_chat_model"):
             return
         run_id = raw.get("run_id")
@@ -111,11 +140,24 @@ class ActivityProjection:
             self._run_agent[run_id] = agent
             if self._first_agent is None:
                 self._first_agent = agent
+        dispatch = self._attr.dispatch_of(raw)
+        if run_id and dispatch:
+            self._model_dispatch[run_id] = dispatch
         if name == "on_chat_model_end" and agent:
             usage = ((raw.get("data") or {}).get("output") or {}).get("usage_metadata")
             if usage:
                 self._tokens[agent] = self._tokens.get(agent, 0) + usage.get("total_tokens", 0)
                 self.dirty = True
+
+    def _record_toolu_dispatch(self, raw: dict[str, Any]) -> None:
+        """Bridge the AG-UI toolu id to the RAW dispatch run_id via the task's ToolMessage."""
+        dispatch = raw.get("run_id")
+        if not dispatch:
+            return
+        data = raw.get("data")
+        toolu = _find_tool_call_id(data.get("output") if isinstance(data, dict) else None)
+        if toolu:
+            self._toolu_dispatch[toolu] = dispatch
 
     # ── projection ───────────────────────────────────────────────────────────
     def _main_agent(self) -> str | None:
@@ -124,12 +166,14 @@ class ActivityProjection:
     def _is_mcp(self, name: str) -> bool:
         return any(name.startswith(f"{server}__") for server in self._mcp_servers)
 
-    def _nested_mono(self, subagent_type: str) -> str:
-        """Summarise a sub-agent's own tool calls into a mono chip."""
+    def _nested_mono(self, dispatch_id: str | None) -> str:
+        """Summarise a sub-agent dispatch's own tool calls into a mono chip."""
+        if dispatch_id is None:
+            return ""
         nested = [
             t
             for t in self._tools.values()
-            if t.name != "task" and self._run_agent.get(t.parent_run_id or "") == subagent_type
+            if t.name != "task" and self._model_dispatch.get(t.parent_run_id or "") == dispatch_id
         ]
         if not nested:
             return ""
@@ -148,14 +192,20 @@ class ActivityProjection:
                 else None
             )
             if tool.name == "task":
-                sub_name = tool.subagent_type or "sub-agent"
+                dispatch_id = self._toolu_dispatch.get(tcid)
+                if dispatch_id is not None:
+                    title = self._attr.dispatch_label(dispatch_id)
+                else:
+                    title = tool.subagent_type or "sub-agent"
                 activity.append(
                     {
                         "dot": _INFO,
                         "glow": tool.running,
-                        "title": sub_name,
-                        "mono": self._nested_mono(sub_name),
-                        "sub": _format_sub(tool.running, ms, self._tokens.get(sub_name)),
+                        "title": title,
+                        "mono": self._nested_mono(dispatch_id),
+                        "sub": _format_sub(
+                            tool.running, ms, self._tokens.get(tool.subagent_type or "")
+                        ),
                         "isRunning": tool.running,
                     }
                 )
