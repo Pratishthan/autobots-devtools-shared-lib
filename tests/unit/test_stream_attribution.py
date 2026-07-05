@@ -187,6 +187,14 @@ def test_dispatch_label_falls_back_when_input_unparseable():
     assert attr.dispatch_label("r1") == "sub-agent"
 
 
+@pytest.mark.parametrize("bad_data", [None, ["x"]])
+def test_observe_task_start_does_not_raise_on_non_dict_data(bad_data):
+    attr = StreamAttribution()
+    event = {"event": "on_tool_start", "name": "task", "run_id": "r1", "data": bad_data}
+    attr.observe(event)  # must not raise
+    assert attr.dispatches["r1"] == DispatchInfo(None, None)
+
+
 def test_subagent_key_prefers_dispatch_then_falls_back_to_agent_name():
     attr = StreamAttribution()
     attr.observe(

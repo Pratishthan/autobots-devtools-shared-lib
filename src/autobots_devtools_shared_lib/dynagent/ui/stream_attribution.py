@@ -57,7 +57,8 @@ class StreamAttribution:
         run_id = event.get("run_id")
         if not run_id:
             return
-        tool_input = event.get("data", {}).get("input")
+        data = event.get("data")
+        tool_input = data.get("input") if isinstance(data, dict) else None
         if isinstance(tool_input, dict):
             info = DispatchInfo(tool_input.get("subagent_type"), tool_input.get("description"))
         else:
