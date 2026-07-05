@@ -399,8 +399,12 @@ class ChainlitStepRenderer:
         if not structured:
             return
         # Suppress a subagent's structured output so it never leaks a foreign bubble.
-        agent_name = output.get("agent_name")
-        if agent_name and not self._attr.is_main(agent_name):
+        # Ownership comes from the event's own lc_agent_name attribution (self-attributing,
+        # like every other handler in this class) — NOT from the Dynagent state's `agent_name`
+        # field, which tracks handoffs within a single classic-domain graph and is unrelated to
+        # lc_agent_name (classic domains share one fixed lc_agent_name for their entire run).
+        owner = self._attr.owner(event)
+        if not self._attr.is_main(owner):
             return
         if is_dataclass(structured) and not isinstance(structured, type):
             structured_dict = asdict(structured)
@@ -412,6 +416,7 @@ class ChainlitStepRenderer:
 
         self.structured_response_count += 1
         logger.info(f"Structured response (JSON): {json.dumps(structured_dict, indent=2)}")
+        agent_name = output.get("agent_name")
         output_type = _extract_output_type(agent_name) if agent_name else None
         if self._on_structured_output:
             markdown = self._on_structured_output(structured_dict, output_type)

@@ -7,8 +7,9 @@ from autobots_devtools_shared_lib.dynagent.ui import ui_utils
 
 
 class FakeMessage:
-    def __init__(self, content=""):
+    def __init__(self, content="", author=None):
         self.content = content
+        self.author = author
         self.tokens: list[str] = []
         self.sent = False
         self.updated = 0
@@ -89,6 +90,10 @@ def _tool_start(agent: str, run_id: str, name: str, tool_input: dict) -> dict:
 
 def _tool_end(run_id: str, output: str) -> dict:
     return {"event": "on_tool_end", "run_id": run_id, "data": {"output": output}}
+
+
+def _chain_end(run_id: str, output: dict) -> dict:
+    return {"event": "on_chain_end", "run_id": run_id, "data": {"output": output}}
 
 
 async def test_main_tokens_go_to_message_subagent_tokens_go_to_step(patched):
@@ -194,3 +199,31 @@ async def test_finish_collapses_open_subagent_steps(patched):
     await r.finish()
     assert step.default_open is False
     assert r.msg.updated >= 1
+
+
+async def test_chain_end_structured_output_not_suppressed_when_owner_is_main(patched):
+    # Classic single-graph domain: the main agent's lc_agent_name ("assistant") is
+    # established via a token stream on run_id "m". The chain-end event for that same
+    # run_id carries a structured_response whose Dynagent state `agent_name` field is a
+    # *different* string ("data_models"), modeling a post-handoff state mutation. This
+    # must still render: ownership is resolved from the event's own lc_agent_name
+    # attribution (via the run_id fallback populated by the earlier token event), not
+    # from the unrelated Dynagent state field.
+    r = ui_utils.ChainlitStepRenderer(on_structured_output=None)
+    await r.start()
+    await r.dispatch(_stream("assistant", "m", "hi"))
+    event = _chain_end("m", {"structured_response": {"foo": "bar"}, "agent_name": "data_models"})
+    await r.dispatch(event)
+    assert r.structured_response_count == 1
+
+
+async def test_chain_end_structured_output_suppressed_for_subagent(patched):
+    # A genuine subagent (distinct lc_agent_name "weather_expert" on its own run_id "w")
+    # producing a structured_response must still be suppressed.
+    r = ui_utils.ChainlitStepRenderer(on_structured_output=None)
+    await r.start()
+    await r.dispatch(_stream("assistant", "m", "hi"))
+    await r.dispatch(_stream("weather_expert", "w", "..."))
+    event = _chain_end("w", {"structured_response": {"foo": "bar"}, "agent_name": "weather_expert"})
+    await r.dispatch(event)
+    assert r.structured_response_count == 0
