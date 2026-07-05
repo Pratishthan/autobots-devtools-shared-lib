@@ -3,10 +3,8 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Protocol, TypedDict, runtime_checkable
-
-if TYPE_CHECKING:
-    from datetime import datetime
+from datetime import datetime  # noqa: TC003
+from typing import Protocol, TypedDict, runtime_checkable
 
 
 class ThreadRecord(TypedDict):
