@@ -1,3 +1,22 @@
+# 05-Jul (0.10.0b2)
+
+## Chainlit subagent stream attribution & rendering
+
+`stream_agent_events` now attributes streamed tokens per agent instead of merging every
+subagent's stream into one bubble.
+
+- New pure reducer `dynagent/ui/stream_attribution.py::StreamAttribution` — resolves each raw
+  `astream_events` event's owning `lc_agent_name` (first chat-model agent = main; nested
+  subagent tool calls self-attribute — no `parent_ids` walk).
+- New `dynagent/ui/ui_utils.py::ChainlitStepRenderer` — main-agent tokens stream into the chat
+  bubble; each subagent renders as its own live, collapsible `cl.Step` with nested tool calls
+  folded inside it. Main-agent tool steps keep the `deque(maxlen=3)` eviction; subagent steps
+  are never evicted while running.
+- **Fail-open:** streams without `lc_agent_name` (Jarvis, Pay, Designer, Nurture, classic AMA)
+  render byte-identically to before.
+- **Known limitation:** two concurrent `task` dispatches of the *same* subagent type merge into
+  one step (v1 groups by agent name).
+
 # 13-Feb
 
 
