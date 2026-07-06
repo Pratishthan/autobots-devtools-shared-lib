@@ -3,7 +3,6 @@
 
 import base64
 import fnmatch
-from collections.abc import Mapping
 from typing import Any
 
 import httpx
@@ -23,7 +22,12 @@ from deepagents.backends.protocol import (
     WriteResult,
 )
 
-from autobots_devtools_shared_lib.common.observability import get_logger
+from autobots_devtools_shared_lib.common.observability import get_logger, get_session_id
+from autobots_devtools_shared_lib.common.utils.context_utils import (
+    get_context,
+    get_context_key,
+    resolve_workspace_context,
+)
 from autobots_devtools_shared_lib.common.utils.fserver_client_utils import (
     raw_list_files,
     raw_read_file,
@@ -31,13 +35,6 @@ from autobots_devtools_shared_lib.common.utils.fserver_client_utils import (
 )
 
 logger = get_logger(__name__)
-
-_WORKSPACE_CONTEXT_KEYS = ("agent_name", "user_name", "repo_name", "jira_number")
-
-
-def workspace_context_from_state(state: Mapping[str, Any]) -> dict[str, Any]:
-    """Build the sidecar workspace_context dict from runtime state keys."""
-    return {key: state[key] for key in _WORKSPACE_CONTEXT_KEYS if state.get(key)}
 
 
 def _to_server_path(path: str) -> str:
@@ -52,27 +49,36 @@ def _to_virtual_path(path: str) -> str:
 class FileServerBackend(BackendProtocol):
     """Virtual filesystem backed by the file-server sidecar (per-session workspace)."""
 
-    def __init__(
-        self,
-        session_id: str | None = None,
-        workspace_context: dict[str, Any] | None = None,
-    ) -> None:
-        self._session_id = session_id
-        self._workspace_context = dict(workspace_context or {})
+    def __init__(self, context_key: str | None = None) -> None:
+        # Identity override; None -> resolve from the ambient context_key ContextVar.
+        self._context_key = context_key
+
+    # -- lazy resolution ---------------------------------------------------
+
+    def _resolve(self) -> tuple[str | None, dict[str, Any]]:
+        """Resolve (session_id, workspace_context) live on each file op."""
+        key = self._context_key or get_context_key()
+        session_id = get_session_id()
+        ctx = get_context(key) if key else {}
+        if not key:
+            logger.warning("FileServerBackend: no context_key available; workspace unscoped")
+        workspace_context = resolve_workspace_context(ctx)
+        return session_id, workspace_context
 
     # -- helpers -----------------------------------------------------------
 
     def _list_all(self) -> list[str]:
-        files = raw_list_files("", self._workspace_context, self._session_id)
+        session_id, workspace_context = self._resolve()
+        files = raw_list_files("", workspace_context, session_id)
         return [str(f) for f in files]
 
     def _read_bytes(self, file_path: str) -> bytes:
-        return raw_read_file(_to_server_path(file_path), self._workspace_context, self._session_id)
+        session_id, workspace_context = self._resolve()
+        return raw_read_file(_to_server_path(file_path), workspace_context, session_id)
 
     def _write_bytes(self, file_path: str, content: bytes) -> None:
-        raw_write_file(
-            _to_server_path(file_path), content, self._workspace_context, self._session_id
-        )
+        session_id, workspace_context = self._resolve()
+        raw_write_file(_to_server_path(file_path), content, workspace_context, session_id)
 
     # -- direct methods ----------------------------------------------------
 

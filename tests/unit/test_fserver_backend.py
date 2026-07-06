@@ -7,16 +7,29 @@ import httpx
 import pytest
 
 import autobots_devtools_shared_lib.dynagent.agents.fserver_backend as fb
-from autobots_devtools_shared_lib.dynagent.agents.fserver_backend import (
-    FileServerBackend,
-    workspace_context_from_state,
+from autobots_devtools_shared_lib.common.observability import set_session_id
+from autobots_devtools_shared_lib.common.utils.context_utils import (
+    set_context_key,
+    set_workspace_context_provider,
 )
+from autobots_devtools_shared_lib.dynagent.agents.fserver_backend import FileServerBackend
 
 
 def _http_error(status: int) -> httpx.HTTPStatusError:
     request = httpx.Request("POST", "http://fs/x")
     response = httpx.Response(status, request=request, text="err")
     return httpx.HTTPStatusError("boom", request=request, response=response)
+
+
+@pytest.fixture(autouse=True)
+def _reset_ambient():
+    set_context_key(None)
+    set_workspace_context_provider(None)
+    set_session_id("default-session-id")
+    yield
+    set_context_key(None)
+    set_workspace_context_provider(None)
+    set_session_id("default-session-id")
 
 
 @pytest.fixture
@@ -40,11 +53,6 @@ def fake_store(monkeypatch):
     monkeypatch.setattr(fb, "raw_read_file", fake_read)
     monkeypatch.setattr(fb, "raw_write_file", fake_write)
     return store
-
-
-def test_workspace_context_from_state_picks_known_keys():
-    state = {"session_id": "s", "jira_number": "J-1", "repo_name": "r", "other": "x"}
-    assert workspace_context_from_state(state) == {"jira_number": "J-1", "repo_name": "r"}
 
 
 def test_ls_lists_direct_children_and_subdirs(fake_store):
@@ -111,7 +119,7 @@ def test_upload_and_download_files(fake_store):
     assert downloads[1].error == "file_not_found"
 
 
-def test_session_and_context_forwarded(monkeypatch):
+def test_resolve_forwards_ambient_context_and_session(monkeypatch):
     seen = {}
 
     def fake_list(base_path="", workspace_context=None, session_id=None):
@@ -120,8 +128,80 @@ def test_session_and_context_forwarded(monkeypatch):
         return []
 
     monkeypatch.setattr(fb, "raw_list_files", fake_list)
-    FileServerBackend(session_id="s1", workspace_context={"jira_number": "J-1"}).ls("/")
-    assert seen == {"workspace_context": {"jira_number": "J-1"}, "session_id": "s1"}
+    monkeypatch.setattr(fb, "get_context", lambda key: {"loaded_for": key})
+    monkeypatch.setattr(
+        fb, "resolve_workspace_context", lambda _ctx: {"workspace_base_path": "u/r-1"}
+    )
+    set_context_key("u1")
+    set_session_id("sess-1")
+
+    FileServerBackend().ls("/")
+
+    assert seen == {
+        "workspace_context": {"workspace_base_path": "u/r-1"},
+        "session_id": "sess-1",
+    }
+
+
+def test_instance_context_key_overrides_ambient(monkeypatch):
+    seen_keys = []
+
+    def fake_get_context(key):
+        seen_keys.append(key)
+        return {}
+
+    monkeypatch.setattr(
+        fb,
+        "raw_list_files",
+        lambda _base_path="", _workspace_context=None, _session_id=None: [],
+    )
+    monkeypatch.setattr(fb, "get_context", fake_get_context)
+    monkeypatch.setattr(fb, "resolve_workspace_context", lambda ctx: ctx)
+    set_context_key("u1")
+
+    FileServerBackend(context_key="u2").ls("/")
+
+    assert seen_keys == ["u2"]
+
+
+def test_no_context_key_yields_empty_workspace_and_skips_store(monkeypatch):
+    seen = {}
+    called = {"get_context": False}
+
+    def fake_list(base_path="", workspace_context=None, session_id=None):
+        seen["workspace_context"] = workspace_context
+        return []
+
+    def fake_get_context(key):
+        called["get_context"] = True
+        return {}
+
+    monkeypatch.setattr(fb, "raw_list_files", fake_list)
+    monkeypatch.setattr(fb, "get_context", fake_get_context)
+    # No provider registered -> resolve_workspace_context is passthrough.
+
+    FileServerBackend().ls("/")
+
+    assert seen["workspace_context"] == {}
+    assert called["get_context"] is False
+
+
+def test_resolve_uses_real_provider_through_full_chain(monkeypatch):
+    """Verify the composed seam: real provider + real resolve_workspace_context + real FileServerBackend.ls."""
+    seen = {}
+
+    def fake_list(base_path="", workspace_context=None, session_id=None):
+        seen["workspace_context"] = workspace_context
+        return []
+
+    monkeypatch.setattr(fb, "raw_list_files", fake_list)
+    monkeypatch.setattr(fb, "get_context", lambda _key: {"user_name": "u"})
+    set_workspace_context_provider(lambda ctx: {"workspace_base_path": f"{ctx['user_name']}/x"})
+    set_context_key("u1")
+
+    FileServerBackend().ls("/")
+
+    assert seen["workspace_context"] == {"workspace_base_path": "u/x"}
 
 
 def test_edit_replaces_unique_occurrence(fake_store):

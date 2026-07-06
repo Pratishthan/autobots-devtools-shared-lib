@@ -9,6 +9,7 @@ helpers or the shared context tools.
 
 import json
 from collections.abc import Callable, Mapping
+from contextvars import ContextVar
 from typing import Any
 
 from autobots_devtools_shared_lib.common.observability.logging_utils import get_logger
@@ -166,3 +167,46 @@ def resolve_workspace_context_for_file_api(
         if isinstance(val, str) and val.strip():
             return val
     return json.dumps(context)
+
+
+# --- Ambient context key (distinct from the state-based resolver above) -------
+# Set per request by the Chainlit layer beside set_session_id(); read live by the
+# deep-engine FileServerBackend to drive get_context(key) on every file op.
+_context_key_var: ContextVar[str | None] = ContextVar("context_key", default=None)
+
+
+def set_context_key(key: str | None) -> None:
+    """Set the ambient context key for the current request/context."""
+    _context_key_var.set(key)
+
+
+def get_context_key() -> str | None:
+    """Return the ambient context key, or None if unset."""
+    return _context_key_var.get()
+
+
+# --- Workspace-context provider seam (use-case-pluggable path formation) -------
+# (store_context_dict) -> sidecar workspace_context dict, e.g. {"workspace_base_path": ...}
+_workspace_context_provider: Callable[[dict[str, Any]], dict[str, Any]] | None = None
+
+
+def set_workspace_context_provider(
+    fn: Callable[[dict[str, Any]], dict[str, Any]] | None,
+) -> None:
+    """Register the use-case function that forms the sidecar workspace_context.
+
+    Pass None to restore default passthrough behavior.
+    """
+    global _workspace_context_provider
+    _workspace_context_provider = fn
+
+
+def resolve_workspace_context(ctx: dict[str, Any]) -> dict[str, Any]:
+    """Form the sidecar workspace_context from a store context dict.
+
+    Uses the registered provider if set; otherwise passthrough so use-cases that
+    already store a ready workspace_context dict keep working.
+    """
+    if _workspace_context_provider is not None:
+        return _workspace_context_provider(ctx)
+    return ctx
