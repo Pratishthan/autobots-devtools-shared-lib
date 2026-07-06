@@ -44,10 +44,10 @@ def _runtime(state=None):
 def test_fserver_type_returns_runtime_factory():
     factory = resolve_backend({"type": "fserver"})
     assert callable(factory)
+    # session_id/context_key are resolved lazily from ambient ContextVars now
+    # (see FileServerBackend._resolve), not snapshotted from runtime.state.
     backend = factory(_runtime({"session_id": "s1", "jira_number": "J-1", "other": "x"}))
     assert isinstance(backend, FileServerBackend)
-    assert backend._session_id == "s1"
-    assert backend._workspace_context == {"jira_number": "J-1"}
 
 
 def test_store_type_without_store_kwarg_fails_fast():

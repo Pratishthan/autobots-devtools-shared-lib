@@ -9,10 +9,7 @@ from deepagents.backends import CompositeBackend, FilesystemBackend, StateBacken
 from deepagents.backends.protocol import BackendProtocol
 
 from autobots_devtools_shared_lib.common.observability import get_logger
-from autobots_devtools_shared_lib.dynagent.agents.fserver_backend import (
-    FileServerBackend,
-    workspace_context_from_state,
-)
+from autobots_devtools_shared_lib.dynagent.agents.fserver_backend import FileServerBackend
 
 logger = get_logger(__name__)
 
@@ -39,12 +36,10 @@ def _build_store(_cfg: dict[str, Any], *, store: Any = None, **_kw: Any) -> Any:
 
 
 def _build_fserver(_cfg: dict[str, Any], **_kw: Any) -> Any:
-    def factory(runtime: Any) -> FileServerBackend:
-        state = getattr(runtime, "state", None) or {}
-        return FileServerBackend(
-            session_id=state.get("session_id"),
-            workspace_context=workspace_context_from_state(state),
-        )
+    def factory(_runtime: Any) -> FileServerBackend:
+        # session_id/context_key are resolved lazily from ambient ContextVars
+        # (set per request by the Chainlit layer); see FileServerBackend._resolve.
+        return FileServerBackend()
 
     return factory
 
