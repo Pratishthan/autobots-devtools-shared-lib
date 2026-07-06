@@ -271,8 +271,11 @@ class ChainlitStepRenderer:
     """Owns the Chainlit surfaces for one agent run and routes events to them.
 
     - The main/coordinator agent's tokens stream into a single ``cl.Message`` bubble.
-    - Each subagent gets its own live ``cl.Step`` (``🧵 {agent}``), created lazily on its
-      first token, streamed into, and collapsed on completion.
+    - Each subagent surface gets its own live ``cl.Step`` (``🧵 {label}``), created lazily on
+      its first token, streamed into, and collapsed on completion. Surfaces are keyed by
+      dispatch ``run_id`` when a task ancestor is known (so N parallel same-type dispatches
+      render as separate steps), falling back to ``lc_agent_name`` for streams without
+      ``parent_ids``.
     - A subagent's nested tool calls become child ``cl.Step``s parented under its subagent step.
     - Main-agent top-level tool steps are the only ones subject to the ``deque(maxlen=3)`` eviction.
     """
@@ -285,10 +288,12 @@ class ChainlitStepRenderer:
         self._on_structured_output = on_structured_output
         self.msg = cl.Message(content="")
         self.structured_response_count = 0
-        self._agent_steps: dict[str, cl.Step] = {}  # lc_agent_name -> subagent step
+        self._subagent_steps: dict[str, cl.Step] = {}  # subagent_key -> subagent step
         self._tool_steps: dict[str, cl.Step] = {}  # run_id -> tool step
         self._main_tool_queue: deque[str] = deque(maxlen=3)  # main-agent tool run_ids only
-        self._task_agent: dict[str, str] = {}  # task run_id -> subagent_type
+        self._task_dispatch: dict[
+            str, str
+        ] = {}  # task run_id -> subagent_type (legacy collapse bridge)
 
     async def start(self) -> None:
         await self.msg.send()
@@ -307,7 +312,7 @@ class ChainlitStepRenderer:
 
     async def finish(self) -> None:
         # Collapse any subagent steps still open (no task-end was observed for them).
-        for step in self._agent_steps.values():
+        for step in self._subagent_steps.values():
             await self._collapse(step)
         await self.msg.update()
 
@@ -316,44 +321,48 @@ class ChainlitStepRenderer:
         fragments = _extract_token_fragments(event.get("data", {}).get("chunk"))
         if not fragments:
             return
-        agent = self._attr.owner(event)
-        if self._attr.is_main(agent):
+        key = self._attr.subagent_key(event)
+        if key is None:
             for frag in fragments:
                 await self.msg.stream_token(frag)
             return
-        step = await self._get_or_create_agent_step(agent)
+        step = await self._get_or_create_subagent_step(key)
         for frag in fragments:
             await step.stream_token(frag)
 
-    async def _get_or_create_agent_step(self, agent: str | None) -> cl.Step:
-        name = agent or "sub-agent"
-        step = self._agent_steps.get(name)
+    async def _get_or_create_subagent_step(self, key: str) -> cl.Step:
+        step = self._subagent_steps.get(key)
         if step is None:
-            step = cl.Step(name=f"🧵 {name}", type="run", default_open=True, auto_collapse=True)
+            step = cl.Step(
+                name=f"🧵 {self._attr.step_label(key)}",
+                type="run",
+                default_open=True,
+                auto_collapse=True,
+            )
             await step.send()
-            self._agent_steps[name] = step
+            self._subagent_steps[key] = step
         return step
 
     # ── tool steps ───────────────────────────────────────────────────────────
     async def _on_tool_start(self, event: dict[str, Any]) -> None:
         run_id = event.get("run_id")
         if StreamAttribution.is_task_dispatch(event):
-            # Dispatch boundary: no visible step here. Remember which subagent it spawns so
-            # its step can be collapsed when this task tool ends.
+            # Dispatch boundary: no visible step here. Remember the subagent_type so a
+            # legacy-keyed step (no parent_ids on child events) can be collapsed on task end.
             tool_input = event.get("data", {}).get("input", {})
             subagent_type = (
                 tool_input.get("subagent_type") if isinstance(tool_input, dict) else None
             )
             if run_id and subagent_type:
-                self._task_agent[run_id] = subagent_type
+                self._task_dispatch[run_id] = subagent_type
             return
 
         tool_name = event.get("name", "unknown")
         tool_input = event.get("data", {}).get("input", {})
-        owner = self._attr.owner(event)
+        key = self._attr.subagent_key(event)
         parent_id: str | None = None
-        if not self._attr.is_main(owner):
-            parent_step = await self._get_or_create_agent_step(owner)
+        if key is not None:
+            parent_step = await self._get_or_create_subagent_step(key)
             parent_id = parent_step.id
         else:
             # Main-agent top-level tool step: subject to eviction.
@@ -375,9 +384,12 @@ class ChainlitStepRenderer:
         run_id = event.get("run_id")
         if run_id is None:
             return
-        if run_id in self._task_agent:
-            # A subagent dispatch finished: collapse its step.
-            step = self._agent_steps.get(self._task_agent[run_id])
+        if run_id in self._attr.dispatches:
+            # A subagent dispatch finished: collapse its step. Deepagent path keys the step
+            # by the task run_id; legacy path keys it by subagent_type (bridged here).
+            step = self._subagent_steps.get(run_id) or self._subagent_steps.get(
+                self._task_dispatch.get(run_id, "")
+            )
             if step is not None:
                 await self._collapse(step)
             return

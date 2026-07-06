@@ -103,7 +103,7 @@ async def test_main_tokens_go_to_message_subagent_tokens_go_to_step(patched):
     await r.dispatch(_stream("assistant", "m", "Hi "))
     await r.dispatch(_stream("weather_expert", "w", "sunny"))
     assert r.msg.tokens == ["Hi "]
-    step = r._agent_steps["weather_expert"]
+    step = r._subagent_steps["weather_expert"]
     assert step.tokens == ["sunny"]
     assert step.name == "🧵 weather_expert"
     assert step.default_open is True
@@ -118,7 +118,7 @@ async def test_nested_tool_parents_under_subagent_step(patched):
     await r.dispatch(
         _tool_start("weather_expert", "t-weather", "spike_tools__get_weather", {"city": "Paris"})
     )
-    subagent_step = r._agent_steps["weather_expert"]
+    subagent_step = r._subagent_steps["weather_expert"]
     tool_step = r._tool_steps["t-weather"]
     assert tool_step.parent_id == subagent_step.id
 
@@ -175,7 +175,7 @@ async def test_subagent_step_collapses_on_task_end(patched):
     await r.dispatch(
         _tool_start("assistant", "t-task", "task", {"subagent_type": "weather_expert"})
     )
-    step = r._agent_steps["weather_expert"]
+    step = r._subagent_steps["weather_expert"]
     await r.dispatch(_tool_end("t-task", "done"))
     assert step.default_open is False
     assert step.updated >= 1
@@ -195,7 +195,7 @@ async def test_finish_collapses_open_subagent_steps(patched):
     await r.start()
     await r.dispatch(_stream("assistant", "m", "hi"))
     await r.dispatch(_stream("math_expert", "n", "51"))  # never receives a task-end
-    step = r._agent_steps["math_expert"]
+    step = r._subagent_steps["math_expert"]
     await r.finish()
     assert step.default_open is False
     assert r.msg.updated >= 1
@@ -227,3 +227,73 @@ async def test_chain_end_structured_output_suppressed_for_subagent(patched):
     event = _chain_end("w", {"structured_response": {"foo": "bar"}, "agent_name": "weather_expert"})
     await r.dispatch(event)
     assert r.structured_response_count == 0
+
+
+def _stream_with_parents(agent, run_id, text, parent_ids):
+    class _C:
+        content = text
+
+    return {
+        "event": "on_chat_model_stream",
+        "run_id": run_id,
+        "parent_ids": parent_ids,
+        "metadata": {"lc_agent_name": agent},
+        "data": {"chunk": _C()},
+    }
+
+
+def _task_dispatch(run_id, subagent_type, description):
+    return {
+        "event": "on_tool_start",
+        "run_id": run_id,
+        "name": "task",
+        "data": {"input": {"subagent_type": subagent_type, "description": description}},
+    }
+
+
+async def test_same_type_parallel_dispatches_get_separate_steps(patched):
+    r = ui_utils.ChainlitStepRenderer(on_structured_output=None)
+    await r.start()
+    await r.dispatch(_stream("assistant", "m", "hi"))
+    await r.dispatch(_task_dispatch("d1", "general-purpose", "Research Rust"))
+    await r.dispatch(_task_dispatch("d2", "general-purpose", "Research Kotlin"))
+    await r.dispatch(_stream_with_parents("general-purpose", "mA", "rust text", ["d1"]))
+    await r.dispatch(_stream_with_parents("general-purpose", "mB", "kotlin text", ["d2"]))
+
+    step1 = r._subagent_steps["d1"]
+    step2 = r._subagent_steps["d2"]
+    assert step1 is not step2
+    assert step1.tokens == ["rust text"]
+    assert step2.tokens == ["kotlin text"]
+    assert step1.name == "🧵 general-purpose · Research Rust"
+    assert step2.name == "🧵 general-purpose · Research Kotlin"
+
+
+async def test_dispatch_step_collapses_on_its_task_end(patched):
+    r = ui_utils.ChainlitStepRenderer(on_structured_output=None)
+    await r.start()
+    await r.dispatch(_stream("assistant", "m", "hi"))
+    await r.dispatch(_task_dispatch("d1", "general-purpose", "Research Rust"))
+    await r.dispatch(_stream_with_parents("general-purpose", "mA", "rust", ["d1"]))
+    step = r._subagent_steps["d1"]
+    await r.dispatch(_tool_end("d1", "done"))
+    assert step.default_open is False
+    assert step.updated >= 1
+
+
+async def test_nested_tool_parents_under_dispatch_step(patched):
+    r = ui_utils.ChainlitStepRenderer(on_structured_output=None)
+    await r.start()
+    await r.dispatch(_stream("assistant", "m", "hi"))
+    await r.dispatch(_task_dispatch("d1", "general-purpose", "Research Rust"))
+    await r.dispatch(_stream_with_parents("general-purpose", "mA", "rust", ["d1"]))
+    nested = {
+        "event": "on_tool_start",
+        "run_id": "nested-1",
+        "name": "spike_tools__ls",
+        "parent_ids": ["d1", "mA"],
+        "metadata": {"lc_agent_name": "general-purpose"},
+        "data": {"input": {}},
+    }
+    await r.dispatch(nested)
+    assert r._tool_steps["nested-1"].parent_id == r._subagent_steps["d1"].id
