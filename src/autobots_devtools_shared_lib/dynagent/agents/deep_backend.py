@@ -3,13 +3,15 @@
 
 from collections.abc import Callable
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from deepagents.backends import CompositeBackend, FilesystemBackend, StateBackend, StoreBackend
-from deepagents.backends.protocol import BackendProtocol
 
 from autobots_devtools_shared_lib.common.observability import get_logger
 from autobots_devtools_shared_lib.dynagent.agents.fserver_backend import FileServerBackend
+
+if TYPE_CHECKING:
+    from deepagents.backends.protocol import BackendProtocol
 
 logger = get_logger(__name__)
 
@@ -35,34 +37,19 @@ def _build_store(_cfg: dict[str, Any], *, store: Any = None, **_kw: Any) -> Any:
     return StoreBackend(store=store)
 
 
-def _build_fserver(_cfg: dict[str, Any], **_kw: Any) -> Any:
-    def factory(_runtime: Any) -> FileServerBackend:
-        # session_id/context_key are resolved lazily from ambient ContextVars
-        # (set per request by the Chainlit layer); see FileServerBackend._resolve.
-        return FileServerBackend()
-
-    return factory
+def _build_fserver(_cfg: dict[str, Any], **_kw: Any) -> FileServerBackend:
+    return FileServerBackend()
 
 
-def _build_composite(cfg: dict[str, Any], *, store: Any = None, **_kw: Any) -> Any:
+def _build_composite(cfg: dict[str, Any], *, store: Any = None, **_kw: Any) -> CompositeBackend:
     route_configs = cfg.get("routes") or {}
-    built_routes = {
-        prefix: _build_backend(route_cfg, store=store)
-        for prefix, route_cfg in route_configs.items()
-    }
-
-    def factory(runtime: Any) -> CompositeBackend:
-        routes: dict[str, BackendProtocol] = {}
-        for prefix, backend in built_routes.items():
-            if backend is None:
-                routes[prefix] = StateBackend()
-            elif isinstance(backend, BackendProtocol):
-                routes[prefix] = backend
-            else:  # BackendFactory route (e.g. fserver): materialize per runtime
-                routes[prefix] = backend(runtime)
-        return CompositeBackend(default=StateBackend(), routes=routes)
-
-    return factory
+    routes: dict[str, BackendProtocol] = {}
+    for prefix, route_cfg in route_configs.items():
+        backend = _build_backend(route_cfg, store=store)
+        # _build_state returns None (deepagents' StateBackend default); every other
+        # builder returns a BackendProtocol instance.
+        routes[prefix] = backend if backend is not None else StateBackend()
+    return CompositeBackend(default=StateBackend(), routes=routes)
 
 
 _BACKEND_REGISTRY: dict[str, Callable[..., Any]] = {

@@ -1,8 +1,6 @@
 # ABOUTME: Unit tests for the deep-engine backend registry.
 # ABOUTME: Covers state/filesystem resolution, override precedence, and unknown-type failure.
 
-from types import SimpleNamespace
-
 import pytest
 from deepagents.backends import CompositeBackend, FilesystemBackend, StateBackend
 
@@ -37,17 +35,10 @@ def test_unknown_type_fails_fast_listing_choices():
         resolve_backend({"type": "s3"})
 
 
-def _runtime(state=None):
-    return SimpleNamespace(state=state or {})
-
-
-def test_fserver_type_returns_runtime_factory():
-    factory = resolve_backend({"type": "fserver"})
-    assert callable(factory)
-    # session_id/context_key are resolved lazily from ambient ContextVars now
-    # (see FileServerBackend._resolve), not snapshotted from runtime.state.
-    backend = factory(_runtime({"session_id": "s1", "jira_number": "J-1", "other": "x"}))
+def test_fserver_type_returns_backend_instance():
+    backend = resolve_backend({"type": "fserver"})
     assert isinstance(backend, FileServerBackend)
+    assert backend._context_key is None
 
 
 def test_store_type_without_store_kwarg_fails_fast():
@@ -72,7 +63,7 @@ def test_store_type_with_store_kwarg(monkeypatch):
 
 
 def test_composite_builds_routed_backend():
-    factory = resolve_backend(
+    composite = resolve_backend(
         {
             "type": "composite",
             "routes": {
@@ -81,8 +72,6 @@ def test_composite_builds_routed_backend():
             },
         }
     )
-    assert callable(factory)
-    composite = factory(_runtime({"session_id": "s1"}))
     assert isinstance(composite, CompositeBackend)
     assert isinstance(composite.default, StateBackend)
     assert isinstance(composite.routes["/workspace/"], FileServerBackend)
