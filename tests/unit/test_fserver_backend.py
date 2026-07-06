@@ -186,6 +186,24 @@ def test_no_context_key_yields_empty_workspace_and_skips_store(monkeypatch):
     assert called["get_context"] is False
 
 
+def test_resolve_uses_real_provider_through_full_chain(monkeypatch):
+    """Verify the composed seam: real provider + real resolve_workspace_context + real FileServerBackend.ls."""
+    seen = {}
+
+    def fake_list(base_path="", workspace_context=None, session_id=None):
+        seen["workspace_context"] = workspace_context
+        return []
+
+    monkeypatch.setattr(fb, "raw_list_files", fake_list)
+    monkeypatch.setattr(fb, "get_context", lambda _key: {"user_name": "u"})
+    set_workspace_context_provider(lambda ctx: {"workspace_base_path": f"{ctx['user_name']}/x"})
+    set_context_key("u1")
+
+    FileServerBackend().ls("/")
+
+    assert seen["workspace_context"] == {"workspace_base_path": "u/x"}
+
+
 def test_edit_replaces_unique_occurrence(fake_store):
     fake_store["a.txt"] = b"hello world"
     result = FileServerBackend().edit("/a.txt", "world", "sidecar")
