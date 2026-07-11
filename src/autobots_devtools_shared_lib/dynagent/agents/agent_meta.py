@@ -22,6 +22,18 @@ class AgentMeta:
     output_schema_map: dict[str, dict | None]
     capabilities_map: dict[str, list[str]]
     default_agent: str | None
+    model_map: dict[str, str | None]
+    skills_map: dict[str, list[str]]
+    memory_map: dict[str, list[str]]
+    interrupt_map: dict[str, dict[str, Any]]
+    permissions_map: dict[str, list[Any]]
+    description_map: dict[str, str | None]
+    mcp_map: dict[str, list[str]]
+    debug_map: dict[str, bool]
+    rubric_map: dict[str, dict[str, Any] | None]
+    backend_config: dict[str, Any] | None
+    model_profiles: dict[str, dict[str, Any]]
+    mcp_servers_config: dict[str, dict[str, Any]]
 
     def __init__(self) -> None:
         self.prompt_map = _agent_config.get_prompt_map()
@@ -30,6 +42,18 @@ class AgentMeta:
         self.output_schema_map = _agent_config.get_resolved_output_schema_map()
         self.capabilities_map = _agent_config.get_capabilities_map()
         self.default_agent = _agent_config.get_default_agent()
+        self.model_map = _agent_config.get_model_map()
+        self.skills_map = _agent_config.get_skills_map()
+        self.memory_map = _agent_config.get_memory_map()
+        self.interrupt_map = _agent_config.get_interrupt_map()
+        self.permissions_map = _agent_config.get_permissions_map()
+        self.description_map = _agent_config.get_description_map()
+        self.mcp_map = _agent_config.get_mcp_map()
+        self.debug_map = _agent_config.get_debug_map()
+        self.rubric_map = _agent_config.get_rubric_map()
+        self.backend_config = _agent_config.get_default_backend_config()
+        self.model_profiles = _agent_config.get_model_profiles()
+        self.mcp_servers_config = _agent_config.get_mcp_servers_config()
         logger.debug("%s", self)
 
     def __repr__(self) -> str:

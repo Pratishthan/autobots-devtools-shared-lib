@@ -172,10 +172,10 @@ class TestInvokeAgent:
         assert call_kwargs["sync_mode"] is True
         assert call_kwargs["initial_agent_name"] == "joke_agent"
 
-    @patch("autobots_devtools_shared_lib.dynagent.agents.invocation_utils.get_langfuse_handler")
+    @patch("autobots_devtools_shared_lib.dynagent.agents.invocation_utils._linked_langfuse_handler")
     def test_adds_langfuse_callback_when_tracing_enabled(
         self,
-        mock_get_handler,
+        mock_linked_handler,
         mock_get_agent_list,
         mock_create_base_agent,
         mock_agent,
@@ -184,7 +184,7 @@ class TestInvokeAgent:
     ):
         """Test that Langfuse handler is added to callbacks when tracing is enabled."""
         mock_handler = MagicMock()
-        mock_get_handler.return_value = mock_handler
+        mock_linked_handler.return_value = mock_handler
 
         _ = invoke_agent("coordinator", input_state, config=config, enable_tracing=True)
 
@@ -194,10 +194,10 @@ class TestInvokeAgent:
         assert "callbacks" in config_arg
         assert mock_handler in config_arg["callbacks"]
 
-    @patch("autobots_devtools_shared_lib.dynagent.agents.invocation_utils.get_langfuse_handler")
+    @patch("autobots_devtools_shared_lib.dynagent.agents.invocation_utils._linked_langfuse_handler")
     def test_preserves_existing_callbacks(
         self,
-        mock_get_handler,
+        mock_linked_handler,
         mock_get_agent_list,
         mock_create_base_agent,
         mock_agent,
@@ -209,7 +209,7 @@ class TestInvokeAgent:
         config["callbacks"] = [existing_callback]
 
         mock_handler = MagicMock()
-        mock_get_handler.return_value = mock_handler
+        mock_linked_handler.return_value = mock_handler
 
         _ = invoke_agent("coordinator", input_state, config=config, enable_tracing=True)
 
@@ -363,10 +363,10 @@ class TestAinvokeAgent:
         assert call_kwargs["initial_agent_name"] == "joke_agent"
 
     @pytest.mark.asyncio
-    @patch("autobots_devtools_shared_lib.dynagent.agents.invocation_utils.get_langfuse_handler")
+    @patch("autobots_devtools_shared_lib.dynagent.agents.invocation_utils._linked_langfuse_handler")
     async def test_adds_langfuse_callback_when_tracing_enabled_async(
         self,
-        mock_get_handler,
+        mock_linked_handler,
         mock_get_agent_list,
         mock_create_base_agent,
         mock_agent,
@@ -375,7 +375,7 @@ class TestAinvokeAgent:
     ):
         """Test that Langfuse handler is added to callbacks when tracing is enabled (async)."""
         mock_handler = MagicMock()
-        mock_get_handler.return_value = mock_handler
+        mock_linked_handler.return_value = mock_handler
 
         _ = await ainvoke_agent("coordinator", input_state, config=config, enable_tracing=True)
 
@@ -415,3 +415,97 @@ class TestAinvokeAgent:
 
         # Should log at start and end
         assert mock_logger.info.call_count >= 2
+
+
+# ---------------------------------------------------------------------------
+# invoke_deepagent / ainvoke_deepagent tests
+# ---------------------------------------------------------------------------
+
+
+class TestInvokeDeepagent:
+    def test_invokes_deepagent_with_correct_state(
+        self, mock_get_agent_list, mock_agent, input_state, config
+    ):
+        from unittest.mock import patch
+
+        from autobots_devtools_shared_lib.dynagent.agents.invocation_utils import (
+            invoke_deepagent,
+        )
+
+        with patch(
+            "autobots_devtools_shared_lib.dynagent.agents.base_deepagent.create_base_deepagent",
+            return_value=mock_agent,
+        ) as mock_factory:
+            _ = invoke_deepagent("coordinator", input_state, config=config, enable_tracing=False)
+
+        mock_factory.assert_called_once()
+        mock_agent.invoke.assert_called_once()
+        call_args = mock_agent.invoke.call_args
+        assert "messages" in call_args[0][0]
+        assert call_args[1]["config"] == config
+
+    async def test_ainvoke_deepagent_with_correct_state(
+        self, mock_get_agent_list, mock_agent, input_state, config
+    ):
+        from unittest.mock import patch
+
+        from autobots_devtools_shared_lib.dynagent.agents.invocation_utils import (
+            ainvoke_deepagent,
+        )
+
+        with patch(
+            "autobots_devtools_shared_lib.dynagent.agents.base_deepagent.create_base_deepagent",
+            return_value=mock_agent,
+        ) as mock_factory:
+            _ = await ainvoke_deepagent(
+                "coordinator", input_state, config=config, enable_tracing=False
+            )
+
+        mock_factory.assert_called_once()
+        mock_agent.ainvoke.assert_called_once()
+
+
+def test_invoke_deepagent_passes_rubric_through(monkeypatch):
+    import autobots_devtools_shared_lib.dynagent.agents.agent_config_utils as cfg
+    import autobots_devtools_shared_lib.dynagent.agents.base_deepagent as bd
+    from autobots_devtools_shared_lib.dynagent.agents.invocation_utils import invoke_deepagent
+
+    monkeypatch.setattr(cfg, "get_agent_list", lambda: ["assistant"])
+    captured: dict = {}
+
+    class FakeAgent:
+        def invoke(self, input_state, config=None):
+            captured.update(input_state)
+            return dict(input_state)
+
+    monkeypatch.setattr(bd, "create_base_deepagent", lambda **_kwargs: FakeAgent())
+    result = invoke_deepagent(
+        agent_name="assistant",
+        input_state={"messages": [], "rubric": "- answer cites a source"},
+        enable_tracing=False,
+    )
+    assert captured["rubric"] == "- answer cites a source"
+    assert result["rubric"] == "- answer cites a source"
+
+
+async def test_ainvoke_deepagent_passes_rubric_through(monkeypatch):
+    import autobots_devtools_shared_lib.dynagent.agents.agent_config_utils as cfg
+    import autobots_devtools_shared_lib.dynagent.agents.base_deepagent as bd
+    from autobots_devtools_shared_lib.dynagent.agents.invocation_utils import ainvoke_deepagent
+
+    monkeypatch.setattr(cfg, "get_agent_list", lambda: ["assistant"])
+    captured: dict = {}
+
+    class FakeAgent:
+        async def ainvoke(self, input_state, config=None):
+            captured.update(input_state)
+            return dict(input_state)
+
+    monkeypatch.setattr(bd, "create_base_deepagent", lambda **_kwargs: FakeAgent())
+    result = await ainvoke_deepagent(
+        agent_name="assistant",
+        input_state={"messages": [], "rubric": "- answer cites a source"},
+        enable_tracing=False,
+    )
+    assert captured["rubric"] == "- answer cites a source"
+    assert result["rubric"] == "- answer cites a source"

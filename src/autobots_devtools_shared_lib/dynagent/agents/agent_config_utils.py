@@ -2,6 +2,8 @@
 # ABOUTME: Reads agents.yaml and provides typed accessors for prompts, tools, schemas.
 
 import json
+import os
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -22,17 +24,55 @@ __all__ = [
     "get_batch_enabled_agents",
     "get_capabilities_map",
     "get_config_dir",
+    "get_debug_map",
     "get_default_agent",
+    "get_default_backend_config",
+    "get_description_map",
+    "get_interrupt_map",
+    "get_mcp_map",
+    "get_mcp_servers_config",
+    "get_memory_map",
+    "get_model_map",
+    "get_model_profiles",
+    "get_permissions_map",
     "get_prompt_map",
     "get_resolved_input_schema_map",
     "get_resolved_output_schema_map",
+    "get_rubric_map",
+    "get_skills_map",
     "get_tool_map",
+    "interpolate_env",
     "load_agents_config",
     "load_prompt",
     "load_render_manifest",
     "load_schema",
     "load_template",
 ]
+
+_ENV_VAR_PATTERN = re.compile(r"\$\{(\w+)\}")
+
+
+def interpolate_env(value: Any) -> Any:
+    """Recursively expand ${VAR} from os.environ in config values.
+
+    Fails fast on undefined variables so misconfigured domains surface at
+    startup instead of at first tool call.
+    """
+    if isinstance(value, str):
+
+        def _sub(match: re.Match[str]) -> str:
+            var = match.group(1)
+            if var not in os.environ:
+                msg = f"Config references undefined environment variable '${{{var}}}'"
+                raise ValueError(msg)
+            return os.environ[var]
+
+        return _ENV_VAR_PATTERN.sub(_sub, value)
+    if isinstance(value, dict):
+        return {key: interpolate_env(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [interpolate_env(item) for item in value]
+    return value
 
 
 @dataclass
@@ -54,6 +94,16 @@ class AgentConfig:
     batch_enabled: bool = False
     is_default: bool = False
     max_concurrency: int | None = None
+    # --- deep-engine-only fields (ignored by the react engine) ---
+    model: str | None = None
+    skills: list[str] = field(default_factory=list)
+    memory: list[str] = field(default_factory=list)
+    interrupt_on: dict[str, Any] = field(default_factory=dict)
+    permissions: list[Any] = field(default_factory=list)
+    description: str | None = None
+    mcp_servers: list[str] = field(default_factory=list)
+    rubric: dict[str, Any] | None = None
+    debug: bool = False
 
     @classmethod
     def from_dict(cls, agent_id: str, data: dict[str, Any]) -> "AgentConfig":
@@ -101,16 +151,31 @@ class AgentConfig:
             batch_enabled=data.get("batch_enabled", False),
             is_default=data.get("is_default", False),
             max_concurrency=data.get("max_concurrency"),
+            model=data.get("model"),
+            skills=list(data.get("skills") or []),
+            memory=list(data.get("memory") or []),
+            interrupt_on=dict(data.get("interrupt_on") or {}),
+            permissions=list(data.get("permissions") or []),
+            description=data.get("description"),
+            mcp_servers=list(data.get("mcp_servers") or []),
+            rubric=data.get("rubric"),
+            debug=bool(data.get("debug", False)),
         )
 
 
 _GLOBAL_AGENT_CONFIG: dict[str, AgentConfig] = {}
+_GLOBAL_MODEL_PROFILES: dict[str, dict[str, Any]] = {}
+_GLOBAL_BACKEND_CONFIG: dict[str, Any] | None = None
+_GLOBAL_MCP_SERVERS: dict[str, dict[str, Any]] = {}
 
 
 def _reset_agent_config() -> None:
     """Clear the cached agent config — for test isolation."""
-    global _GLOBAL_AGENT_CONFIG
+    global _GLOBAL_AGENT_CONFIG, _GLOBAL_MODEL_PROFILES, _GLOBAL_BACKEND_CONFIG, _GLOBAL_MCP_SERVERS
     _GLOBAL_AGENT_CONFIG = {}
+    _GLOBAL_MODEL_PROFILES = {}
+    _GLOBAL_BACKEND_CONFIG = None
+    _GLOBAL_MCP_SERVERS = {}
 
 
 def get_config_dir() -> Path:
@@ -126,18 +191,79 @@ def get_config_dir() -> Path:
 
 def load_agents_config() -> dict[str, AgentConfig]:
     """Load agent configurations from agents.yaml."""
-    global _GLOBAL_AGENT_CONFIG
+    global _GLOBAL_AGENT_CONFIG, _GLOBAL_MODEL_PROFILES, _GLOBAL_BACKEND_CONFIG, _GLOBAL_MCP_SERVERS
     if _GLOBAL_AGENT_CONFIG:
         return _GLOBAL_AGENT_CONFIG
     config_dir = get_config_dir()
-    config_path = Path(config_dir) / "agents.yaml"
+    config_path = Path(config_dir) / get_dynagent_settings().agents_config_filename
 
     with open(config_path) as f:  # noqa: PTH123
         data = yaml.safe_load(f)
+    data = interpolate_env(data or {})
+
+    _GLOBAL_MODEL_PROFILES = data.get("models") or {}
+    _GLOBAL_BACKEND_CONFIG = data.get("default_backend")
+    _GLOBAL_MCP_SERVERS = data.get("mcp_servers") or {}
 
     agents = {}
     for agent_id, agent_data in data.get("agents", {}).items():
         agents[agent_id] = AgentConfig.from_dict(agent_id, agent_data)
+
+    from autobots_devtools_shared_lib.dynagent.llm.model_resolution import (
+        validate_model_profiles,
+        validate_model_ref,
+    )
+
+    validate_model_profiles(_GLOBAL_MODEL_PROFILES)
+    for agent_id, agent_cfg in agents.items():
+        if agent_cfg.model is not None:
+            try:
+                validate_model_ref(agent_cfg.model, _GLOBAL_MODEL_PROFILES)
+            except ValueError as e:
+                msg = f"Agent '{agent_id}': {e}"
+                raise ValueError(msg) from e
+
+    for agent_id, agent_cfg in agents.items():
+        for server_name in agent_cfg.mcp_servers:
+            if server_name not in _GLOBAL_MCP_SERVERS:
+                msg = (
+                    f"Agent '{agent_id}' references undeclared MCP server '{server_name}'. "
+                    f"Declared servers: {sorted(_GLOBAL_MCP_SERVERS)}"
+                )
+                raise ValueError(msg)
+
+    for agent_id, agent_cfg in agents.items():
+        if agent_cfg.rubric is None:
+            continue
+        rubric = agent_cfg.rubric
+        if not isinstance(rubric, dict):
+            msg = f"Agent '{agent_id}': rubric: must be a mapping"
+            raise ValueError(msg)  # noqa: TRY004 — interface contract requires ValueError, not TypeError
+        max_iterations = rubric.get("max_iterations", 3)
+        if (
+            not isinstance(max_iterations, int)
+            or isinstance(max_iterations, bool)
+            or not 1 <= max_iterations <= 20
+        ):
+            msg = f"Agent '{agent_id}': rubric.max_iterations must be an int in [1, 20]"
+            raise ValueError(msg)
+        rubric_model = rubric.get("model")
+        if rubric_model is not None:
+            try:
+                validate_model_ref(rubric_model, _GLOBAL_MODEL_PROFILES)
+            except ValueError as e:
+                msg = f"Agent '{agent_id}' rubric: {e}"
+                raise ValueError(msg) from e
+
+    if get_dynagent_settings().agents_config_filename == "deep-agents.yaml":
+        default_name = next((n for n, c in agents.items() if c.is_default), None)
+        for agent_id, agent_cfg in agents.items():
+            if agent_id != default_name and not agent_cfg.description:
+                msg = (
+                    f"Agent '{agent_id}': non-default deep-agent roster entries require a "
+                    "description: (deepagents' task tool uses it for delegation)"
+                )
+                raise ValueError(msg)
 
     _GLOBAL_AGENT_CONFIG = agents
 
@@ -331,3 +457,66 @@ def get_default_agent() -> str | None:
         if cfg.is_default:
             return name
     return None
+
+
+def get_model_map() -> dict[str, str | None]:
+    """Return {agent_name: model ref (profile / inline / bare) or None}."""
+    return {name: c.model for name, c in load_agents_config().items()}
+
+
+def get_skills_map() -> dict[str, list[str]]:
+    """Return {agent_name: skill source paths}."""
+    return {name: c.skills for name, c in load_agents_config().items()}
+
+
+def get_memory_map() -> dict[str, list[str]]:
+    """Return {agent_name: memory (AGENTS.md) paths}."""
+    return {name: c.memory for name, c in load_agents_config().items()}
+
+
+def get_interrupt_map() -> dict[str, dict[str, Any]]:
+    """Return {agent_name: interrupt_on config}."""
+    return {name: c.interrupt_on for name, c in load_agents_config().items()}
+
+
+def get_permissions_map() -> dict[str, list[Any]]:
+    """Return {agent_name: filesystem permission rules}."""
+    return {name: c.permissions for name, c in load_agents_config().items()}
+
+
+def get_description_map() -> dict[str, str | None]:
+    """Return {agent_name: subagent description or None}."""
+    return {name: c.description for name, c in load_agents_config().items()}
+
+
+def get_mcp_map() -> dict[str, list[str]]:
+    """Return {agent_name: referenced MCP server names}."""
+    return {name: c.mcp_servers for name, c in load_agents_config().items()}
+
+
+def get_debug_map() -> dict[str, bool]:
+    """Return {agent_name: debug flag}."""
+    return {name: c.debug for name, c in load_agents_config().items()}
+
+
+def get_rubric_map() -> dict[str, dict[str, Any] | None]:
+    """Return {agent_name: raw rubric config or None}."""
+    return {name: c.rubric for name, c in load_agents_config().items()}
+
+
+def get_model_profiles() -> dict[str, dict[str, Any]]:
+    """Return the top-level models: block ({profile_name: {provider, name, temperature}})."""
+    load_agents_config()
+    return _GLOBAL_MODEL_PROFILES
+
+
+def get_default_backend_config() -> dict[str, Any] | None:
+    """Return the top-level default_backend: block, or None if not configured."""
+    load_agents_config()
+    return _GLOBAL_BACKEND_CONFIG
+
+
+def get_mcp_servers_config() -> dict[str, dict[str, Any]]:
+    """Return the top-level mcp_servers: block ({server_name: connection config})."""
+    load_agents_config()
+    return _GLOBAL_MCP_SERVERS

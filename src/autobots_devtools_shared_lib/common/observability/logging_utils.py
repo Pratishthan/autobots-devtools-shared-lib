@@ -35,6 +35,16 @@ def set_session_id(session_id: str) -> None:
     _session_id_var.set(session_id)
 
 
+def get_session_id() -> str:
+    """
+    Return the session/thread identifier for the current context.
+
+    Returns the "default-session-id" sentinel when unset; for file ops this is
+    tracing metadata only and is harmless when defaulted.
+    """
+    return _session_id_var.get()
+
+
 def _parse_log_level(level: LogLevelLike | None) -> int:
     """
     Normalize various level representations into a standard logging level.

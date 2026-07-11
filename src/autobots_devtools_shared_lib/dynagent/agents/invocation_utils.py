@@ -16,6 +16,7 @@ from autobots_devtools_shared_lib.common.observability.tracing import (
     flush_tracing,
     get_langfuse_handler,
 )
+from autobots_devtools_shared_lib.dynagent.models.deep_state import DynaDeepAgent
 from autobots_devtools_shared_lib.dynagent.models.state import Dynagent
 
 logger = get_logger(__name__)
@@ -205,6 +206,75 @@ def invoke_agent(
             flush_tracing()
 
 
+def invoke_deepagent(
+    agent_name: str,
+    input_state: dict[str, Any] | None = None,
+    checkpointer: Any | None = None,
+    config: RunnableConfig | None = None,
+    enable_tracing: bool = True,
+    trace_metadata: TraceMetadata | None = None,
+    state_schema: type[AgentState[ResponseT]] = DynaDeepAgent,
+) -> dict[str, Any]:
+    """Synchronously invoke a deep-agent (deepagents-backed) with observability.
+
+    Mirrors invoke_agent but builds the graph via create_base_deepagent.
+    """
+    from autobots_devtools_shared_lib.dynagent.agents.agent_config_utils import get_agent_list
+
+    valid_agents = get_agent_list()
+    if agent_name not in valid_agents:
+        raise ValueError(f"Unknown agent: {agent_name}. Valid agents: {', '.join(valid_agents)}")
+
+    if input_state is None:
+        input_state = {}
+    if trace_metadata is None:
+        trace_metadata = TraceMetadata.create(app_name=f"{agent_name}-invoke-deep")
+        if "session_id" in input_state:
+            trace_metadata.session_id = input_state["session_id"]
+
+    if "session_id" not in input_state:
+        input_state["session_id"] = trace_metadata.session_id
+    if "agent_name" not in input_state:
+        input_state["agent_name"] = agent_name
+
+    try:
+        with (
+            propagate_attributes(
+                user_id=trace_metadata.user_id,
+                session_id=trace_metadata.session_id,
+                tags=trace_metadata.tags,
+            ),
+            otel_span(f"{trace_metadata.app_name}-{agent_name}") as span,
+        ):
+            if enable_tracing:
+                config = inject_langfuse_handler_into_config(config, _linked_langfuse_handler(span))
+            if span is not None:
+                span.set_attribute("langfuse.session.id", str(trace_metadata.session_id))
+
+            from langgraph.checkpoint.memory import InMemorySaver
+
+            from autobots_devtools_shared_lib.dynagent.agents.base_deepagent import (
+                create_base_deepagent,
+            )
+
+            if checkpointer is None:
+                checkpointer = InMemorySaver()
+
+            agent = create_base_deepagent(
+                checkpointer=checkpointer,
+                state_schema=state_schema,
+                initial_agent_name=agent_name,
+            )
+
+            logger.info(
+                f"Invoking deepagent '{agent_name}' (sync) session_id={trace_metadata.session_id}"
+            )
+            return agent.invoke(input_state, config=config)
+    finally:
+        if enable_tracing:
+            flush_tracing()
+
+
 async def ainvoke_agent(
     agent_name: str,
     input_state: dict[str, Any] | None = None,
@@ -336,6 +406,75 @@ async def ainvoke_agent(
             )
             return result
 
+    finally:
+        if enable_tracing:
+            flush_tracing()
+
+
+async def ainvoke_deepagent(
+    agent_name: str,
+    input_state: dict[str, Any] | None = None,
+    checkpointer: Any | None = None,
+    config: RunnableConfig | None = None,
+    enable_tracing: bool = True,
+    trace_metadata: TraceMetadata | None = None,
+    state_schema: type[AgentState[ResponseT]] = DynaDeepAgent,
+) -> dict[str, Any]:
+    """Asynchronously invoke a deep-agent (deepagents-backed) with observability.
+
+    Mirrors ainvoke_agent but builds the graph via create_base_deepagent.
+    """
+    from autobots_devtools_shared_lib.dynagent.agents.agent_config_utils import get_agent_list
+
+    valid_agents = get_agent_list()
+    if agent_name not in valid_agents:
+        raise ValueError(f"Unknown agent: {agent_name}. Valid agents: {', '.join(valid_agents)}")
+
+    if input_state is None:
+        input_state = {}
+    if trace_metadata is None:
+        trace_metadata = TraceMetadata.create(app_name=f"{agent_name}-ainvoke-deep")
+        if "session_id" in input_state:
+            trace_metadata.session_id = input_state["session_id"]
+
+    if "session_id" not in input_state:
+        input_state["session_id"] = trace_metadata.session_id
+    if "agent_name" not in input_state:
+        input_state["agent_name"] = agent_name
+
+    try:
+        with (
+            propagate_attributes(
+                user_id=trace_metadata.user_id,
+                session_id=trace_metadata.session_id,
+                tags=trace_metadata.tags,
+            ),
+            otel_span(f"{trace_metadata.app_name}-{agent_name}") as span,
+        ):
+            if enable_tracing:
+                config = inject_langfuse_handler_into_config(config, _linked_langfuse_handler(span))
+            if span is not None:
+                span.set_attribute("langfuse.session.id", str(trace_metadata.session_id))
+
+            from langgraph.checkpoint.memory import InMemorySaver
+
+            from autobots_devtools_shared_lib.dynagent.agents.base_deepagent import (
+                create_base_deepagent,
+            )
+
+            if checkpointer is None:
+                checkpointer = InMemorySaver()
+
+            agent = create_base_deepagent(
+                checkpointer=checkpointer,
+                state_schema=state_schema,
+                initial_agent_name=agent_name,
+            )
+
+            logger.info(
+                f"Invoking deepagent '{agent_name}' (async) session_id={trace_metadata.session_id}"
+            )
+            return await agent.ainvoke(input_state, config=config)
     finally:
         if enable_tracing:
             flush_tracing()

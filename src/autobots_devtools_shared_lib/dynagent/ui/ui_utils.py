@@ -24,6 +24,7 @@ from autobots_devtools_shared_lib.common.observability.tracing import (
     get_langfuse_client,
     get_langfuse_handler,
 )
+from autobots_devtools_shared_lib.dynagent.ui.stream_attribution import StreamAttribution
 
 logger = get_logger(__name__)
 
@@ -96,6 +97,29 @@ def _extract_output_type(step_name: str | None) -> str | None:
     if not step_name:
         return None
     return step_name.replace("_agent", "").replace("_", "")
+
+
+def _extract_token_fragments(chunk: Any) -> list[str]:
+    """Return the ordered text fragments in a streamed chat-model chunk.
+
+    Handles string content, a list of string / ``.text`` / ``{"text": ...}`` blocks,
+    and returns ``[]`` for empty or content-less chunks.
+    """
+    content = getattr(chunk, "content", None)
+    if not content:
+        return []
+    if isinstance(content, str):
+        return [content]
+    fragments: list[str] = []
+    if isinstance(content, list):
+        for block in content:
+            if isinstance(block, str):
+                fragments.append(block)
+            elif hasattr(block, "text"):
+                fragments.append(block.text)
+            elif isinstance(block, dict) and "text" in block:
+                fragments.append(block["text"])
+    return fragments
 
 
 # ---------------------------------------------------------------------------
@@ -239,6 +263,181 @@ def _enrich_text_with_file_metadata(
 
 
 # ---------------------------------------------------------------------------
+# Chainlit step renderer (requires Chainlit runtime)
+# ---------------------------------------------------------------------------
+
+
+class ChainlitStepRenderer:
+    """Owns the Chainlit surfaces for one agent run and routes events to them.
+
+    - The main/coordinator agent's tokens stream into a single ``cl.Message`` bubble.
+    - Each subagent surface gets its own live ``cl.Step`` (``🧵 {label}``), created lazily on
+      its first token, streamed into, and collapsed on completion. Surfaces are keyed by
+      dispatch ``run_id`` when a task ancestor is known (so N parallel same-type dispatches
+      render as separate steps), falling back to ``lc_agent_name`` for streams without
+      ``parent_ids``.
+    - A subagent's nested tool calls become child ``cl.Step``s parented under its subagent step.
+    - Main-agent top-level tool steps are the only ones subject to the ``deque(maxlen=3)`` eviction.
+    """
+
+    def __init__(
+        self,
+        on_structured_output: Callable[[dict[str, Any], str | None], str] | None,
+    ) -> None:
+        self._attr = StreamAttribution()
+        self._on_structured_output = on_structured_output
+        self.msg = cl.Message(content="")
+        self.structured_response_count = 0
+        self._subagent_steps: dict[str, cl.Step] = {}  # subagent_key -> subagent step
+        self._tool_steps: dict[str, cl.Step] = {}  # run_id -> tool step
+        self._main_tool_queue: deque[str] = deque(maxlen=3)  # main-agent tool run_ids only
+        self._task_dispatch: dict[
+            str, str
+        ] = {}  # task run_id -> subagent_type (legacy collapse bridge)
+
+    async def start(self) -> None:
+        await self.msg.send()
+
+    async def dispatch(self, event: dict[str, Any]) -> None:
+        self._attr.observe(event)
+        kind = event.get("event")
+        if kind == "on_chat_model_stream":
+            await self._on_token(event)
+        elif kind == "on_tool_start":
+            await self._on_tool_start(event)
+        elif kind == "on_tool_end":
+            await self._on_tool_end(event)
+        elif kind == "on_chain_end":
+            await self._on_chain_end(event)
+
+    async def finish(self) -> None:
+        # Collapse any subagent steps still open (no task-end was observed for them).
+        for step in self._subagent_steps.values():
+            await self._collapse(step)
+        await self.msg.update()
+
+    # ── token streaming ──────────────────────────────────────────────────────
+    async def _on_token(self, event: dict[str, Any]) -> None:
+        fragments = _extract_token_fragments(event.get("data", {}).get("chunk"))
+        if not fragments:
+            return
+        key = self._attr.subagent_key(event)
+        if key is None:
+            for frag in fragments:
+                await self.msg.stream_token(frag)
+            return
+        step = await self._get_or_create_subagent_step(key)
+        for frag in fragments:
+            await step.stream_token(frag)
+
+    async def _get_or_create_subagent_step(self, key: str) -> cl.Step:
+        step = self._subagent_steps.get(key)
+        if step is None:
+            step = cl.Step(
+                name=f"🧵 {self._attr.step_label(key)}",
+                type="run",
+                default_open=True,
+                auto_collapse=True,
+            )
+            await step.send()
+            self._subagent_steps[key] = step
+        return step
+
+    # ── tool steps ───────────────────────────────────────────────────────────
+    async def _on_tool_start(self, event: dict[str, Any]) -> None:
+        run_id = event.get("run_id")
+        if StreamAttribution.is_task_dispatch(event):
+            # Dispatch boundary: no visible step here. Remember the subagent_type so a
+            # legacy-keyed step (no parent_ids on child events) can be collapsed on task end.
+            tool_input = event.get("data", {}).get("input", {})
+            subagent_type = (
+                tool_input.get("subagent_type") if isinstance(tool_input, dict) else None
+            )
+            if run_id and subagent_type:
+                self._task_dispatch[run_id] = subagent_type
+            return
+
+        tool_name = event.get("name", "unknown")
+        tool_input = event.get("data", {}).get("input", {})
+        key = self._attr.subagent_key(event)
+        parent_id: str | None = None
+        if key is not None:
+            parent_step = await self._get_or_create_subagent_step(key)
+            parent_id = parent_step.id
+        else:
+            # Main-agent top-level tool step: subject to eviction.
+            if len(self._main_tool_queue) >= 3:
+                old_run_id = self._main_tool_queue.popleft()
+                old_step = self._tool_steps.pop(old_run_id, None)
+                if old_step is not None:
+                    await old_step.remove()
+            if run_id:
+                self._main_tool_queue.append(run_id)
+
+        step = cl.Step(name=f"🛠️ {tool_name}", type="tool", parent_id=parent_id)
+        step.input = tool_input
+        await step.send()
+        if run_id:
+            self._tool_steps[run_id] = step
+
+    async def _on_tool_end(self, event: dict[str, Any]) -> None:
+        run_id = event.get("run_id")
+        if run_id is None:
+            return
+        if run_id in self._attr.dispatches:
+            # A subagent dispatch finished: collapse its step. Deepagent path keys the step
+            # by the task run_id; legacy path keys it by subagent_type (bridged here).
+            step = self._subagent_steps.get(run_id) or self._subagent_steps.get(
+                self._task_dispatch.get(run_id, "")
+            )
+            if step is not None:
+                await self._collapse(step)
+            return
+        step = self._tool_steps.get(run_id)
+        if step is not None:
+            step.output = str(event.get("data", {}).get("output", ""))[:1000]
+            await step.update()
+
+    async def _collapse(self, step: cl.Step) -> None:
+        step.default_open = False
+        await step.update()
+
+    # ── structured output ────────────────────────────────────────────────────
+    async def _on_chain_end(self, event: dict[str, Any]) -> None:
+        output = event.get("data", {}).get("output", {})
+        if not isinstance(output, dict):
+            return
+        structured = output.get("structured_response")
+        if not structured:
+            return
+        # Suppress a subagent's structured output so it never leaks a foreign bubble.
+        # Ownership comes from the event's own lc_agent_name attribution (self-attributing,
+        # like every other handler in this class) — NOT from the Dynagent state's `agent_name`
+        # field, which tracks handoffs within a single classic-domain graph and is unrelated to
+        # lc_agent_name (classic domains share one fixed lc_agent_name for their entire run).
+        owner = self._attr.owner(event)
+        if not self._attr.is_main(owner):
+            return
+        if is_dataclass(structured) and not isinstance(structured, type):
+            structured_dict = asdict(structured)
+        elif isinstance(structured, dict):
+            structured_dict = structured
+        else:
+            logger.warning(f"Unexpected structured response type: {type(structured)}")
+            return
+
+        self.structured_response_count += 1
+        logger.info(f"Structured response (JSON): {json.dumps(structured_dict, indent=2)}")
+        agent_name = output.get("agent_name")
+        output_type = _extract_output_type(agent_name) if agent_name else None
+        if self._on_structured_output:
+            markdown = self._on_structured_output(structured_dict, output_type)
+        else:
+            markdown = structured_to_markdown(structured_dict)
+        await cl.Message(content=markdown, author="Assistant").send()
+
+
+# ---------------------------------------------------------------------------
 # Async streaming helper (requires Chainlit runtime)
 # ---------------------------------------------------------------------------
 
@@ -341,127 +540,26 @@ async def stream_agent_events(
                 else nullcontext()
             )
             with span_ctx as span:
-                msg = cl.Message(content="")
-                tool_steps: dict[str, cl.Step] = {}
-                tool_step_queue: deque[str] = deque(maxlen=3)
-                structured_response_count = 0
-
-                await msg.send()
+                renderer = ChainlitStepRenderer(on_structured_output)
+                await renderer.start()
 
                 async for event in agent.astream_events(
                     input_state,
                     config=RunnableConfig(**config),
                     version="v2",
                 ):
-                    kind = event["event"]
+                    await renderer.dispatch(dict(event))
 
-                    # --- token streaming ----------------------------------------------
-                    if kind == "on_chat_model_stream":
-                        chunk = event.get("data", {}).get("chunk")
-                        content = chunk.content if chunk and hasattr(chunk, "content") else None
-                        if content:
-                            # Handle content as list or string
-                            if isinstance(content, list):
-                                for block in content:
-                                    if isinstance(block, str):
-                                        await msg.stream_token(block)
-                                    elif hasattr(block, "text"):
-                                        await msg.stream_token(block.text)
-                                    elif isinstance(block, dict) and "text" in block:
-                                        await msg.stream_token(block["text"])
-                            else:
-                                await msg.stream_token(content)
-
-                    # --- tool start ----------------------------------------------------
-                    elif kind == "on_tool_start":
-                        tool_name = event.get("name", "unknown")
-                        tool_input = event["data"].get("input", {})
-                        run_id = event.get("run_id")
-
-                        # Remove oldest step if we're at max capacity
-                        if len(tool_step_queue) >= 3:
-                            old_run_id = tool_step_queue.popleft()
-                            if old_run_id in tool_steps:
-                                old_step = tool_steps[old_run_id]
-                                await old_step.remove()
-                                del tool_steps[old_run_id]
-
-                        async with cl.Step(name=f"🛠️ {tool_name}", type="tool") as step:
-                            step.input = tool_input
-                            tool_steps[run_id] = step
-                            tool_step_queue.append(run_id)
-
-                    # --- tool end ------------------------------------------------------
-                    elif kind == "on_tool_end":
-                        run_id = event.get("run_id")
-                        output = event["data"].get("output", "")
-
-                        if run_id in tool_steps:
-                            step = tool_steps[run_id]
-                            step.output = str(output)[:1000]  # Limit output length
-                            await step.update()
-
-                    # --- chain end (structured output) ---------------------------------
-                    elif kind == "on_chain_end":
-                        data = event.get("data", {})
-                        output = data.get("output", {})
-
-                        if output:
-                            if isinstance(output, dict):
-                                structured = output.get("structured_response", None)
-                                if structured:
-                                    structured_response_count += 1
-                                    structured_dict: dict[str, Any]
-                                    if is_dataclass(structured) and not isinstance(
-                                        structured, type
-                                    ):
-                                        structured_dict = asdict(structured)
-                                    elif isinstance(structured, dict):
-                                        structured_dict = structured
-                                    else:
-                                        # Fallback: skip if not dict or dataclass
-                                        logger.warning(
-                                            f"Unexpected structured response type: {type(structured)}"
-                                        )
-                                        continue
-
-                                    # Log JSON for debugging
-                                    json_str = json.dumps(structured_dict, indent=2)
-                                    logger.info(f"Structured response (JSON): {json_str}")
-
-                                    # Extract output type from agent_name if available
-                                    current_step = output.get("agent_name")
-                                    output_type = (
-                                        _extract_output_type(current_step) if current_step else None
-                                    )
-
-                                    # Convert to Markdown
-                                    if on_structured_output:
-                                        markdown = on_structured_output(
-                                            structured_dict, output_type
-                                        )
-                                    else:
-                                        markdown = structured_to_markdown(structured_dict)
-
-                                    # Send as a separate message for clean formatting
-                                    await cl.Message(content=markdown, author="Assistant").send()
-                                else:
-                                    logger.debug("No structured response found in output.")
-                            elif isinstance(output, list):
-                                # Iterate through list items
-                                for item in output:
-                                    logger.info(f"Output item: {item}")
-                        else:
-                            logger.warning("No output found in chain end event.")
-
-                await msg.update()
+                await renderer.finish()
 
                 # Update span with results
                 if span is not None:
                     span.update(
                         output={
-                            "structured_responses": structured_response_count,
-                            "message_length": len(msg.content) if msg.content else 0,
+                            "structured_responses": renderer.structured_response_count,
+                            "message_length": len(renderer.msg.content)
+                            if renderer.msg.content
+                            else 0,
                         }
                     )
     finally:

@@ -47,6 +47,12 @@ class DynagentSettings(BaseSettings):
         default=Path("configs"),
         description="Base directory for agent configuration files",
     )
+    # Filename of the agent roster config within the config dir (env: AGENTS_CONFIG_FILENAME).
+    # Deep-agent domains set this to "deep-agents.yaml".
+    agents_config_filename: str = Field(
+        default="agents.yaml",
+        description="Agent roster config filename within the config dir",
+    )
 
     # Langfuse observability settings
     langfuse_public_key: str = Field(default="", description="Langfuse public key")
