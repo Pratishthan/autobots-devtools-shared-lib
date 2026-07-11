@@ -1,6 +1,7 @@
 # ABOUTME: Factory for the dynagent base agent.
 # ABOUTME: Assembles model, middleware stack, and tool set into a runnable agent.
 
+from collections.abc import Sequence
 from typing import Any, cast
 
 from langchain.agents import AgentState, create_agent
@@ -28,6 +29,7 @@ def create_base_agent(
     sync_mode: bool = False,
     initial_agent_name: str | None = None,
     state_schema: type[AgentState[ResponseT]] = Dynagent,
+    middleware: Sequence[Any] | None = None,
 ) -> CompiledStateGraph:
     """Create the dynagent base agent with middleware.
 
@@ -36,6 +38,10 @@ def create_base_agent(
             Defaults to InMemorySaver.
         sync_mode: Whether to use synchronous middleware (for batch processing).
         agent_name: Name for tracing/observability. Defaults to "dynagent".
+        state_schema: Agent state schema. Defaults to Dynagent.
+        middleware: Caller-supplied middleware, appended after the injected-agent and
+            summarisation middleware. Mirrors create_base_deepagent, so the AG-UI app
+            builder can compose this engine with the same factory contract.
 
     Returns:
         Configured LangGraph agent.
@@ -56,21 +62,21 @@ def create_base_agent(
     if initial_agent_name is None:
         initial_agent_name = get_default_agent()
 
+    middleware_stack = [
+        _middleware,
+        SummarizationMiddleware(
+            model=model,
+            trigger=("fraction", 0.6),
+            keep=("messages", 20),
+        ),
+        *(middleware or []),
+    ]
+
     return create_agent(
         model,
         name=initial_agent_name or "dynagent",
         tools=all_tools,
         state_schema=state_schema,
-        middleware=cast(
-            "list[AgentMiddleware[Any, Any]]",
-            [
-                _middleware,
-                SummarizationMiddleware(
-                    model=model,
-                    trigger=("fraction", 0.6),
-                    keep=("messages", 20),
-                ),
-            ],
-        ),
+        middleware=cast("list[AgentMiddleware[Any, Any]]", middleware_stack),
         checkpointer=checkpointer,
     )
