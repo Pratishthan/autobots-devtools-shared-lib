@@ -44,7 +44,9 @@ __all__ = [
     "interpolate_env",
     "load_agents_config",
     "load_prompt",
+    "load_render_manifest",
     "load_schema",
+    "load_template",
 ]
 
 _ENV_VAR_PATTERN = re.compile(r"\$\{(\w+)\}")
@@ -308,6 +310,26 @@ def load_schema(name: str, base_dir: Path | None = None) -> dict:
         error_msg = f"Error reading schema {name} from {schema_dir}: {e}"
         logger.exception(error_msg)
         raise
+
+
+def load_template(name: str) -> str:
+    """Read a template file by name from the templates/ directory."""
+    config_dir = get_config_dir()
+    template_path = Path(config_dir) / "templates" / name
+    if not template_path.exists():
+        raise FileNotFoundError(f"Template not found: {template_path}")
+    with Path.open(template_path) as f:
+        return f.read()
+
+
+def load_render_manifest() -> dict:
+    """Read and parse the per-domain dynadoc.yaml manifest."""
+    config_dir = get_config_dir()
+    manifest_path = Path(config_dir) / "dynadoc.yaml"
+    if not manifest_path.exists():
+        raise FileNotFoundError(f"dynadoc manifest not found: {manifest_path}")
+    with Path.open(manifest_path) as f:
+        return yaml.safe_load(f) or {}
 
 
 def _build_parent_paths(schema_name: str) -> list[Path]:

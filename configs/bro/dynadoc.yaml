@@ -1,0 +1,7 @@
+documents:
+  smoke:
+    json: smoke.json
+    template: sample.md.j2
+  smoke_e2e:
+    json: smoke.json
+    template: d.md.j2
