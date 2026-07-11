@@ -25,7 +25,13 @@ from autobots_devtools_shared_lib.dynagent.ui.collapse_system_messages import (
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
 
-    from autobots_devtools_shared_lib.dynagent.api.thread_store import PrefsStore, ThreadStore
+    from pydantic import BaseModel
+
+    from autobots_devtools_shared_lib.dynagent.api.thread_store import (
+        PrefsStore,
+        ThreadRecord,
+        ThreadStore,
+    )
 
 logger = get_logger(__name__)
 
@@ -54,6 +60,8 @@ def create_agui_app(
     agent_name: str | None = None,
     checkpoint_deleter: Callable[[str], Awaitable[None]] | None = None,
     agent_factory: Callable[..., Any] = create_base_deepagent,
+    create_body_model: type[BaseModel] | None = None,
+    on_thread_created: Callable[[ThreadRecord, Any], Awaitable[None]] | None = None,
     cors_origins: list[str] | None = None,
     path: str = "/agent",
 ) -> FastAPI:
@@ -61,6 +69,9 @@ def create_agui_app(
 
     Both planes share one deep-agent graph and one checkpointer. Injected stores replace
     the spike's module-level InMemorySaver; CORS origins and identity are configuration.
+
+    `create_body_model` / `on_thread_created` let a domain narrow thread creation — e.g.
+    Designer, where a Thread is one ticket's LLD and cannot exist without one.
     """
     from copilotkit import CopilotKitMiddleware
 
@@ -97,6 +108,8 @@ def create_agui_app(
             backend=backend,
             user_id_dependency=user_id_dependency,
             checkpoint_deleter=checkpoint_deleter,
+            create_body_model=create_body_model,
+            on_thread_created=on_thread_created,
         )
     )
 

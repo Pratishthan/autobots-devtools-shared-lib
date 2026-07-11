@@ -23,8 +23,13 @@ if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
 
     from fastapi import FastAPI, Request
+    from pydantic import BaseModel
 
-    from autobots_devtools_shared_lib.dynagent.api.thread_store import PrefsStore, ThreadStore
+    from autobots_devtools_shared_lib.dynagent.api.thread_store import (
+        PrefsStore,
+        ThreadRecord,
+        ThreadStore,
+    )
 
 
 def register_exception_handlers(app: FastAPI) -> None:
@@ -47,11 +52,23 @@ def build_resource_router(
     backend: Any,
     user_id_dependency: Callable[..., Any],
     checkpoint_deleter: Callable[[str], Awaitable[None]] | None = None,
+    create_body_model: type[BaseModel] | None = None,
+    on_thread_created: Callable[[ThreadRecord, Any], Awaitable[None]] | None = None,
 ) -> APIRouter:
-    """Compose the four resource routers into one client-agnostic APIRouter."""
+    """Compose the four resource routers into one client-agnostic APIRouter.
+
+    `create_body_model` / `on_thread_created` are the thread-creation policy seam; see
+    build_threads_router.
+    """
     router = APIRouter()
     router.include_router(
-        build_threads_router(thread_store, user_id_dependency, checkpoint_deleter)
+        build_threads_router(
+            thread_store,
+            user_id_dependency,
+            checkpoint_deleter,
+            create_body_model=create_body_model,
+            on_thread_created=on_thread_created,
+        )
     )
     router.include_router(build_skills_router(meta, backend, prefs_store, user_id_dependency))
     router.include_router(build_tools_router(meta))
