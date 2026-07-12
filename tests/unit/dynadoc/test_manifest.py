@@ -20,6 +20,31 @@ def test_parse_leaf():
     assert node.children == {}
 
 
+def test_leaf_carries_its_title():
+    """A title lets a caller name a node without re-declaring the tree beside the manifest."""
+    raw = {"documents": {"d": {"title": "Data Models", "json": "a.json", "template": "a.md.j2"}}}
+    assert parse_manifest(raw)["d"].title == "Data Models"
+
+
+def test_composite_carries_its_title():
+    raw = {
+        "documents": {
+            "d": {
+                "title": "Low-Level Design",
+                "template": "wrap.md.j2",
+                "children": {"x": {"json": "x.json", "template": "x.md.j2"}},
+            }
+        }
+    }
+    assert parse_manifest(raw)["d"].title == "Low-Level Design"
+
+
+def test_title_is_optional():
+    """Manifests authored before titles existed still parse."""
+    raw = {"documents": {"d": {"json": "a.json", "template": "a.md.j2"}}}
+    assert parse_manifest(raw)["d"].title is None
+
+
 def test_parse_composite_2_level():
     raw = {
         "documents": {

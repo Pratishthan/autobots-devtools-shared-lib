@@ -11,6 +11,7 @@ from autobots_devtools_shared_lib.dynadoc.errors import ManifestValidationError
 class Node:
     path: str  # dotted manifest path, e.g. "lld.data.models"
     template: str
+    title: str | None = None  # human-readable name, e.g. for a section stepper
     json_path: str | None = None  # leaf only
     children: dict[str, "Node"] = field(default_factory=dict)  # composite only
 
@@ -37,9 +38,10 @@ def _parse_node(raw: Any, path: str) -> Node:
         raise ManifestValidationError(f"Node at '{path}' is missing 'template'")
 
     template = raw["template"]
+    title = raw.get("title")
 
     if has_json:
-        return Node(path=path, template=template, json_path=raw["json"])
+        return Node(path=path, template=template, title=title, json_path=raw["json"])
 
     raw_children = raw["children"]
     if not isinstance(raw_children, dict) or not raw_children:
@@ -48,7 +50,7 @@ def _parse_node(raw: Any, path: str) -> Node:
     children: dict[str, Node] = {}
     for name, child_raw in raw_children.items():  # YAML preserves insertion order
         children[name] = _parse_node(child_raw, f"{path}.{name}")
-    return Node(path=path, template=template, children=children)
+    return Node(path=path, template=template, title=title, children=children)
 
 
 def parse_manifest(raw: dict) -> dict[str, Node]:

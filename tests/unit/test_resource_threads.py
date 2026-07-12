@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+from pydantic import BaseModel, Field
 
 from autobots_devtools_shared_lib.dynagent.api.resources.threads import (
     build_threads_router,
@@ -115,6 +116,63 @@ def test_rename_unknown_thread_404(client):
 def test_rename_empty_title_422(client):
     tid = client.post("/threads", json={}).json()["id"]
     assert client.patch(f"/threads/{tid}", json={"title": ""}).status_code == 422
+
+
+class TicketCreateBody(BaseModel):
+    """A domain's stricter create body — every LLD thread is bound to a ticket."""
+
+    title: str = Field(min_length=1, max_length=200)
+    repo_name: str = Field(min_length=1)
+    jira_number: str = Field(min_length=1)
+
+
+@pytest.fixture
+def seeded():
+    return []
+
+
+@pytest.fixture
+def ticket_client(seeded):
+    store = FakeThreadStore()
+
+    async def on_thread_created(record, body):
+        seeded.append((record["id"], body))
+
+    app = FastAPI()
+    register_exception_handlers(app)
+    app.state.store = store
+    app.include_router(
+        build_threads_router(
+            store,
+            user_id_dependency=lambda: "u1",
+            create_body_model=TicketCreateBody,
+            on_thread_created=on_thread_created,
+        )
+    )
+    return TestClient(app)
+
+
+def test_custom_create_body_seeds_the_hook_with_record_and_body(ticket_client, seeded):
+    resp = ticket_client.post(
+        "/threads", json={"title": "PAY-1 LLD", "repo_name": "pay", "jira_number": "PAY-1"}
+    )
+    assert resp.status_code == 200
+
+    thread_id = resp.json()["id"]
+    assert len(seeded) == 1
+    seeded_id, body = seeded[0]
+    assert seeded_id == thread_id
+    assert body.repo_name == "pay"
+    assert body.jira_number == "PAY-1"
+
+
+def test_create_without_the_domain_required_fields_is_rejected(ticket_client, seeded):
+    resp = ticket_client.post("/threads", json={"title": "no ticket"})
+
+    assert resp.status_code == 422
+    # Rejected before the row is written: no thread exists, and nothing was seeded.
+    assert ticket_client.get("/threads").json() == []
+    assert seeded == []
 
 
 def test_cross_user_delete_403():
