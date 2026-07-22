@@ -1,0 +1,54 @@
+{
+  "name": "ValidateAccountType",
+  "type": "Manual",
+  "subType": "Validation",
+  "consumes": {
+    "Models": [
+      {
+        "referencedProperties": [
+          {
+            "name": "maturityDate",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--MaturityDate"
+          }
+        ],
+        "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--ReferenceContract",
+        "$ref": "../models/fbp-product-deposit-app--develop--Model--DTO--ReferenceContract.json#/components/schemas/ReferenceContract"
+      }
+    ],
+    "Primitives": [
+      {
+        "name": "featureType",
+        "dataType": "String"
+      }
+    ],
+    "apis": [],
+    "dataReaders": []
+  },
+  "produces": {
+    "Models": [],
+    "Primitives": [],
+    "apis": [],
+    "dataWriters": []
+  },
+  "businessLogic": [
+    "Retrieve featureType from SlotsDTO.",
+    "If featureType is not 'TDAccountPreClosure', skip validation and return.",
+    "Retrieve ReferenceContractDTO from SlotsDTO using REFERENCE_CONTRACT_PARAMS key.",
+    "If ReferenceContractDTO is null, throw FbpValidationException with error CONTRACT_DETAILS_DO_NOT_EXIST_FOR_THE_GIVEN_PRODUCT.",
+    "Extract maturityDate from ReferenceContractDTO; determine isTDAccount as true if maturityDate is non-null and non-empty.",
+    "If isTDAccount is false, throw FbpValidationException with error ONLY_TIME_DEPOSIT_ACCOUNT_CLOSURE_ALLOWED.",
+    "Log successful account type validation for the given feature type."
+  ],
+  "errorConstants": [
+    "CONTRACT_DETAILS_DO_NOT_EXIST_FOR_THE_GIVEN_PRODUCT",
+    "ONLY_TIME_DEPOSIT_ACCOUNT_CLOSURE_ALLOWED"
+  ],
+  "kgId": "fbp-product-deposit-app--develop--LPU--ValidateAccountType",
+  "metadata": {
+    "extractedAt": "2026-07-03T05:38:12.667463+00:00",
+    "generatedBy": "autobots-agents-mer / logical_processing_unit",
+    "version": "develop",
+    "repoName": "fbp-product-deposit-app",
+    "sha": ""
+  }
+}

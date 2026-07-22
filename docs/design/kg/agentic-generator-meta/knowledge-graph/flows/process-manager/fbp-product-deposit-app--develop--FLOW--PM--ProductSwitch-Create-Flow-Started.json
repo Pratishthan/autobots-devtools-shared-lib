@@ -1,0 +1,271 @@
+{
+  "kgId": "fbp-product-deposit-app--develop--FLOW--PM--ProductSwitch-Create-Flow-Started",
+  "serviceKgId": "fbp-product-deposit-app--develop--Service--ProductSwitch--CheckingAccountProductSwitch",
+  "name": "ProductSwitch-Create-Flow-Started",
+  "flowType": "PROCESS_MANAGER",
+  "processingNodes": [
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--State--ProductSwitch-Create-Flow-Started",
+      "name": "ProductSwitch-Create-Flow-Started",
+      "type": "State",
+      "props": {
+        "state": {
+          "name": "ProductSwitch-Create-Flow-Started",
+          "description": "ProductSwitch-Create-Flow-Started state",
+          "persist": false,
+          "initiateAsync": false
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--State--CHECKING_ACCOUNT_PRODUCT_SWITCH",
+      "name": "CHECKING_ACCOUNT_PRODUCT_SWITCH",
+      "type": "State",
+      "props": {
+        "state": {
+          "name": "CHECKING_ACCOUNT_PRODUCT_SWITCH",
+          "description": "CHECKING_ACCOUNT_PRODUCT_SWITCH state",
+          "persist": true,
+          "initiateAsync": false
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Action--ProductSwitch-Create-Flow-Started_to_CHECKING_ACCOUNT_PRODUCT_SWITCH",
+      "name": "CheckingAccount-ProductSwitch/process",
+      "type": "Action",
+      "props": {
+        "action": {
+          "type": "Local",
+          "feature": "CheckingAccount-ProductSwitch",
+          "operation": "process",
+          "$ref": "../compose-engine/fbp-product-deposit-app--develop--FLOW--CM--CheckingAccount-ProductSwitch-process.json",
+          "actionKgId": "fbp-product-deposit-app--develop--FLOW--CM--CheckingAccount-ProductSwitch-process",
+          "component": "DEP",
+          "mapperIdentifier": "product-switch-payload"
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--State--PRODUCT_SWITCH_INITIATED",
+      "name": "PRODUCT_SWITCH_INITIATED",
+      "type": "State",
+      "props": {
+        "state": {
+          "name": "PRODUCT_SWITCH_INITIATED",
+          "description": "PRODUCT_SWITCH_INITIATED state",
+          "persist": true,
+          "initiateAsync": false
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Action--CHECKING_ACCOUNT_PRODUCT_SWITCH_to_PRODUCT_SWITCH_INITIATED",
+      "name": "CommandHandler-ProcessCommandToExternalSystem/process",
+      "type": "Action",
+      "props": {
+        "action": {
+          "type": "Remote",
+          "feature": "CommandHandler-ProcessCommandToExternalSystem",
+          "operation": "process",
+          "$ref": "../compose-engine/fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-ProcessCommandToExternalSystem-process.json",
+          "actionKgId": "fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-ProcessCommandToExternalSystem-process",
+          "component": "Account",
+          "mapperIdentifier": "product-switch-payload",
+          "remoteCommandKey": "DEP-product-switch"
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--State--PRODUCT_SWITCH_CONTRACT",
+      "name": "PRODUCT_SWITCH_CONTRACT",
+      "type": "State",
+      "props": {
+        "state": {
+          "name": "PRODUCT_SWITCH_CONTRACT",
+          "description": "PRODUCT_SWITCH_CONTRACT state",
+          "persist": true,
+          "initiateAsync": false
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Action--PRODUCT_SWITCH_INITIATED_to_PRODUCT_SWITCH_CONTRACT",
+      "name": "CommandHandler-ProcessCommandToExternalSystem/process",
+      "type": "Action",
+      "props": {
+        "action": {
+          "type": "Remote",
+          "feature": "CommandHandler-ProcessCommandToExternalSystem",
+          "operation": "process",
+          "$ref": "../compose-engine/fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-ProcessCommandToExternalSystem-process.json",
+          "actionKgId": "fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-ProcessCommandToExternalSystem-process",
+          "component": "Contract",
+          "mapperIdentifier": "product-switch-contract",
+          "remoteCommandKey": "product-switch-contract"
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--State--BALANCE_FETCHED",
+      "name": "BALANCE_FETCHED",
+      "type": "State",
+      "props": {
+        "state": {
+          "name": "BALANCE_FETCHED",
+          "description": "BALANCE_FETCHED state",
+          "persist": true,
+          "initiateAsync": false
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Action--PRODUCT_SWITCH_CONTRACT_to_BALANCE_FETCHED",
+      "name": "CommandHandler-ProcessCommandToExternalSystem/process",
+      "type": "Action",
+      "props": {
+        "action": {
+          "type": "Remote",
+          "feature": "CommandHandler-ProcessCommandToExternalSystem",
+          "operation": "process",
+          "$ref": "../compose-engine/fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-ProcessCommandToExternalSystem-process.json",
+          "actionKgId": "fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-ProcessCommandToExternalSystem-process",
+          "component": "customer-ledger",
+          "mapperIdentifier": "balance-request",
+          "remoteCommandKey": "fetch-balance"
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--State--PRODUCT_SWITCHED",
+      "name": "PRODUCT_SWITCHED",
+      "type": "State",
+      "props": {
+        "state": {
+          "name": "PRODUCT_SWITCHED",
+          "description": "PRODUCT_SWITCHED state",
+          "persist": true,
+          "initiateAsync": false
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Action--BALANCE_FETCHED_to_PRODUCT_SWITCHED",
+      "name": "CommandHandler-FlowCompleted/process",
+      "type": "Action",
+      "props": {
+        "action": {
+          "type": "Local",
+          "feature": "CommandHandler-FlowCompleted",
+          "operation": "process",
+          "$ref": "../compose-engine/fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-FlowCompleted-process.json",
+          "actionKgId": "fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-FlowCompleted-process",
+          "component": "DEP",
+          "mapperIdentifier": "checking-account-product-switch-response"
+        }
+      }
+    }
+  ],
+  "flowPaths": {
+    "path_1": [
+      {
+        "stepNumber": 1,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--ProductSwitch-Create-Flow-Started"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--ProductSwitch-Create-Flow-Started_to_CHECKING_ACCOUNT_PRODUCT_SWITCH"
+        }
+      },
+      {
+        "stepNumber": 2,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--ProductSwitch-Create-Flow-Started_to_CHECKING_ACCOUNT_PRODUCT_SWITCH"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--CHECKING_ACCOUNT_PRODUCT_SWITCH"
+        }
+      },
+      {
+        "stepNumber": 3,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--CHECKING_ACCOUNT_PRODUCT_SWITCH"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--CHECKING_ACCOUNT_PRODUCT_SWITCH_to_PRODUCT_SWITCH_INITIATED"
+        }
+      },
+      {
+        "stepNumber": 4,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--CHECKING_ACCOUNT_PRODUCT_SWITCH_to_PRODUCT_SWITCH_INITIATED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--PRODUCT_SWITCH_INITIATED"
+        }
+      },
+      {
+        "stepNumber": 5,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--PRODUCT_SWITCH_INITIATED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--PRODUCT_SWITCH_INITIATED_to_PRODUCT_SWITCH_CONTRACT"
+        }
+      },
+      {
+        "stepNumber": 6,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--PRODUCT_SWITCH_INITIATED_to_PRODUCT_SWITCH_CONTRACT"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--PRODUCT_SWITCH_CONTRACT"
+        }
+      },
+      {
+        "stepNumber": 7,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--PRODUCT_SWITCH_CONTRACT"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--PRODUCT_SWITCH_CONTRACT_to_BALANCE_FETCHED"
+        }
+      },
+      {
+        "stepNumber": 8,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--PRODUCT_SWITCH_CONTRACT_to_BALANCE_FETCHED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--BALANCE_FETCHED"
+        }
+      },
+      {
+        "stepNumber": 9,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--BALANCE_FETCHED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--BALANCE_FETCHED_to_PRODUCT_SWITCHED"
+        }
+      },
+      {
+        "stepNumber": 10,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--BALANCE_FETCHED_to_PRODUCT_SWITCHED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--PRODUCT_SWITCHED"
+        }
+      }
+    ]
+  },
+  "metadata": {
+    "generatedFrom": "DEP-complete-rules.csv",
+    "generatedAt": "2026-07-03T05:35:30.269618+00:00",
+    "version": "develop",
+    "generatedBy": "flow-kg-generator-phase18",
+    "repoName": "fbp-product-deposit-app",
+    "sha": ""
+  }
+}

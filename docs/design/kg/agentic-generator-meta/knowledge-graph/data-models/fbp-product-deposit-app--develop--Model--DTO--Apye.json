@@ -1,0 +1,56 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Calculator API",
+    "version": "1.0.0",
+    "description": "API schema for FBP Yield calculations- Annual Percentage Yield Earned"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "Apye": {
+        "type": "object",
+        "properties": {
+          "accountNumber": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountNumber"
+            }
+          },
+          "avgBal": {
+            "type": "number",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--AvgBal"
+            }
+          },
+          "intEarned": {
+            "type": "number",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--IntEarned"
+            }
+          },
+          "fromDate": {
+            "$ref": "../common/FbpDtoDataTypes.json#/components/schemas/BusinessDateDTO",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--FromDate"
+            }
+          },
+          "toDate": {
+            "$ref": "../common/FbpDtoDataTypes.json#/components/schemas/BusinessDateDTO",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--ToDate"
+            }
+          }
+        },
+        "x-fbp-params": {
+          "kgId": "fbp-product-deposit-app--develop--Model--DTO--Apye",
+          "version": "develop",
+          "generatedAt": "2026-07-03T05:35:19.203396+00:00",
+          "sha": "583e853634c91a54a357f270b196e07af8b06e9b68fa216c55b57e8304afea5e",
+          "repoName": "fbp-product-deposit-app",
+          "type": "DTO"
+        }
+      }
+    }
+  }
+}

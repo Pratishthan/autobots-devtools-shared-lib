@@ -1,0 +1,50 @@
+{
+  "name": "ValidateCreditAllowed",
+  "type": "Manual",
+  "subType": "Validation",
+  "consumes": {
+    "Models": [],
+    "Primitives": [
+      {
+        "name": "featureType",
+        "dataType": "String"
+      },
+      {
+        "name": "TRANSFER_LEG_CONTEXTS",
+        "dataType": "List<TransferLegContext>"
+      }
+    ],
+    "apis": [],
+    "dataReaders": []
+  },
+  "produces": {
+    "Models": [],
+    "Primitives": [
+      {
+        "name": "TRANSFER_LEG_CONTEXTS",
+        "dataType": "List<TransferLegContext>"
+      }
+    ],
+    "apis": [],
+    "dataWriters": []
+  },
+  "businessLogic": [
+    "Read featureType from SlotsDTO.",
+    "If featureType is 'FundTransfer' or 'MultiCreditTransaction', proceed with credit-allowed validation; otherwise skip.",
+    "Retrieve the list of TransferLegContext objects from SlotsDTO using TRANSFER_LEG_CONTEXTS key.",
+    "If the leg context list is null or empty, log a warning and return.",
+    "Iterate over each TransferLegContext; skip any leg whose creditDebitIndicator is not 'CREDIT'.",
+    "For each CREDIT leg, invoke TransactionTransferValidationService.validateCreditAllowed() with the leg's referenceContract, initialDeposit, txnAmount, and acctNumber.",
+    "If validateCreditAllowed returns true, set the leg's initialDeposit field to 'Y'.",
+    "Write the updated list of TransferLegContext objects back to SlotsDTO under the TRANSFER_LEG_CONTEXTS key."
+  ],
+  "errorConstants": [],
+  "kgId": "fbp-product-deposit-app--develop--LPU--ValidateCreditAllowed",
+  "metadata": {
+    "extractedAt": "2026-07-03T05:38:12.770593+00:00",
+    "generatedBy": "autobots-agents-mer / logical_processing_unit",
+    "version": "develop",
+    "repoName": "fbp-product-deposit-app",
+    "sha": ""
+  }
+}

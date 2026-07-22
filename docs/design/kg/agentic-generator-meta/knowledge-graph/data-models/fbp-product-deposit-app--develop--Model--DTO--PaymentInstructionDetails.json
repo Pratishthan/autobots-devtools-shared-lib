@@ -1,0 +1,59 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "PaymentInstructionDetails API",
+    "version": "1.0.0",
+    "description": "API schema for PaymentInstructionDetails entity"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "PaymentInstructionDetails": {
+        "type": "object",
+        "properties": {
+          "remittanceMode": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--RemittanceMode"
+            }
+          },
+          "amountType": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--AmountType"
+            }
+          },
+          "amountPercentage": {
+            "type": "integer",
+            "format": "int32",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--AmountPercentage"
+            }
+          },
+          "amountValue": {
+            "type": "number",
+            "format": "double",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--AmountValue"
+            }
+          },
+          "intraBankAccountDetails": {
+            "$ref": "IntraBankAccountDetails.json#/components/schemas/IntraBankAccountDetails",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--IntraBankAccountDetails",
+              "propertyTypeKgId": "fbp-product-deposit-app--develop--Model--DTO--IntraBankAccountDetails"
+            }
+          }
+        },
+        "x-fbp-params": {
+          "kgId": "fbp-product-deposit-app--develop--Model--DTO--PaymentInstructionDetails",
+          "version": "develop",
+          "generatedAt": "2026-07-03T05:35:20.785453+00:00",
+          "sha": "c5a5be6cd6b7d262bba7d0de5c4e4b682cf3fc14771e1fc13f03fdc411c728ed",
+          "repoName": "fbp-product-deposit-app",
+          "type": "DTO"
+        }
+      }
+    }
+  }
+}

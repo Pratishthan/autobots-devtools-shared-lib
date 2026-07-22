@@ -1,0 +1,23 @@
+{
+  "metadata": {
+    "generatedAt": "2026-07-03T05:35:25.626672+00:00",
+    "generatedBy": "autobots-agents-mer / data_access_kg_extractor",
+    "version": "develop",
+    "repoName": "fbp-product-deposit-app"
+  },
+  "repoMethods": [
+    {
+      "fetchMethod": "findByAccountNumber",
+      "fetchParams": [
+        {
+          "fetchParamsName": "accountNumber",
+          "fetchParamsType": "String"
+        }
+      ],
+      "singleResponse": true,
+      "dataAccessKgId": "fbp-product-deposit-app--develop--DataAccess--DepositAccount--findByAccountNumber",
+      "query": "",
+      "description": "Find by account number"
+    }
+  ]
+}

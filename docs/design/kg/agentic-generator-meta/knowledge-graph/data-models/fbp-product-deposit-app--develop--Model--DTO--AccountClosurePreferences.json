@@ -1,0 +1,36 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Account Interest Preferences DTO",
+    "version": "1.0.0",
+    "description": "API schema for AccountInterestPreferences DTO"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "AccountClosurePreferences": {
+        "type": "object",
+        "properties": {
+          "settlementPreferences": {
+            "type": "array",
+            "items": {
+              "$ref": "CollectionManagementParameters.json#/components/schemas/CollectionManagementParameters",
+              "x-fbp-params": {
+                "propertyKgId": "fbp-product-deposit-app--develop--Property--SettlementPreferences",
+                "propertyTypeKgId": "fbp-product-deposit-app--develop--Model--DTO--CollectionManagementParameters"
+              }
+            }
+          }
+        },
+        "x-fbp-params": {
+          "kgId": "fbp-product-deposit-app--develop--Model--DTO--AccountClosurePreferences",
+          "version": "develop",
+          "generatedAt": "2026-07-03T05:35:18.183041+00:00",
+          "sha": "1b51ef4075ae438107dfd93fca94088d6495e42e8f8b02f7d7cdee9021101a5a",
+          "repoName": "fbp-product-deposit-app",
+          "type": "DTO"
+        }
+      }
+    }
+  }
+}

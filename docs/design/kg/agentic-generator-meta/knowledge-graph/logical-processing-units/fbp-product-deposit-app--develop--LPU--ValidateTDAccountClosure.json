@@ -1,0 +1,65 @@
+{
+  "name": "ValidateTDAccountClosure",
+  "type": "Manual",
+  "subType": "Validation",
+  "consumes": {
+    "Models": [
+      {
+        "referencedProperties": [
+          {
+            "name": "maturityDate",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--MaturityDate"
+          }
+        ],
+        "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--ReferenceContract",
+        "$ref": "../models/fbp-product-deposit-app--develop--Model--DTO--ReferenceContract.json#/components/schemas/ReferenceContract"
+      }
+    ],
+    "Primitives": [
+      {
+        "name": "featureType",
+        "dataType": "String"
+      },
+      {
+        "name": "currentCommandPayLoad",
+        "dataType": "String"
+      }
+    ],
+    "apis": [],
+    "dataReaders": []
+  },
+  "produces": {
+    "Models": [],
+    "Primitives": [],
+    "apis": [],
+    "dataWriters": []
+  },
+  "businessLogic": [
+    "Retrieve featureType from SlotsDTO.",
+    "Retrieve ReferenceContractDTO from SlotsDTO using REFERENCE_CONTRACT_PARAMS key.",
+    "Retrieve current command payload string from SlotsDTO using DOMAIN_CURRENT_COMMAND_PAYLOAD key.",
+    "If ReferenceContractDTO is null, throw FbpValidationException with CONTRACT_DETAILS_DO_NOT_EXIST_FOR_THE_GIVEN_PRODUCT error.",
+    "If featureType is 'AccountClosure', check maturityDate on ReferenceContractDTO; if null or blank, skip TD maturity validation and return.",
+    "If featureType is 'AccountClosure' and maturityDate is present, deserialize currentCommandPayLoad into AccountClosureDTO and build facts list with slotsDTO, closureDTO, and referenceContract.",
+    "If featureType is 'TDAccountPreClosure', deserialize currentCommandPayLoad into TDAccountPreClosureDTO and build facts list with slotsDTO, closureDTO, and referenceContract.",
+    "If facts list is null (unrecognised featureType), log error and return.",
+    "Insert facts into the closure rules WorkingMemory session and fire rules.",
+    "Query the rule session using QueryingRules for closure validation result.",
+    "If validation result is ':PRE_CLOSURE_INVALID', throw FbpValidationException with ONLY_PRE_CLOSURE_OF_TIME_DEPOSIT_ACCOUNT_ALLOWED error.",
+    "If validation result is ':MATURITY_CLOSURE_INVALID', throw FbpValidationException with TIME_DEPOSIT_ACCOUNT_YET_TO_REACH_MATURITY error.",
+    "Log successful TD account closure validation."
+  ],
+  "errorConstants": [
+    "CONTRACT_DETAILS_DO_NOT_EXIST_FOR_THE_GIVEN_PRODUCT",
+    "ONLY_PRE_CLOSURE_OF_TIME_DEPOSIT_ACCOUNT_ALLOWED",
+    "TIME_DEPOSIT_ACCOUNT_YET_TO_REACH_MATURITY"
+  ],
+  "kgId": "fbp-product-deposit-app--develop--LPU--ValidateTDAccountClosure",
+  "metadata": {
+    "extractedAt": "2026-07-03T05:38:13.951707+00:00",
+    "generatedBy": "autobots-agents-mer / logical_processing_unit",
+    "version": "develop",
+    "repoName": "fbp-product-deposit-app",
+    "sha": ""
+  }
+}

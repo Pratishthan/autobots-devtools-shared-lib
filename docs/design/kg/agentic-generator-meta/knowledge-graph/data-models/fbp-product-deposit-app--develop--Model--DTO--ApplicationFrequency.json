@@ -1,0 +1,98 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Application Frequency DTO",
+    "version": "1.0.0",
+    "description": "API schema for Application Frequency DTO"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "ApplicationFrequency": {
+        "type": "object",
+        "properties": {
+          "frequency": {
+            "type": "string",
+            "enum": [
+              "D",
+              "W",
+              "M",
+              "Y",
+              "F",
+              "Q",
+              "H"
+            ],
+            "description": "Frequency of Execution. Valid values are D - Daily, F - Fortnightly, H - Half Yearly (Semi Annual), M - Monthly, Q - Quarterly, W - Weekly, Y - Yearly.",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--Frequency"
+            }
+          },
+          "freqHoliday": {
+            "type": "string",
+            "enum": [
+              "N",
+              "P",
+              "S"
+            ],
+            "description": "N - Next Day, P - Previous Day, S - Skip",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--FreqHoliday"
+            }
+          },
+          "byWeekOrDate": {
+            "type": "string",
+            "enum": [
+              "BWD",
+              "BD"
+            ],
+            "description": "Valida values are By week and day- BWD, By Date- BD'",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--ByWeekOrDate"
+            }
+          },
+          "freqDay": {
+            "minimum": 1,
+            "maximum": 7,
+            "type": "integer",
+            "description": "Day of the week on which frequency starts. Valid values are 1 -Sunday, 2 - Monday, 3 - Tuesday, 4 - Wednesday, 5 - Thursday, 6 -Friday, 7 - Saturday",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--FreqDay"
+            }
+          },
+          "freqDate": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 31,
+            "description": "Start date of the frequency. Valid values are any number between 1 and 31. Value of Start Date should be 0 for Statement frequency types Daily, Fortnightly and Weekly.",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--FreqDate"
+            }
+          },
+          "freqWeek": {
+            "type": "string",
+            "enum": [
+              "1",
+              "2",
+              "3",
+              "4",
+              "L",
+              "M"
+            ],
+            "description": "Week number of the frequency. Valid values are 1 - First Week, 2 -Second Week, 3 - Third Week, 4 - Fourth Week, L - Last Week, M -Middle Week",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--FreqWeek"
+            }
+          }
+        },
+        "x-fbp-params": {
+          "kgId": "fbp-product-deposit-app--develop--Model--DTO--ApplicationFrequency",
+          "version": "develop",
+          "generatedAt": "2026-07-03T05:35:18.965672+00:00",
+          "sha": "907011a1f3e65a77626ef66d8486685dca039ca25616501037d0787674928c28",
+          "repoName": "fbp-product-deposit-app",
+          "type": "DTO"
+        }
+      }
+    }
+  }
+}

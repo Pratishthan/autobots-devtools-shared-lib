@@ -1,0 +1,69 @@
+{
+  "name": "FetchConfigService",
+  "type": "Manual",
+  "subType": "Enrichment",
+  "consumes": {
+    "Models": [],
+    "Primitives": [
+      {
+        "name": "DOMAIN_CURRENT_COMMAND_PAYLOAD",
+        "dataType": "String"
+      },
+      {
+        "name": "featureType",
+        "dataType": "String"
+      }
+    ],
+    "apis": [
+      {
+        "clientType": "retrievalClient",
+        "name": "getBodDateAsLocalDate",
+        "component": "ConfigService",
+        "requestModelName": "RequestContext",
+        "responseModelName": "LocalDate",
+        "referencedProperties": [
+          {
+            "name": "orgCode",
+            "propertyKgId": ""
+          }
+        ],
+        "url": ""
+      }
+    ],
+    "dataReaders": []
+  },
+  "produces": {
+    "Models": [],
+    "Primitives": [
+      {
+        "name": "BOD_DATE",
+        "dataType": "BusinessDateDTO"
+      },
+      {
+        "name": "DOMAIN_CURRENT_COMMAND_PAYLOAD",
+        "dataType": "String"
+      }
+    ],
+    "apis": [],
+    "dataWriters": []
+  },
+  "businessLogic": [
+    "Retrieve RequestContext from SlotsDTO and log the org code.",
+    "Call ConfigService.getBodDateAsLocalDate(requestContext) to fetch the BOD date and populate a BusinessDateDTO.",
+    "Set the BOD_DATE slot on SlotsDTO with the populated BusinessDateDTO.",
+    "Retrieve the current command payload string and featureType from SlotsDTO.",
+    "If featureType is 'OpenAccount', deserialize the payload into AccountDTO; if accountOpeningDate is null, set it to the BOD date, serialize back, and update DOMAIN_CURRENT_COMMAND_PAYLOAD on SlotsDTO.",
+    "If featureType is 'AccountClosure', deserialize the payload into AccountClosureDTO, set closureDate to the BOD date, serialize back, and update DOMAIN_CURRENT_COMMAND_PAYLOAD on SlotsDTO.",
+    "If featureType is 'TDAccountPreClosure', deserialize the payload into TDAccountPreClosureDTO, set closureDate to the BOD date, serialize back, and update DOMAIN_CURRENT_COMMAND_PAYLOAD on SlotsDTO.",
+    "Catch JacksonException and throw a RuntimeException if parsing of the command payload fails."
+  ],
+  "errorConstants": [],
+  "kgId": "fbp-product-deposit-app--develop--LPU--FetchConfigService",
+  "metadata": {
+    "extractedAt": "2026-07-03T05:38:11.230891+00:00",
+    "generatedBy": "autobots-agents-mer / logical_processing_unit",
+    "version": "develop",
+    "repoName": "fbp-product-deposit-app",
+    "sha": ""
+  }
+}

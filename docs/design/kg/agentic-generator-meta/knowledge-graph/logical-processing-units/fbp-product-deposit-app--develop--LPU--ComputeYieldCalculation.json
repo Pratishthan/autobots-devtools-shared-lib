@@ -1,0 +1,78 @@
+{
+  "name": "ComputeYieldCalculation",
+  "type": "Manual",
+  "subType": "Computation",
+  "consumes": {
+    "Models": [],
+    "Primitives": [
+      {
+        "name": "featureType",
+        "dataType": "String"
+      },
+      {
+        "name": "interestEarned",
+        "dataType": "BigDecimal"
+      },
+      {
+        "name": "avgBalance",
+        "dataType": "BigDecimal"
+      },
+      {
+        "name": "intAmt",
+        "dataType": "BigDecimal"
+      },
+      {
+        "name": "principal",
+        "dataType": "BigDecimal"
+      },
+      {
+        "name": "fromDate",
+        "dataType": "BusinessDateDTO"
+      },
+      {
+        "name": "toDate",
+        "dataType": "BusinessDateDTO"
+      }
+    ],
+    "apis": [],
+    "dataReaders": []
+  },
+  "produces": {
+    "Models": [
+      {
+        "enrichedProperties": {
+          "complete": false,
+          "partial": [
+            {
+              "name": "result",
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--Result"
+            }
+          ]
+        }
+      }
+    ],
+    "Primitives": [],
+    "apis": [],
+    "dataWriters": []
+  },
+  "businessLogic": [
+    "Retrieve InternalDataModel and RequestContext from SlotsDTO.",
+    "Obtain current BOD date from ConfigService and compute next year date and toDate (nextYearDate minus 1 day).",
+    "Determine featureType from SlotsDTO.",
+    "If featureType is 'ApyeCreate': retrieve ApyeDTO, interestEarned, and avgBalance from SlotsDTO; if avgBalance is zero set APYE to zero, otherwise populate ApyeDTO and invoke yield calculation engine for APYE; wrap result in ApiSingleResponse and set on InternalDataModel.",
+    "If featureType is 'ApyCreate': set FROM_DATE and TO_DATE on SlotsDTO; retrieve ApyDTO, intAmt, principal, fromDate, toDate from SlotsDTO; calculate base days (366 for leap year, 365 otherwise); if principal is zero set APY to zero, otherwise populate ApyDTO and invoke yield calculation engine for APY; wrap result in ApiSingleResponse and set on InternalDataModel.",
+    "Yield calculation is performed by serialising the request via inope.executeTransformation, calling irr_calculator.inope.calculate, then deserialising the engine output back to the response DTO.",
+    "Set updated InternalDataModel back onto SlotsDTO."
+  ],
+  "errorConstants": [
+    "ERROR_PARSING_PAYLOAD_JSON"
+  ],
+  "kgId": "fbp-product-deposit-app--develop--LPU--ComputeYieldCalculation",
+  "metadata": {
+    "extractedAt": "2026-07-03T05:38:10.738656+00:00",
+    "generatedBy": "autobots-agents-mer / logical_processing_unit",
+    "version": "develop",
+    "repoName": "fbp-product-deposit-app",
+    "sha": ""
+  }
+}

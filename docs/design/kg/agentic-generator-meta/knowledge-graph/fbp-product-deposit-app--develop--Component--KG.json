@@ -1,0 +1,38 @@
+{
+  "kgId": "fbp-product-deposit-app--develop--Component--KG",
+  "componentName": "ProductDeposit",
+  "description": "The Deposit Product component provides comprehensive lifecycle management for deposit accounts within the banking platform. It supports the full spectrum of deposit account operations \u2014 from initial account opening through ongoing transactional activity to eventual closure \u2014 across multiple account types including operative checking accounts and time deposit accounts. The component enforces rigorous eligibility and compliance checks at every stage, validating customer standing, product suitability, KYC status, and residency before permitting any state transition. It handles complex multi-leg financial movements, including fund transfers, multi-credit and multi-debit transactions, with built-in fee determination, operational limit evaluation, and limit reversal on failure. For time deposit accounts specifically, the component governs both scheduled maturity closures and early pre-closure scenarios, applying distinct business rules to determine permissibility based on the current business date. The component also computes Annual Percentage Yield and Annual Percentage Yield Earned figures, applying formula-driven calculation engines that account for leap-year day-count conventions and zero-balance edge cases. Product switching for checking accounts is supported, enabling customers to transition between product configurations while preserving transactional continuity. Transaction reversal capabilities allow previously processed operations to be unwound in a controlled manner. Throughout all operations, the component coordinates with external contract, party, and composable account systems, persisting account records, document details, and notice instructions to maintain a consistent and auditable state.",
+  "glossary": [
+    {
+      "term": "Feature Type",
+      "meaning": "A discriminator value embedded in the request payload that identifies the specific business operation being performed (e.g. OpenAccount, FundTransfer, AccountClosure, TDAccountPreClosure, MultiCreditTransaction, MultiDebitTransaction). It drives conditional branching throughout validation, enrichment, fee determination, and state-transition logic across multiple services."
+    },
+    {
+      "term": "Process Context",
+      "meaning": "An internal state container used to carry intermediate results, command payloads, and workflow states across the stages of a single operation. It holds data such as the assigned account number, fee-applicability flags, and external system responses, and is persisted to allow downstream steps and reversal flows to reference prior outcomes."
+    },
+    {
+      "term": "Contract",
+      "meaning": "In this component, a contract refers to the product and customer agreement record retrieved from an external source system that governs the terms of a deposit account \u2014 including interest type, compounding frequency, maturity date, credit/debit eligibility, and fee configuration. It is distinct from a legal contract document."
+    },
+    {
+      "term": "TD (Time Deposit)",
+      "meaning": "A deposit account type that carries a fixed maturity date and is subject to specialised closure rules distinguishing between full maturity closure and pre-closure. Pre-closure may be subject to eligibility restrictions enforced at the time of the closure request."
+    },
+    {
+      "term": "Notice Instruction",
+      "meaning": "A structured directive associated with an account operation that is persisted and forwarded to an external system for further processing. It represents a formal notification or instruction record linked to account events such as openings, closures, or transactions."
+    },
+    {
+      "term": "APY / APYE",
+      "meaning": "Annual Percentage Yield (APY) is a forward-looking yield figure calculated from interest rate terms and principal, while Annual Percentage Yield Earned (APYE) is a backward-looking figure derived from actual interest ledger data and average balance over a period. Both are computed by dedicated calculation engines within this component."
+    }
+  ],
+  "metadata": {
+    "generatedAt": "2026-07-03T05:39:18.152710+00:00",
+    "generatedBy": "autobots-agents-mer / component_kg_generator",
+    "version": "develop",
+    "repoName": "fbp-product-deposit-app",
+    "serviceCount": 13
+  }
+}

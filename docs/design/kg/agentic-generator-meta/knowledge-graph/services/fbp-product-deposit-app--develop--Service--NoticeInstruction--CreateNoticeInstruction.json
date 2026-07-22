@@ -1,0 +1,123 @@
+{
+  "kgId": "fbp-product-deposit-app--develop--Service--NoticeInstruction--CreateNoticeInstruction",
+  "metadata": {
+    "repoName": "fbp-product-deposit-app",
+    "version": "develop",
+    "generatedAt": "2026-07-03T05:38:19Z"
+  },
+  "name": "createNoticeInstruction",
+  "domain": "NoticeInstruction",
+  "operationType": "CREATE",
+  "invocationType": [
+    "SYNC"
+  ],
+  "description": [
+    "This service creates a notice instruction by first preparing and persisting all relevant entities based on the type of financial operation being processed. During preparation, the service inspects the feature type \u2014 which may be a direct notice creation, a fund transfer, a multi-credit transaction, a multi-debit transaction, or another account-based operation \u2014 and branches accordingly: for notice creation it transforms the instruction DTO into a persistable entity, for fund and multi-credit transfers it processes initial deposit CREDIT legs by fetching deposit account details, and for other feature types it maps account information onto a new deposit account entity. If document details are present, they are also mapped and staged for persistence. All prepared entities \u2014 deposit accounts, document details, and the notice instruction itself \u2014 are then saved to their respective repositories. Once persistence is complete, the service forwards the instruction to an external system for further processing, extracts the resulting account number and response data from the process context, and returns the final outcome to the caller with an HTTP 201 Created response."
+  ],
+  "requestType": "SINGLE",
+  "inputDataModel": {
+    "modelKgId": "fbp-product-deposit-app--develop--Model--Hybrid--NoticeInstruction"
+  },
+  "responseType": "SINGLE",
+  "outputDataModels": [
+    {
+      "modelKgId": "fbp-product-deposit-app--develop--Model--Hybrid--NoticeInstruction",
+      "enrichedProperties": {
+        "complete": true,
+        "partial": []
+      }
+    },
+    {
+      "modelKgId": "fbp-product-deposit-app--develop--Model--Entity--DocumentDetails",
+      "enrichedProperties": {
+        "complete": true,
+        "partial": []
+      }
+    },
+    {
+      "modelKgId": "fbp-product-deposit-app--develop--Model--Entity--DepositAccount",
+      "enrichedProperties": {
+        "complete": true,
+        "partial": []
+      }
+    }
+  ],
+  "referencedModels": [
+    {
+      "modelKgId": "fbp-product-deposit-app--develop--Model--Hybrid--NoticeInstruction",
+      "referencedProperties": [
+        {
+          "name": "noticeInstruction",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--NoticeInstruction"
+        }
+      ]
+    },
+    {
+      "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--Account",
+      "referencedProperties": [
+        {
+          "name": "accountName",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountName"
+        },
+        {
+          "name": "accountNumber",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountNumber"
+        },
+        {
+          "name": "cifId",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--CifId"
+        },
+        {
+          "name": "purposeId",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--PurposeId"
+        },
+        {
+          "name": "purpose",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--Purpose"
+        },
+        {
+          "name": "currency",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--Currency"
+        }
+      ]
+    },
+    {
+      "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--DocumentDetails",
+      "referencedProperties": [
+        {
+          "name": "documentCode",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--DocumentCode"
+        },
+        {
+          "name": "documentExpiryDate",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--DocumentExpiryDate"
+        },
+        {
+          "name": "documentReceivedDate",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--DocumentReceivedDate"
+        }
+      ]
+    },
+    {
+      "modelKgId": "fbp-product-deposit-app--develop--Model--Entity--DepositAccount",
+      "referencedProperties": [
+        {
+          "name": "accountNumber",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountNumber"
+        },
+        {
+          "name": "initialDeposit",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--InitialDeposit"
+        }
+      ]
+    }
+  ],
+  "engine": "PROCESS_MANAGER",
+  "enableAudit": false,
+  "flows": [
+    {
+      "flowKgId": "fbp-product-deposit-app--develop--FLOW--PM--NoticeInstruction-Create-Flow-Started",
+      "flowKgRef": "../flows/process-manager/fbp-product-deposit-app--develop--FLOW--PM--NoticeInstruction-Create-Flow-Started.json"
+    }
+  ]
+}

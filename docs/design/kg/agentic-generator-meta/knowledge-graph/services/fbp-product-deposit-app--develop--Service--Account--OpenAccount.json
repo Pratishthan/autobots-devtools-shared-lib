@@ -1,0 +1,312 @@
+{
+  "kgId": "fbp-product-deposit-app--develop--Service--Account--OpenAccount",
+  "metadata": {
+    "repoName": "fbp-product-deposit-app",
+    "version": "develop",
+    "generatedAt": "2026-07-03T05:38:16Z"
+  },
+  "name": "openAccount",
+  "domain": "Account",
+  "operationType": "CREATE",
+  "invocationType": [
+    "SYNC"
+  ],
+  "description": [
+    "This service orchestrates the end-to-end account opening process, supporting multiple feature types including OpenAccount, AccountClosure, TDAccountPreClosure, FundTransfer, and multi-credit/debit transactions. It begins by fetching the business date and enriching the command payload, then retrieves the relevant customer and product contract from external systems to resolve the account purpose (checking or deposit). A series of validation steps follows \u2014 covering input fields, subscription data (interest type, compounding frequency, statement preferences), product eligibility rules, customer status (residency, suspension, KYC), and, where applicable, counterparty details \u2014 with each validation capable of terminating the flow early via a specific exception. Once all validations pass, the service prepares the account entity for persistence and sets the process context state, including fee-applicable states for transfer operations. If the resolved purpose is a checking account, it registers the related party with an external party service; if a related party is present, it delegates to an additional external command handler. Finally, the service extracts the assigned account number from the persisted process context, saves account, document, and notice entities to the database, constructs the response from the process output, and returns an HTTP 201 Created response."
+  ],
+  "requestType": "SINGLE",
+  "inputDataModel": {
+    "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--Account"
+  },
+  "responseType": "SINGLE",
+  "outputDataModels": [
+    {
+      "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--GenerateResponse",
+      "enrichedProperties": {
+        "complete": false,
+        "partial": []
+      }
+    },
+    {
+      "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--ReferenceContract",
+      "enrichedProperties": {
+        "complete": false,
+        "partial": [
+          {
+            "name": "contractId",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--ContractId"
+          },
+          {
+            "name": "depositAmount",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--DepositAmount"
+          }
+        ]
+      }
+    },
+    {
+      "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--Account",
+      "enrichedProperties": {
+        "complete": true,
+        "partial": []
+      }
+    },
+    {
+      "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--Transfer",
+      "enrichedProperties": {
+        "complete": false,
+        "partial": [
+          {
+            "name": "transferDetails",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--TransferDetails"
+          }
+        ]
+      }
+    },
+    {
+      "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--MultiCreditTransaction",
+      "enrichedProperties": {
+        "complete": false,
+        "partial": [
+          {
+            "name": "multiCreditDetails",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--MultiCreditDetails"
+          }
+        ]
+      }
+    },
+    {
+      "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--MultiDebitTransaction",
+      "enrichedProperties": {
+        "complete": false,
+        "partial": [
+          {
+            "name": "multiDebitDetails",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--MultiDebitDetails"
+          }
+        ]
+      }
+    },
+    {
+      "modelKgId": "fbp-product-deposit-app--develop--Model--Hybrid--NoticeInstruction",
+      "enrichedProperties": {
+        "complete": true,
+        "partial": []
+      }
+    },
+    {
+      "modelKgId": "fbp-product-deposit-app--develop--Model--Entity--DocumentDetails",
+      "enrichedProperties": {
+        "complete": true,
+        "partial": []
+      }
+    },
+    {
+      "modelKgId": "fbp-product-deposit-app--develop--Model--Entity--DepositAccount",
+      "enrichedProperties": {
+        "complete": true,
+        "partial": []
+      }
+    }
+  ],
+  "referencedModels": [
+    {
+      "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--Apy",
+      "referencedProperties": [
+        {
+          "name": "cifId",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--CifId"
+        },
+        {
+          "name": "purposeId",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--PurposeId"
+        },
+        {
+          "name": "accountNumber",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountNumber"
+        },
+        {
+          "name": "productId",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--ProductId"
+        }
+      ]
+    },
+    {
+      "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--Account",
+      "referencedProperties": [
+        {
+          "name": "cifId",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--CifId"
+        },
+        {
+          "name": "purposeId",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--PurposeId"
+        },
+        {
+          "name": "purpose",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--Purpose"
+        },
+        {
+          "name": "accountIdentity",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountIdentity"
+        },
+        {
+          "name": "accountInterestPreferences",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountInterestPreferences"
+        },
+        {
+          "name": "accountStatementPreferences",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountStatementPreferences"
+        },
+        {
+          "name": "accountFeePreferences",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountFeePreferences"
+        },
+        {
+          "name": "accountClosurePreferences",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountClosurePreferences"
+        },
+        {
+          "name": "accountName",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountName"
+        },
+        {
+          "name": "accountNumber",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountNumber"
+        },
+        {
+          "name": "currency",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--Currency"
+        }
+      ]
+    },
+    {
+      "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--ReferenceContract",
+      "referencedProperties": [
+        {
+          "name": "contractId",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--ContractId"
+        },
+        {
+          "name": "depositAmount",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--DepositAmount"
+        },
+        {
+          "name": "productType",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--ProductType"
+        },
+        {
+          "name": "interestType",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--InterestType"
+        },
+        {
+          "name": "computationMethod",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--ComputationMethod"
+        },
+        {
+          "name": "depositTermServicePresent",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--DepositTermServicePresent"
+        },
+        {
+          "name": "depositAmountServicePresent",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--DepositAmountServicePresent"
+        },
+        {
+          "name": "customerResidencyStatus",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--CustomerResidencyStatus"
+        }
+      ]
+    },
+    {
+      "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--Transfer",
+      "referencedProperties": [
+        {
+          "name": "transferDetails",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--TransferDetails"
+        }
+      ]
+    },
+    {
+      "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--MultiCreditTransaction",
+      "referencedProperties": [
+        {
+          "name": "multiCreditDetails",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--MultiCreditDetails"
+        }
+      ]
+    },
+    {
+      "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--MultiDebitTransaction",
+      "referencedProperties": [
+        {
+          "name": "multiDebitDetails",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--MultiDebitDetails"
+        }
+      ]
+    },
+    {
+      "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--AccountClosure",
+      "referencedProperties": [
+        {
+          "name": "accountNumber",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountNumber"
+        }
+      ]
+    },
+    {
+      "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--TDAccountPreClosure",
+      "referencedProperties": [
+        {
+          "name": "accountNumber",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountNumber"
+        }
+      ]
+    },
+    {
+      "modelKgId": "fbp-product-deposit-app--develop--Model--Hybrid--NoticeInstruction",
+      "referencedProperties": [
+        {
+          "name": "noticeInstruction",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--NoticeInstruction"
+        }
+      ]
+    },
+    {
+      "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--DocumentDetails",
+      "referencedProperties": [
+        {
+          "name": "documentCode",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--DocumentCode"
+        },
+        {
+          "name": "documentExpiryDate",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--DocumentExpiryDate"
+        },
+        {
+          "name": "documentReceivedDate",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--DocumentReceivedDate"
+        }
+      ]
+    },
+    {
+      "modelKgId": "fbp-product-deposit-app--develop--Model--Entity--DepositAccount",
+      "referencedProperties": [
+        {
+          "name": "accountNumber",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountNumber"
+        },
+        {
+          "name": "initialDeposit",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--InitialDeposit"
+        }
+      ]
+    }
+  ],
+  "engine": "PROCESS_MANAGER",
+  "enableAudit": true,
+  "flows": [
+    {
+      "flowKgId": "fbp-product-deposit-app--develop--FLOW--PM--Account-Create-Flow-Started",
+      "flowKgRef": "../flows/process-manager/fbp-product-deposit-app--develop--FLOW--PM--Account-Create-Flow-Started.json"
+    }
+  ]
+}

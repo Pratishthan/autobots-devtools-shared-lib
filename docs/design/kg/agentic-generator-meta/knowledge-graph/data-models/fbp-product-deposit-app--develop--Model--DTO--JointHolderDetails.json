@@ -1,0 +1,38 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Joint Holder Details DTO",
+    "version": "1.0.0",
+    "description": "API schema for JointHolderDetails DTO"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "JointHolderDetails": {
+        "type": "object",
+        "properties": {
+          "cifId": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--CifId"
+            }
+          },
+          "partyNumber": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--PartyNumber"
+            }
+          }
+        },
+        "x-fbp-params": {
+          "kgId": "fbp-product-deposit-app--develop--Model--DTO--JointHolderDetails",
+          "version": "develop",
+          "generatedAt": "2026-07-03T05:35:20.104709+00:00",
+          "sha": "9754e840de774f38e51bd69cf59258bc7ec36ca192ccc6164db51ca60f35bae4",
+          "repoName": "fbp-product-deposit-app",
+          "type": "DTO"
+        }
+      }
+    }
+  }
+}

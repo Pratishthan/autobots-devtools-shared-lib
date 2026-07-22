@@ -1,0 +1,128 @@
+{
+  "kgId": "fbp-product-deposit-app--develop--FLOW--PM--TDAccountPreClosure-Create-Flow-Started",
+  "serviceKgId": "fbp-product-deposit-app--develop--Service--TDAccountPreClosure--TimeDepositPreClosure",
+  "name": "TDAccountPreClosure-Create-Flow-Started",
+  "flowType": "PROCESS_MANAGER",
+  "processingNodes": [
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--State--TDAccountPreClosure-Create-Flow-Started",
+      "name": "TDAccountPreClosure-Create-Flow-Started",
+      "type": "State",
+      "props": {
+        "state": {
+          "name": "TDAccountPreClosure-Create-Flow-Started",
+          "description": "TDAccountPreClosure-Create-Flow-Started state",
+          "persist": false,
+          "initiateAsync": false
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--State--TDA_PRE_CLOSURE_INITIATED",
+      "name": "TDA_PRE_CLOSURE_INITIATED",
+      "type": "State",
+      "props": {
+        "state": {
+          "name": "TDA_PRE_CLOSURE_INITIATED",
+          "description": "TDA_PRE_CLOSURE_INITIATED state",
+          "persist": true,
+          "initiateAsync": false
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Action--TDAccountPreClosure-Create-Flow-Started_to_TDA_PRE_CLOSURE_INITIATED",
+      "name": "TDAccountPreClosure/process",
+      "type": "Action",
+      "props": {
+        "action": {
+          "type": "Local",
+          "feature": "TDAccountPreClosure",
+          "operation": "process",
+          "$ref": "../compose-engine/fbp-product-deposit-app--develop--FLOW--CM--TDAccountPreClosure-process.json",
+          "actionKgId": "fbp-product-deposit-app--develop--FLOW--CM--TDAccountPreClosure-process",
+          "component": "DEP",
+          "mapperIdentifier": "NA"
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--State--TDA_PRE_CLOSURE_COMPLETED",
+      "name": "TDA_PRE_CLOSURE_COMPLETED",
+      "type": "State",
+      "props": {
+        "state": {
+          "name": "TDA_PRE_CLOSURE_COMPLETED",
+          "description": "TDA_PRE_CLOSURE_COMPLETED state",
+          "persist": true,
+          "initiateAsync": false
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Action--TDA_PRE_CLOSURE_INITIATED_to_TDA_PRE_CLOSURE_COMPLETED",
+      "name": "CommandHandler-FinalCommandToExternalSystem/process",
+      "type": "Action",
+      "props": {
+        "action": {
+          "type": "Remote",
+          "feature": "CommandHandler-FinalCommandToExternalSystem",
+          "operation": "process",
+          "$ref": "../compose-engine/fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-FinalCommandToExternalSystem-process.json",
+          "actionKgId": "fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-FinalCommandToExternalSystem-process",
+          "component": "closure",
+          "mapperIdentifier": "tda-pre-closure",
+          "remoteCommandKey": "close-account"
+        }
+      }
+    }
+  ],
+  "flowPaths": {
+    "path_1": [
+      {
+        "stepNumber": 1,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--TDAccountPreClosure-Create-Flow-Started"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--TDAccountPreClosure-Create-Flow-Started_to_TDA_PRE_CLOSURE_INITIATED"
+        }
+      },
+      {
+        "stepNumber": 2,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--TDAccountPreClosure-Create-Flow-Started_to_TDA_PRE_CLOSURE_INITIATED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--TDA_PRE_CLOSURE_INITIATED"
+        }
+      },
+      {
+        "stepNumber": 3,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--TDA_PRE_CLOSURE_INITIATED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--TDA_PRE_CLOSURE_INITIATED_to_TDA_PRE_CLOSURE_COMPLETED"
+        }
+      },
+      {
+        "stepNumber": 4,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--TDA_PRE_CLOSURE_INITIATED_to_TDA_PRE_CLOSURE_COMPLETED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--TDA_PRE_CLOSURE_COMPLETED"
+        }
+      }
+    ]
+  },
+  "metadata": {
+    "generatedFrom": "DEP-complete-rules.csv",
+    "generatedAt": "2026-07-03T05:35:30.840744+00:00",
+    "version": "develop",
+    "generatedBy": "flow-kg-generator-phase18",
+    "repoName": "fbp-product-deposit-app",
+    "sha": ""
+  }
+}

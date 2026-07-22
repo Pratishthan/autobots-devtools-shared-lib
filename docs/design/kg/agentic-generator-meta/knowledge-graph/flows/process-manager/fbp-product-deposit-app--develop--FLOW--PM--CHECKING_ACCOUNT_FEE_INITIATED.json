@@ -1,0 +1,128 @@
+{
+  "kgId": "fbp-product-deposit-app--develop--FLOW--PM--CHECKING_ACCOUNT_FEE_INITIATED",
+  "serviceKgId": "fbp-product-deposit-app--develop--FLOW--PM--CHECKING_ACCOUNT_FEE_INITIATED",
+  "name": "CHECKING_ACCOUNT_FEE_INITIATED",
+  "flowType": "PROCESS_MANAGER",
+  "processingNodes": [
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--State--CHECKING_ACCOUNT_FEE_INITIATED",
+      "name": "CHECKING_ACCOUNT_FEE_INITIATED",
+      "type": "State",
+      "props": {
+        "state": {
+          "name": "CHECKING_ACCOUNT_FEE_INITIATED",
+          "description": "CHECKING_ACCOUNT_FEE_INITIATED state",
+          "persist": false,
+          "initiateAsync": false
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--State--FEE_INITIATED",
+      "name": "FEE_INITIATED",
+      "type": "State",
+      "props": {
+        "state": {
+          "name": "FEE_INITIATED",
+          "description": "FEE_INITIATED state",
+          "persist": true,
+          "initiateAsync": false
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Action--CHECKING_ACCOUNT_FEE_INITIATED_to_FEE_INITIATED",
+      "name": "Fee-Processing/process",
+      "type": "Action",
+      "props": {
+        "action": {
+          "type": "Local",
+          "feature": "Fee-Processing",
+          "operation": "process",
+          "$ref": "../compose-engine/fbp-product-deposit-app--develop--FLOW--CM--Fee-Processing-process.json",
+          "actionKgId": "fbp-product-deposit-app--develop--FLOW--CM--Fee-Processing-process",
+          "component": "DEP",
+          "mapperIdentifier": "Checking-account-fee"
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--State--FEE_COMPLETED",
+      "name": "FEE_COMPLETED",
+      "type": "State",
+      "props": {
+        "state": {
+          "name": "FEE_COMPLETED",
+          "description": "FEE_COMPLETED state",
+          "persist": true,
+          "initiateAsync": false
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Action--FEE_INITIATED_to_FEE_COMPLETED",
+      "name": "CommandHandler-FinalCommandToExternalSystem/process",
+      "type": "Action",
+      "props": {
+        "action": {
+          "type": "Remote",
+          "feature": "CommandHandler-FinalCommandToExternalSystem",
+          "operation": "process",
+          "$ref": "../compose-engine/fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-FinalCommandToExternalSystem-process.json",
+          "actionKgId": "fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-FinalCommandToExternalSystem-process",
+          "component": "transaction",
+          "mapperIdentifier": "Checking-account-fee",
+          "remoteCommandKey": "debit"
+        }
+      }
+    }
+  ],
+  "flowPaths": {
+    "path_1": [
+      {
+        "stepNumber": 1,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--CHECKING_ACCOUNT_FEE_INITIATED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--CHECKING_ACCOUNT_FEE_INITIATED_to_FEE_INITIATED"
+        }
+      },
+      {
+        "stepNumber": 2,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--CHECKING_ACCOUNT_FEE_INITIATED_to_FEE_INITIATED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--FEE_INITIATED"
+        }
+      },
+      {
+        "stepNumber": 3,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--FEE_INITIATED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--FEE_INITIATED_to_FEE_COMPLETED"
+        }
+      },
+      {
+        "stepNumber": 4,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--FEE_INITIATED_to_FEE_COMPLETED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--FEE_COMPLETED"
+        }
+      }
+    ]
+  },
+  "metadata": {
+    "generatedFrom": "DEP-complete-rules.csv",
+    "generatedAt": "2026-07-03T05:35:29.249571+00:00",
+    "version": "develop",
+    "generatedBy": "flow-kg-generator-phase18",
+    "repoName": "fbp-product-deposit-app",
+    "sha": ""
+  }
+}

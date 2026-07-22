@@ -1,0 +1,45 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Account Closure API",
+    "version": "1.0.0",
+    "description": "API schema for Account Closure - supports both Operative and TD-Maturity closures"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "AccountClosure": {
+        "type": "object",
+        "properties": {
+          "accountNumber": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountNumber"
+            }
+          },
+          "closureDate": {
+            "$ref": "../common/FbpDtoDataTypes.json#/components/schemas/BusinessDateDTO",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--ClosureDate"
+            }
+          },
+          "closureRemarks": {
+            "type": "string",
+            "nullable": "true",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--ClosureRemarks"
+            }
+          }
+        },
+        "x-fbp-params": {
+          "kgId": "fbp-product-deposit-app--develop--Model--DTO--AccountClosure",
+          "version": "develop",
+          "generatedAt": "2026-07-03T05:35:18.107831+00:00",
+          "sha": "c14bb1a0841ffa1482c46c5d0c27bfcd9fa8afd30f9f712ac38d3831bd2b9293",
+          "repoName": "fbp-product-deposit-app",
+          "type": "DTO"
+        }
+      }
+    }
+  }
+}

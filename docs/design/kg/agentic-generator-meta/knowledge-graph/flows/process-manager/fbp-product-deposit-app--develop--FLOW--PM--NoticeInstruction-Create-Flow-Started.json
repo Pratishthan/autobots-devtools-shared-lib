@@ -1,0 +1,128 @@
+{
+  "kgId": "fbp-product-deposit-app--develop--FLOW--PM--NoticeInstruction-Create-Flow-Started",
+  "serviceKgId": "fbp-product-deposit-app--develop--Service--NoticeInstruction--CreateNoticeInstruction",
+  "name": "NoticeInstruction-Create-Flow-Started",
+  "flowType": "PROCESS_MANAGER",
+  "processingNodes": [
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--State--NoticeInstruction-Create-Flow-Started",
+      "name": "NoticeInstruction-Create-Flow-Started",
+      "type": "State",
+      "props": {
+        "state": {
+          "name": "NoticeInstruction-Create-Flow-Started",
+          "description": "NoticeInstruction-Create-Flow-Started state",
+          "persist": false,
+          "initiateAsync": false
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--State--SAVING_NOTICE_INSTRUCTION_INITIATED",
+      "name": "SAVING_NOTICE_INSTRUCTION_INITIATED",
+      "type": "State",
+      "props": {
+        "state": {
+          "name": "SAVING_NOTICE_INSTRUCTION_INITIATED",
+          "description": "SAVING_NOTICE_INSTRUCTION_INITIATED state",
+          "persist": true,
+          "initiateAsync": false
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Action--NoticeInstruction-Create-Flow-Started_to_SAVING_NOTICE_INSTRUCTION_INITIATED",
+      "name": "CreateNotice/process",
+      "type": "Action",
+      "props": {
+        "action": {
+          "type": "Local",
+          "feature": "CreateNotice",
+          "operation": "process",
+          "$ref": "../compose-engine/fbp-product-deposit-app--develop--FLOW--CM--CreateNotice-process.json",
+          "actionKgId": "fbp-product-deposit-app--develop--FLOW--CM--CreateNotice-process",
+          "component": "DEP",
+          "mapperIdentifier": "NA"
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--State--SAVING_NOTICE_INSTRUCTION_POSTED",
+      "name": "SAVING_NOTICE_INSTRUCTION_POSTED",
+      "type": "State",
+      "props": {
+        "state": {
+          "name": "SAVING_NOTICE_INSTRUCTION_POSTED",
+          "description": "SAVING_NOTICE_INSTRUCTION_POSTED state",
+          "persist": true,
+          "initiateAsync": false
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Action--SAVING_NOTICE_INSTRUCTION_INITIATED_to_SAVING_NOTICE_INSTRUCTION_POSTED",
+      "name": "CommandHandler-FinalCommandToExternalSystem/process",
+      "type": "Action",
+      "props": {
+        "action": {
+          "type": "Remote",
+          "feature": "CommandHandler-FinalCommandToExternalSystem",
+          "operation": "process",
+          "$ref": "../compose-engine/fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-FinalCommandToExternalSystem-process.json",
+          "actionKgId": "fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-FinalCommandToExternalSystem-process",
+          "component": "transaction",
+          "mapperIdentifier": "Savings-notice-instruction",
+          "remoteCommandKey": "create-multi-transaction"
+        }
+      }
+    }
+  ],
+  "flowPaths": {
+    "path_1": [
+      {
+        "stepNumber": 1,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--NoticeInstruction-Create-Flow-Started"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--NoticeInstruction-Create-Flow-Started_to_SAVING_NOTICE_INSTRUCTION_INITIATED"
+        }
+      },
+      {
+        "stepNumber": 2,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--NoticeInstruction-Create-Flow-Started_to_SAVING_NOTICE_INSTRUCTION_INITIATED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--SAVING_NOTICE_INSTRUCTION_INITIATED"
+        }
+      },
+      {
+        "stepNumber": 3,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--SAVING_NOTICE_INSTRUCTION_INITIATED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--SAVING_NOTICE_INSTRUCTION_INITIATED_to_SAVING_NOTICE_INSTRUCTION_POSTED"
+        }
+      },
+      {
+        "stepNumber": 4,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--SAVING_NOTICE_INSTRUCTION_INITIATED_to_SAVING_NOTICE_INSTRUCTION_POSTED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--SAVING_NOTICE_INSTRUCTION_POSTED"
+        }
+      }
+    ]
+  },
+  "metadata": {
+    "generatedFrom": "DEP-complete-rules.csv",
+    "generatedAt": "2026-07-03T05:35:30.154991+00:00",
+    "version": "develop",
+    "generatedBy": "flow-kg-generator-phase18",
+    "repoName": "fbp-product-deposit-app",
+    "sha": ""
+  }
+}

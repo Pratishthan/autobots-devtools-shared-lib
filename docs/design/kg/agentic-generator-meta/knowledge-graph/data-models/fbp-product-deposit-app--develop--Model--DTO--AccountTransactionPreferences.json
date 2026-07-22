@@ -1,0 +1,110 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Account Transaction Preferences API",
+    "version": "1.0.0",
+    "description": "API schema for AccountTranPreferencesDTO entity"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "AccountTransactionPreferences": {
+        "type": "object",
+        "properties": {
+          "creditLimitDaily": {
+            "type": "number",
+            "minimum": 0,
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--CreditLimitDaily"
+            }
+          },
+          "creditLimitMonthly": {
+            "type": "number",
+            "minimum": 0,
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--CreditLimitMonthly"
+            }
+          },
+          "creditLimitYearly": {
+            "type": "number",
+            "minimum": 0,
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--CreditLimitYearly"
+            }
+          },
+          "numberOfCreditsDaily": {
+            "type": "integer",
+            "minimum": 0,
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--NumberOfCreditsDaily"
+            }
+          },
+          "numberOfCreditsMonthly": {
+            "type": "integer",
+            "minimum": 0,
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--NumberOfCreditsMonthly"
+            }
+          },
+          "numberOfCreditsYearly": {
+            "type": "integer",
+            "minimum": 0,
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--NumberOfCreditsYearly"
+            }
+          },
+          "debitLimitDaily": {
+            "type": "number",
+            "minimum": 0,
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--DebitLimitDaily"
+            }
+          },
+          "debitLimitMonthly": {
+            "type": "number",
+            "minimum": 0,
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--DebitLimitMonthly"
+            }
+          },
+          "debitLimitYearly": {
+            "type": "number",
+            "minimum": 0,
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--DebitLimitYearly"
+            }
+          },
+          "numberOfDebitsDaily": {
+            "type": "integer",
+            "minimum": 0,
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--NumberOfDebitsDaily"
+            }
+          },
+          "numberOfDebitsMonthly": {
+            "type": "integer",
+            "minimum": 0,
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--NumberOfDebitsMonthly"
+            }
+          },
+          "numberOfDebitsYearly": {
+            "type": "integer",
+            "minimum": 0,
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--NumberOfDebitsYearly"
+            }
+          }
+        },
+        "x-fbp-params": {
+          "kgId": "fbp-product-deposit-app--develop--Model--DTO--AccountTransactionPreferences",
+          "version": "develop",
+          "generatedAt": "2026-07-03T05:35:18.888591+00:00",
+          "sha": "8a53f7c05d185274aa695c722c6bfff9c0f48274e18c60a1ad0ea1cf8062a741",
+          "repoName": "fbp-product-deposit-app",
+          "type": "DTO"
+        }
+      }
+    }
+  }
+}

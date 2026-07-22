@@ -1,0 +1,74 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "NoticeInstruction API",
+    "version": "1.0.0",
+    "description": "API schema for NoticeInstruction entity"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "NoticeInstruction": {
+        "type": "object",
+        "properties": {
+          "accountNumber": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountNumber"
+            }
+          },
+          "noticeAmount": {
+            "$ref": "../common/FbpDtoDataTypes.json#/components/schemas/AmountDTO",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--NoticeAmount"
+            }
+          },
+          "noticePeriod": {
+            "type": "number",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--NoticePeriod"
+            }
+          },
+          "noticeDate": {
+            "$ref": "../common/FbpDtoDataTypes.json#/components/schemas/BusinessDateDTO",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--NoticeDate"
+            }
+          },
+          "noticeMaturityDate": {
+            "$ref": "../common/FbpDtoDataTypes.json#/components/schemas/BusinessDateDTO",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--NoticeMaturityDate"
+            }
+          },
+          "modeOfWithdrawal": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--ModeOfWithdrawal"
+            }
+          },
+          "repaymentAccountId": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--RepaymentAccountId"
+            }
+          },
+          "externalBankDetails": {
+            "type": "object",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--ExternalBankDetails"
+            }
+          }
+        },
+        "x-fbp-params": {
+          "kgId": "fbp-product-deposit-app--develop--Model--Hybrid--NoticeInstruction",
+          "version": "develop",
+          "generatedAt": "2026-07-03T05:35:20.588079+00:00",
+          "sha": "56fa12eee0194e8d6fa8f4ba88a5f925f8c4aae04f431b01fecc1ad877e0e239",
+          "repoName": "fbp-product-deposit-app",
+          "type": "Hybrid"
+        }
+      }
+    }
+  }
+}

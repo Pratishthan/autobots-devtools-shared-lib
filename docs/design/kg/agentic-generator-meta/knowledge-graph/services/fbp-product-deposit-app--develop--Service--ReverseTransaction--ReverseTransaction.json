@@ -1,0 +1,61 @@
+{
+  "kgId": "fbp-product-deposit-app--develop--Service--ReverseTransaction--ReverseTransaction",
+  "metadata": {
+    "repoName": "fbp-product-deposit-app",
+    "version": "develop",
+    "generatedAt": "2026-07-03T05:38:20Z"
+  },
+  "name": "reverseTransaction",
+  "domain": "ReverseTransaction",
+  "operationType": "CREATE",
+  "invocationType": [
+    "SYNC"
+  ],
+  "description": [
+    "This service handles the reversal of a transaction by first preparing the process context, reading fee applicability flags and internal data model state, and determining the appropriate initiated state based on the feature type (FundTransfer, MultiCreditTransaction, or MultiDebitTransaction) when fees apply. Once the context is established, the service dispatches the reversal command to an external account closure system and then resolves the appropriate response by inspecting persisted process contexts to locate the command status containing account result data, falling back to the last available context if no match is found. The response payload is extracted and reshaped as needed \u2014 particularly when the transaction state reflects a product switch \u2014 before being wrapped in a standardised API response object. Any updated deposit account records, document details, and notice instructions are persisted to their respective repositories. Finally, the service validates that a valid response entity exists and returns the result with an HTTP 201 Created status, throwing an error if the response cannot be constructed."
+  ],
+  "requestType": "SINGLE",
+  "inputDataModel": {
+    "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--ReverseTransaction"
+  },
+  "responseType": "SINGLE",
+  "outputDataModels": [
+    {
+      "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--GenerateResponse",
+      "enrichedProperties": {
+        "complete": false,
+        "partial": []
+      }
+    },
+    {
+      "modelKgId": "fbp-product-deposit-app--develop--Model--Entity--DepositAccount",
+      "enrichedProperties": {
+        "complete": true,
+        "partial": []
+      }
+    },
+    {
+      "modelKgId": "fbp-product-deposit-app--develop--Model--Entity--DocumentDetails",
+      "enrichedProperties": {
+        "complete": true,
+        "partial": []
+      }
+    },
+    {
+      "modelKgId": "fbp-product-deposit-app--develop--Model--Hybrid--NoticeInstruction",
+      "enrichedProperties": {
+        "complete": true,
+        "partial": []
+      }
+    }
+  ],
+  "referencedModels": [],
+  "engine": "PROCESS_MANAGER",
+  "enableAudit": false,
+  "flows": [
+    {
+      "flowKgId": "fbp-product-deposit-app--develop--FLOW--PM--ReverseTransaction-Create-Flow-Started",
+      "flowKgRef": "../flows/process-manager/fbp-product-deposit-app--develop--FLOW--PM--ReverseTransaction-Create-Flow-Started.json"
+    }
+  ]
+}

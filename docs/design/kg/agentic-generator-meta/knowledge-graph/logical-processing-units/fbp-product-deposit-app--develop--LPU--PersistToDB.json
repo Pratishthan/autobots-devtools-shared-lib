@@ -1,0 +1,57 @@
+{
+  "name": "PersistToDB",
+  "type": "Standard",
+  "subType": "Persistence",
+  "consumes": {
+    "Models": [],
+    "Primitives": [],
+    "apis": [],
+    "dataReaders": []
+  },
+  "produces": {
+    "Models": [],
+    "Primitives": [],
+    "apis": [],
+    "dataWriters": [
+      {
+        "enrichedProperties": {
+          "complete": true,
+          "partial": []
+        },
+        "modelKgId": "fbp-product-deposit-app--develop--Model--Entity--DepositAccount",
+        "$ref": "../models/fbp-product-deposit-app--develop--Model--Entity--DepositAccount.json#/components/schemas/DepositAccount"
+      },
+      {
+        "enrichedProperties": {
+          "complete": true,
+          "partial": []
+        },
+        "modelKgId": "fbp-product-deposit-app--develop--Model--Entity--DocumentDetails",
+        "$ref": "../models/fbp-product-deposit-app--develop--Model--Entity--DocumentDetails.json#/components/schemas/DocumentDetails"
+      },
+      {
+        "enrichedProperties": {
+          "complete": true,
+          "partial": []
+        },
+        "modelKgId": "fbp-product-deposit-app--develop--Model--Hybrid--NoticeInstruction",
+        "$ref": "../models/fbp-product-deposit-app--develop--Model--Hybrid--NoticeInstruction.json#/components/schemas/NoticeInstruction"
+      }
+    ]
+  },
+  "businessLogic": [
+    "Retrieve the list of DepositAccountEntity objects from SlotsDTO using DEPOSIT_ACCOUNTS_LIST key; if the list is non-null and non-empty, save all entries via depositDomainLifeCycleRepository.",
+    "If DEPOSIT_ACCOUNTS_LIST is null or empty, retrieve a single DepositAccountEntity from SlotsDTO using DEPOSIT_ACCOUNT key; if non-null, wrap it in a list and save via depositDomainLifeCycleRepository; otherwise log a warning.",
+    "Retrieve DocumentDetailsEntity from SlotsDTO using DOCUMENT_DETAILS key; if non-null, wrap it in a list and save via documentDetailsRepository; otherwise log a warning.",
+    "Retrieve NoticeInstructionEntity from SlotsDTO using NOTICE_INSTRUCTION key; if non-null, wrap it in a list and save via noticeInstructionRepository."
+  ],
+  "errorConstants": [],
+  "kgId": "fbp-product-deposit-app--develop--LPU--PersistToDB",
+  "metadata": {
+    "extractedAt": "2026-07-03T05:38:11.754495+00:00",
+    "generatedBy": "autobots-agents-mer / logical_processing_unit",
+    "version": "develop",
+    "repoName": "fbp-product-deposit-app",
+    "sha": ""
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "DepositAccount API",
+    "version": "1.0.0",
+    "description": "API schema for DepositAccount entity"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "DepositAccount": {
+        "type": "object",
+        "properties": {
+          "accountName": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountName"
+            }
+          },
+          "accountNumber": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountNumber"
+            }
+          },
+          "cifId": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--CifId"
+            }
+          },
+          "purposeId": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--PurposeId"
+            }
+          },
+          "purpose": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--Purpose"
+            }
+          },
+          "currency": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--Currency"
+            }
+          },
+          "accountOpeningDate": {
+            "$ref": "../common/FbpEntityDataTypes.json#/components/schemas/BusinessDate",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountOpeningDate"
+            }
+          },
+          "depositAmount": {
+            "type": "number",
+            "format": "double",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--DepositAmount"
+            }
+          },
+          "initialDeposit": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--InitialDeposit"
+            }
+          },
+          "renewalAmount": {
+            "type": "number",
+            "format": "double",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--RenewalAmount"
+            }
+          },
+          "tenorInMonths": {
+            "type": "integer",
+            "format": "int32",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--TenorInMonths"
+            }
+          },
+          "tenorInDays": {
+            "type": "integer",
+            "format": "int32",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--TenorInDays"
+            }
+          }
+        },
+        "x-fbp-params": {
+          "kgId": "fbp-product-deposit-app--develop--Model--Entity--DepositAccount",
+          "version": "develop",
+          "generatedAt": "2026-07-03T05:35:21.941268+00:00",
+          "sha": "0017fb5f2f1e4277ca7b36ec6c41ac34d0a60f7fcf861a2274e200f034fc1bf8",
+          "repoName": "fbp-product-deposit-app",
+          "type": "Entity"
+        }
+      }
+    }
+  }
+}

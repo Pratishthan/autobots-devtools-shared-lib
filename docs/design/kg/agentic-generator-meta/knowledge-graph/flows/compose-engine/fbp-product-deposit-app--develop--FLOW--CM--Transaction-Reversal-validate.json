@@ -1,0 +1,40 @@
+{
+  "kgId": "fbp-product-deposit-app--develop--FLOW--CM--Transaction-Reversal-validate",
+  "serviceKgId": "",
+  "name": "Transaction-Reversal-validate",
+  "feature": "Transaction-Reversal",
+  "flowType": "COMPOSE_ENGINE",
+  "operation": "validate",
+  "processingNodes": [
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--ValidateInput",
+      "name": "ValidateInput",
+      "type": "Behaviour",
+      "props": {
+        "behaviour": {
+          "name": "ValidateInput",
+          "$ref": "../../logical-processing-units/fbp-product-deposit-app--develop--LPU--ValidateInput.json",
+          "lpuKgId": "fbp-product-deposit-app--develop--LPU--ValidateInput.json"
+        }
+      }
+    }
+  ],
+  "flowPaths": {
+    "path_1": [
+      {
+        "stepNumber": 1,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--ValidateInput"
+        }
+      }
+    ]
+  },
+  "metadata": {
+    "generatedFrom": "deposit-configuration.behaviour",
+    "generatedAt": "2026-07-03T05:35:28.058289+00:00",
+    "version": "develop",
+    "generatedBy": "compose-flow-kg-generator",
+    "repoName": "fbp-product-deposit-app",
+    "sha": "388c0f56abd4908809c054383990b6d49acf434e5834573805cf331f4c58b844"
+  }
+}

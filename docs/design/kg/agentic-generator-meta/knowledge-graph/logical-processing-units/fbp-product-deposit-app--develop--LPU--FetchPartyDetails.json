@@ -1,0 +1,115 @@
+{
+  "name": "FetchPartyDetails",
+  "type": "Manual",
+  "subType": "Enrichment",
+  "consumes": {
+    "Models": [
+      {
+        "referencedProperties": [
+          {
+            "name": "accountInterestPreferences",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountInterestPreferences"
+          },
+          {
+            "name": "accountFeePreferences",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountFeePreferences"
+          },
+          {
+            "name": "accountClosurePreferences",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountClosurePreferences"
+          }
+        ],
+        "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--Account",
+        "$ref": "../models/fbp-product-deposit-app--develop--Model--DTO--Account.json#/components/schemas/Account"
+      }
+    ],
+    "Primitives": [
+      {
+        "name": "orgCode",
+        "dataType": "String"
+      }
+    ],
+    "apis": [
+      {
+        "clientType": "retrievalClient",
+        "name": "retrievePartyByPartyNumber",
+        "component": "DomainService",
+        "requestModelName": "Map",
+        "responseModelName": "JsonNode",
+        "referencedProperties": [
+          {
+            "name": "targetAccountNumber",
+            "propertyKgId": ""
+          },
+          {
+            "name": "targetAccountCurrency",
+            "propertyKgId": ""
+          },
+          {
+            "name": "targetAccountProperties",
+            "propertyKgId": ""
+          }
+        ],
+        "url": ""
+      }
+    ],
+    "dataReaders": []
+  },
+  "produces": {
+    "Models": [
+      {
+        "enrichedProperties": {
+          "complete": false,
+          "partial": [
+            {
+              "name": "targetAccountNumber",
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--TargetAccountNumber"
+            },
+            {
+              "name": "targetAccountCurrency",
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--TargetAccountCurrency"
+            },
+            {
+              "name": "targetAccountProperties",
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--TargetAccountProperties"
+            }
+          ]
+        },
+        "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--Account",
+        "$ref": "../models/fbp-product-deposit-app--develop--Model--DTO--Account.json#/components/schemas/Account"
+      }
+    ],
+    "Primitives": [
+      {
+        "name": "DOMAIN_CURRENT_COMMAND_PAYLOAD",
+        "dataType": "String"
+      }
+    ],
+    "apis": [],
+    "dataWriters": []
+  },
+  "businessLogic": [
+    "Read AccountDTO from the ACCOUNT_IDENTITY slot (DOMAIN.REQUEST).",
+    "If AccountDTO is null, skip party fetch and return early.",
+    "Collect all CollectionManagementParametersDTO items from interest, fee, and closure settlement preferences that have a non-blank counterPartyNumber, grouped by counterPartyNumber.",
+    "If no such items exist, skip party fetch and return early.",
+    "Resolve orgCode from RequestContext.",
+    "For each unique counterPartyNumber, call DomainService.retrievePartyByPartyNumber with partyNumber and orgCode headers.",
+    "Parse the returned JSON response into a JsonNode; throw FbpValidationException if blank or unparseable.",
+    "Enrich each matching CollectionManagementParametersDTO item with targetAccountNumber, targetAccountCurrency, and targetAccountProperties extracted from the resolved JsonNode.",
+    "Serialize the enriched AccountDTO to JSON and write it back to the DOMAIN_CURRENT_COMMAND_PAYLOAD slot."
+  ],
+  "errorConstants": [
+    "RUNTIME_ERROR",
+    "PARTY_NOT_FOUND_IN_SOURCE_SYSTEM",
+    "ERROR_PARSING_PAYLOAD_JSON"
+  ],
+  "kgId": "fbp-product-deposit-app--develop--LPU--FetchPartyDetails",
+  "metadata": {
+    "extractedAt": "2026-07-03T05:38:11.618617+00:00",
+    "generatedBy": "autobots-agents-mer / logical_processing_unit",
+    "version": "develop",
+    "repoName": "fbp-product-deposit-app",
+    "sha": ""
+  }
+}

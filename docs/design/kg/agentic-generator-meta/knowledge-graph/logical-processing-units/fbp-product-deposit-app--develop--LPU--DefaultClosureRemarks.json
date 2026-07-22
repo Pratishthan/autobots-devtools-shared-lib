@@ -1,0 +1,47 @@
+{
+  "name": "DefaultClosureRemarks",
+  "type": "Manual",
+  "subType": "Transformation",
+  "consumes": {
+    "Models": [],
+    "Primitives": [
+      {
+        "name": "featureType",
+        "dataType": "String"
+      },
+      {
+        "name": "DOMAIN_CURRENT_COMMAND_PAYLOAD",
+        "dataType": "String"
+      }
+    ],
+    "apis": [],
+    "dataReaders": []
+  },
+  "produces": {
+    "Models": [],
+    "Primitives": [
+      {
+        "name": "DOMAIN_CURRENT_COMMAND_PAYLOAD",
+        "dataType": "String"
+      }
+    ],
+    "apis": [],
+    "dataWriters": []
+  },
+  "businessLogic": [
+    "Read featureType from SlotsDTO.",
+    "Read the current command payload (JSON string) from SlotsDTO using PMConstants.DOMAIN_CURRENT_COMMAND_PAYLOAD.",
+    "If featureType is 'AccountClosure', deserialize the payload into AccountClosureDTO. If closureRemarks is blank, retrieve ReferenceContractDTO from SlotsDTO using DDLCConstants.REFERENCE_CONTRACT_PARAMS. If the reference contract has a non-blank maturityDate, set closureRemarks to 'Deposit Account Closure'; otherwise set it to 'Operative Account Closure'. Serialize the updated DTO back and set it on SlotsDTO.",
+    "If featureType is 'TDAccountPreClosure', deserialize the payload into TDAccountPreClosureDTO. If closureRemarks is blank, set it to 'Deposit Account Closure'. Serialize the updated DTO back and set it on SlotsDTO.",
+    "If a JacksonException occurs during parsing, log the error and throw a RuntimeException."
+  ],
+  "errorConstants": [],
+  "kgId": "fbp-product-deposit-app--develop--LPU--DefaultClosureRemarks",
+  "metadata": {
+    "extractedAt": "2026-07-03T05:38:10.818267+00:00",
+    "generatedBy": "autobots-agents-mer / logical_processing_unit",
+    "version": "develop",
+    "repoName": "fbp-product-deposit-app",
+    "sha": ""
+  }
+}

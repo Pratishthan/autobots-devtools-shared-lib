@@ -1,0 +1,44 @@
+{
+  "kgId": "fbp-product-deposit-app--develop--Service--Echo--EchoCreation",
+  "metadata": {
+    "repoName": "fbp-product-deposit-app",
+    "version": "develop",
+    "generatedAt": "2026-07-03T05:38:18Z"
+  },
+  "name": "echoCreation",
+  "domain": "Echo",
+  "operationType": "CREATE",
+  "invocationType": [
+    "SYNC"
+  ],
+  "description": [
+    "CREATE operation on Echo"
+  ],
+  "requestType": "SINGLE",
+  "inputDataModel": {
+    "modelKgId": "fbp-product-deposit-app--develop--Model--Hybrid--Echo"
+  },
+  "responseType": "SINGLE",
+  "outputDataModels": [
+    {
+      "modelKgId": "fbp-product-deposit-app--develop--Model--Hybrid--Echo",
+      "enrichedProperties": {
+        "complete": false,
+        "partial": []
+      }
+    }
+  ],
+  "referencedModels": [],
+  "engine": "COMPOSE_ENGINE",
+  "enableAudit": false,
+  "flows": [
+    {
+      "flowKgId": "fbp-product-deposit-app--develop--FLOW--CM--EchoCreate-process",
+      "flowKgRef": "../flows/compose-engine/fbp-product-deposit-app--develop--FLOW--CM--EchoCreate-process.json"
+    },
+    {
+      "flowKgId": "fbp-product-deposit-app--develop--FLOW--CM--EchoCreate-validate",
+      "flowKgRef": "../flows/compose-engine/fbp-product-deposit-app--develop--FLOW--CM--EchoCreate-validate.json"
+    }
+  ]
+}

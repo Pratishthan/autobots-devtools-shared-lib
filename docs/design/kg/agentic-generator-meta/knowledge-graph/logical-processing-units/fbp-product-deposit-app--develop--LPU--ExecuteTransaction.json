@@ -1,0 +1,57 @@
+{
+  "name": "ExecuteTransaction",
+  "type": "Manual",
+  "subType": "External Call",
+  "consumes": {
+    "Models": [],
+    "Primitives": [
+      {
+        "name": "LIMIT_EXTERNAL_REF_IDS",
+        "dataType": "List<String>"
+      },
+      {
+        "name": "LIMIT_REVERSAL_TXN_DATE",
+        "dataType": "BusinessDateDTO"
+      },
+      {
+        "name": "correlationId",
+        "dataType": "String"
+      }
+    ],
+    "apis": [],
+    "dataReaders": []
+  },
+  "produces": {
+    "Models": [],
+    "Primitives": [],
+    "apis": [
+      {
+        "clientType": "externalClient",
+        "name": "processEachEvent",
+        "component": "ProcessCommandToExternalSystem",
+        "requestModelName": "SlotsDTO",
+        "responseModelName": "",
+        "referencedProperties": [],
+        "url": ""
+      }
+    ],
+    "dataWriters": []
+  },
+  "businessLogic": [
+    "Delegate to ProcessCommandToExternalSystem.processEachEvent(slotsDTO) to perform the composable-tm external call.",
+    "If an FbpApplicationException is thrown and limit reversal is enabled, initiate limit reversal.",
+    "Read externalReferenceIds from slots using DDLCConstants.LIMIT_EXTERNAL_REF_IDS; if absent or empty, log a warning and skip reversal.",
+    "Read txnDate from slots using DDLCConstants.LIMIT_REVERSAL_TXN_DATE as BusinessDateDTO.",
+    "Delegate to LimitReversalServiceUtil.reverse() with requestContext, externalRefIds, and txnDate to reverse consumed operational limits.",
+    "Always re-throw the original FbpApplicationException to preserve the existing rejection/HTTP-error handling flow."
+  ],
+  "errorConstants": [],
+  "kgId": "fbp-product-deposit-app--develop--LPU--ExecuteTransaction",
+  "metadata": {
+    "extractedAt": "2026-07-03T05:38:10.898350+00:00",
+    "generatedBy": "autobots-agents-mer / logical_processing_unit",
+    "version": "develop",
+    "repoName": "fbp-product-deposit-app",
+    "sha": ""
+  }
+}

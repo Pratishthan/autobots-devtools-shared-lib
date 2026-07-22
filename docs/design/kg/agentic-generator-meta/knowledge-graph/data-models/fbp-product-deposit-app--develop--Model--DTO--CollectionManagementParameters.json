@@ -1,0 +1,63 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Collection Management Parameters",
+    "version": "1.0.0",
+    "description": "schema for CollectionManagementParametersDTO"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "CollectionManagementParameters": {
+        "type": "object",
+        "properties": {
+          "targetAccountNumber": {
+            "type": "string",
+            "nullable": true,
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--TargetAccountNumber"
+            }
+          },
+          "counterPartyNumber": {
+            "type": "string",
+            "nullable": true,
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--CounterPartyNumber"
+            }
+          },
+          "splitPercentage": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--SplitPercentage"
+            }
+          },
+          "targetAccountProperties": {
+            "type": "object",
+            "additionalProperties": {},
+            "nullable": true,
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--TargetAccountProperties"
+            }
+          },
+          "targetAccountCurrency": {
+            "type": "string",
+            "nullable": true,
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--TargetAccountCurrency"
+            }
+          }
+        },
+        "x-fbp-params": {
+          "kgId": "fbp-product-deposit-app--develop--Model--DTO--CollectionManagementParameters",
+          "version": "develop",
+          "generatedAt": "2026-07-03T05:35:19.345436+00:00",
+          "sha": "e748a249367e0413fd4091fe28c3950721229de32cc0ebbd77d15e93799142d5",
+          "repoName": "fbp-product-deposit-app",
+          "type": "DTO"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "name": "ValidateDomain",
+  "type": "Manual",
+  "subType": "Validation",
+  "consumes": {
+    "Models": [],
+    "Primitives": [
+      {
+        "name": "featureType",
+        "dataType": "String"
+      }
+    ],
+    "apis": [],
+    "dataReaders": []
+  },
+  "produces": {
+    "Models": [],
+    "Primitives": [
+      {
+        "name": "RULE_INPUT_DTO",
+        "dataType": "RuleInputDTO"
+      },
+      {
+        "name": "DOMAIN.currentState",
+        "dataType": "String"
+      }
+    ],
+    "apis": [],
+    "dataWriters": []
+  },
+  "businessLogic": [
+    "Check if featureType equals 'CheckingAccount-ProductSwitch' (case-insensitive).",
+    "If featureType is 'CheckingAccount-ProductSwitch', invoke validateProductSwitchInputUsingRules: delegate to productSwitchValidationService.validateProductSwitchInputUsingRulesHelper, insert slotsDTO as fact into ruleSessionProductSwitching, fire rules, query 'clojure.product_switching_rules/queryResponse' for '?productSwitchingData', strip colons from output, and switch on result \u2014 throw FbpValidationException with MAXIMUM_PRODUCT_SWITCH_LIMIT_HAS_REACHED if output is 'maximumProductSwitchLimitReached', log success if 'valid', otherwise do nothing.",
+    "If featureType is not 'CheckingAccount-ProductSwitch', invoke validateInputUsingRules: create RuleInputDTO via depositUtil.createDomainInputDTO, set it on slotsDTO under DDLCConstants.RULE_INPUT_DTO, insert it as a fact into domainSession, fire rules, query 'clojure.domain_validation_rules/queryCurrencyData' for '?accountCurrency', and if the output is not blank, set it on slotsDTO under DDLCConstants.DOMAIN + '.currentState'."
+  ],
+  "errorConstants": [
+    "MAXIMUM_PRODUCT_SWITCH_LIMIT_HAS_REACHED"
+  ],
+  "kgId": "fbp-product-deposit-app--develop--LPU--ValidateDomain",
+  "metadata": {
+    "extractedAt": "2026-07-03T05:38:12.967338+00:00",
+    "generatedBy": "autobots-agents-mer / logical_processing_unit",
+    "version": "develop",
+    "repoName": "fbp-product-deposit-app",
+    "sha": ""
+  }
+}

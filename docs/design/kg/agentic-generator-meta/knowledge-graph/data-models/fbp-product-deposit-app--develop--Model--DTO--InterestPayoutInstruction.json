@@ -1,0 +1,42 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "InterestPayoutInstruction API",
+    "version": "1.0.0",
+    "description": "API schema for InterestPayoutInstruction entity"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "InterestPayoutInstruction": {
+        "type": "object",
+        "properties": {
+          "interestApplicationVia": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--InterestApplicationVia"
+            }
+          },
+          "paymentInstructionDetails": {
+            "type": "array",
+            "items": {
+              "$ref": "PaymentInstructionDetails.json#/components/schemas/PaymentInstructionDetails",
+              "x-fbp-params": {
+                "propertyKgId": "fbp-product-deposit-app--develop--Property--PaymentInstructionDetails",
+                "propertyTypeKgId": "fbp-product-deposit-app--develop--Model--DTO--PaymentInstructionDetails"
+              }
+            }
+          }
+        },
+        "x-fbp-params": {
+          "kgId": "fbp-product-deposit-app--develop--Model--DTO--InterestPayoutInstruction",
+          "version": "develop",
+          "generatedAt": "2026-07-03T05:35:19.939666+00:00",
+          "sha": "38077c43283b5f176db9a1e685f197d023c11d60b474224e79a12cae4499dbbd",
+          "repoName": "fbp-product-deposit-app",
+          "type": "DTO"
+        }
+      }
+    }
+  }
+}

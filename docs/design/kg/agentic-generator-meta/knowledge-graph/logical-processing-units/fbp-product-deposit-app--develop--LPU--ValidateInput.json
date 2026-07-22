@@ -1,0 +1,204 @@
+{
+  "name": "ValidateInput",
+  "type": "Manual",
+  "subType": "Validation",
+  "consumes": {
+    "Models": [
+      {
+        "referencedProperties": [
+          {
+            "name": "productType",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--ProductType"
+          }
+        ],
+        "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--ReferenceContract",
+        "$ref": "../models/fbp-product-deposit-app--develop--Model--DTO--ReferenceContract.json#/components/schemas/ReferenceContract"
+      },
+      {
+        "referencedProperties": [
+          {
+            "name": "accountIdentity",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountIdentity"
+          }
+        ],
+        "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--Account",
+        "$ref": "../models/fbp-product-deposit-app--develop--Model--DTO--Account.json#/components/schemas/Account"
+      },
+      {
+        "referencedProperties": [
+          {
+            "name": "transferDetails",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--TransferDetails"
+          }
+        ],
+        "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--Transfer",
+        "$ref": "../models/fbp-product-deposit-app--develop--Model--DTO--Transfer.json#/components/schemas/Transfer"
+      },
+      {
+        "referencedProperties": [
+          {
+            "name": "multiCreditDetails",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--MultiCreditDetails"
+          }
+        ],
+        "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--MultiCreditTransaction",
+        "$ref": "../models/fbp-product-deposit-app--develop--Model--DTO--MultiCreditTransaction.json#/components/schemas/MultiCreditTransaction"
+      },
+      {
+        "referencedProperties": [
+          {
+            "name": "multiDebitDetails",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--MultiDebitDetails"
+          }
+        ],
+        "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--MultiDebitTransaction",
+        "$ref": "../models/fbp-product-deposit-app--develop--Model--DTO--MultiDebitTransaction.json#/components/schemas/MultiDebitTransaction"
+      },
+      {
+        "referencedProperties": [
+          {
+            "name": "accountNumber",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountNumber"
+          }
+        ],
+        "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--AccountClosure",
+        "$ref": "../models/fbp-product-deposit-app--develop--Model--DTO--AccountClosure.json#/components/schemas/AccountClosure"
+      },
+      {
+        "referencedProperties": [
+          {
+            "name": "accountNumber",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountNumber"
+          }
+        ],
+        "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--TDAccountPreClosure",
+        "$ref": "../models/fbp-product-deposit-app--develop--Model--DTO--TDAccountPreClosure.json#/components/schemas/TDAccountPreClosure"
+      }
+    ],
+    "Primitives": [
+      {
+        "name": "DOMAIN_CURRENT_COMMAND_PAYLOAD",
+        "dataType": "String"
+      },
+      {
+        "name": "featureType",
+        "dataType": "String"
+      },
+      {
+        "name": "operation",
+        "dataType": "String"
+      }
+    ],
+    "apis": [],
+    "dataReaders": []
+  },
+  "produces": {
+    "Models": [
+      {
+        "enrichedProperties": {
+          "complete": false,
+          "partial": [
+            {
+              "name": "accountIdentity",
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountIdentity"
+            }
+          ]
+        },
+        "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--Account",
+        "$ref": "../models/fbp-product-deposit-app--develop--Model--DTO--Account.json#/components/schemas/Account"
+      },
+      {
+        "enrichedProperties": {
+          "complete": false,
+          "partial": [
+            {
+              "name": "transferDetails",
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--TransferDetails"
+            }
+          ]
+        },
+        "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--Transfer",
+        "$ref": "../models/fbp-product-deposit-app--develop--Model--DTO--Transfer.json#/components/schemas/Transfer"
+      },
+      {
+        "enrichedProperties": {
+          "complete": false,
+          "partial": [
+            {
+              "name": "multiCreditDetails",
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--MultiCreditDetails"
+            }
+          ]
+        },
+        "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--MultiCreditTransaction",
+        "$ref": "../models/fbp-product-deposit-app--develop--Model--DTO--MultiCreditTransaction.json#/components/schemas/MultiCreditTransaction"
+      },
+      {
+        "enrichedProperties": {
+          "complete": false,
+          "partial": [
+            {
+              "name": "multiDebitDetails",
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--MultiDebitDetails"
+            }
+          ]
+        },
+        "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--MultiDebitTransaction",
+        "$ref": "../models/fbp-product-deposit-app--develop--Model--DTO--MultiDebitTransaction.json#/components/schemas/MultiDebitTransaction"
+      }
+    ],
+    "Primitives": [
+      {
+        "name": "productType",
+        "dataType": "String"
+      }
+    ],
+    "apis": [],
+    "dataWriters": []
+  },
+  "businessLogic": [
+    "Check featureType from slotsDTO; if 'OpenAccount', invoke validateInputUsingRules.",
+    "In validateInputUsingRules: parse DOMAIN_CURRENT_COMMAND_PAYLOAD into AccountDTO and set it as ACCOUNT_IDENTITY on slotsDTO; retrieve ReferenceContractDTO and if present set productType on slotsDTO.",
+    "Insert slotsDTO and AccountDTO as facts into inputRules WorkingMemory, fire rules, and query 'queryInputField'; throw FbpValidationException for any failing validation result (ACCOUNT_CURRENCY, PURPOSE_ID, CIF_ID, DEPOSIT_PERIOD, DEPOSIT_AMOUNT, CREDIT_LIMIT, etc.).",
+    "If featureType is 'FundTransfer' and DOMAIN_CURRENT_COMMAND_PAYLOAD is not null, invoke validateTransferRules: parse payload into TransferDTO, set as TRANSFER_DETAILS, insert into transferRules WorkingMemory, fire rules, query 'queryResponse', and throw FbpValidationException for any failing result (TRANSACTION_LINES, TRANSFER_AMOUNT, CURRENCY, LINE_ACCOUNT_ID, LINE_TYPE, CURRENCY_MISMATCH, TRANSFER_AMOUNT_UNBALANCED, LINE_CURRENCY).",
+    "If featureType is 'MultiCreditTransaction' and DOMAIN_CURRENT_COMMAND_PAYLOAD is not null, invoke validateMultiCreditRules: parse payload into MultiCreditTransactionDTO, set as MULTI_CREDIT_DETAILS, insert into multiCreditDebitSessions, fire rules, query 'queryResponse', and handle validation result via handleMultiTxnValidationResult.",
+    "If featureType is 'MultiDebitTransaction' and DOMAIN_CURRENT_COMMAND_PAYLOAD is not null, invoke validateMultiDebitRules: parse payload into MultiDebitTransactionDTO, set as MULTI_DEBIT_DETAILS, insert into multiCreditDebitSessions, fire rules, query 'queryResponse', and handle validation result via handleMultiTxnValidationResult.",
+    "handleMultiTxnValidationResult throws FbpValidationException for TRANSACTION_LINES, TXN_AMOUNT, TXN_CURRENCY, TXN_VALUE_DATE, TXN_ACCOUNT_NUMBER, ALL_LINES_MUST_BE_CREDIT, ALL_LINES_MUST_BE_DEBIT.",
+    "If featureType is 'AccountClosure', retrieve AccountClosureDTO from DOMAIN_REQUEST, insert slotsDTO and closureDTO into inputRules WorkingMemory, fire rules, query 'queryInputField', and throw FbpValidationException if result is ':ACCOUNT_NUMBER'.",
+    "If featureType is 'TDAccountPreClosure', retrieve TDAccountPreClosureDTO from DOMAIN_REQUEST, insert slotsDTO and preClosureDTO into inputRules WorkingMemory, fire rules, query 'queryInputField', and throw FbpValidationException if result is ':ACCOUNT_NUMBER'."
+  ],
+  "errorConstants": [
+    "ACCOUNT_CURRENCY_NOT_AVAILABLE",
+    "PURPOSE_ID_IS_NULL_OR_EMPTY",
+    "CIF_ID_IS_NULL_OR_EMPTY",
+    "DEPOSIT_PERIOD_AND_MATURITY_DATE_MISSING",
+    "ENTER_EITHER_DEPOSIT_PERIOD_OR_MATURITY_DATE",
+    "DEPOSIT_PERIOD_IS_ZERO_AND_MATURITY_DATE_MISSING",
+    "DEPOSIT_AMOUNT_IS_MANDATORY",
+    "CREDIT_LIMIT_DAILY_EXCEEDS_CREDIT_LIMIT_MONTHLY",
+    "TRANSACTION_LINES_MISSING",
+    "TRANSFER_AMOUNT_INVALID",
+    "TRANSFER_CURRENCY_INVALID",
+    "TRANSFER_ACCOUNT_ID_INVALID",
+    "TRANSFER_TYPE_INVALID",
+    "TRANSFER_CURRENCY_MISMATCH",
+    "TRANSFER_AMOUNT_UNBALANCED",
+    "TRANSFER_LINE_CURRENCY_INVALID",
+    "TXN_AMOUNT_IS_NULL_OR_EMPTY",
+    "TXN_CURRENCY_IS_NULL_OR_EMPTY",
+    "TRANSACTION_VALUE_DATE_IS_NULL_OR_EMPTY",
+    "TXN_ACCOUNT_NUMBER_IS_NULL_OR_EMPTY",
+    "ALL_LINES_MUST_BE_CREDIT",
+    "ALL_LINES_MUST_BE_DEBIT",
+    "ACCOUNT_NUMBER_IS_NULL_OR_EMPTY",
+    "UNABLE_TO_RETRIEVE_CONTRACT_FROM_SOURCE_SYSTEM"
+  ],
+  "kgId": "fbp-product-deposit-app--develop--LPU--ValidateInput",
+  "metadata": {
+    "extractedAt": "2026-07-03T05:38:13.006117+00:00",
+    "generatedBy": "autobots-agents-mer / logical_processing_unit",
+    "version": "develop",
+    "repoName": "fbp-product-deposit-app",
+    "sha": ""
+  }
+}

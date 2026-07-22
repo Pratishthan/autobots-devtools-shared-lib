@@ -1,0 +1,110 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Account Domain API",
+    "version": "1.0.0",
+    "description": "API schema for AccountDomainDTO entity"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "AccountDomain": {
+        "type": "object",
+        "properties": {
+          "industryType": {
+            "type": "string",
+            "description": "Type of industry",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--IndustryType"
+            }
+          },
+          "purposeOfAdvance": {
+            "type": "string",
+            "description": "Purpose of the advance",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--PurposeOfAdvance"
+            }
+          },
+          "interestCreditAccount": {
+            "type": "string",
+            "description": "Account for interest credit",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--InterestCreditAccount"
+            }
+          },
+          "interestDebitAccount": {
+            "type": "string",
+            "description": "Account for interest debit",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--InterestDebitAccount"
+            }
+          },
+          "relationshipManagerId": {
+            "type": "string",
+            "description": "ID of the relationship manager",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--RelationshipManagerId"
+            }
+          },
+          "nsfValidityCycle": {
+            "type": "string",
+            "description": "NSF validity cycle",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--NsfValidityCycle"
+            }
+          },
+          "maxNsfCountLimit": {
+            "type": "string",
+            "description": "Maximum NSF count limit",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--MaxNsfCountLimit"
+            }
+          },
+          "userControlForNsfCount": {
+            "type": "string",
+            "description": "User control for NSF count",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--UserControlForNsfCount"
+            }
+          },
+          "considerUncollectedFundsForNsf": {
+            "type": "string",
+            "description": "Consider uncollected funds for NSF",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--ConsiderUncollectedFundsForNsf"
+            }
+          },
+          "controlledNotOwnedAccount": {
+            "type": "string",
+            "description": "Controlled but not owned account",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--ControlledNotOwnedAccount"
+            }
+          },
+          "allowAcctExemptForCcyTransReport": {
+            "type": "string",
+            "description": "Allow account exemption for currency transaction report",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--AllowAcctExemptForCcyTransReport"
+            }
+          },
+          "checkFundAvailabilityApplicable": {
+            "type": "string",
+            "description": "Check if fund availability is applicable",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--CheckFundAvailabilityApplicable"
+            }
+          }
+        },
+        "x-fbp-params": {
+          "kgId": "fbp-product-deposit-app--develop--Model--DTO--AccountDomain",
+          "version": "develop",
+          "generatedAt": "2026-07-03T05:35:18.330695+00:00",
+          "sha": "68c64a5b10362aa516f2036349b6d3dfc8028278a446217a3d95339f5e8cbd4d",
+          "repoName": "fbp-product-deposit-app",
+          "type": "DTO"
+        }
+      }
+    }
+  }
+}

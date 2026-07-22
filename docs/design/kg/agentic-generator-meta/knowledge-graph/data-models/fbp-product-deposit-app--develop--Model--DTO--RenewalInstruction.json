@@ -1,0 +1,40 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "RenewalInstruction API",
+    "version": "1.0.0",
+    "description": "API schema for RenewalInstruction entity"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "RenewalInstruction": {
+        "type": "object",
+        "properties": {
+          "renewalFundingInstructionDetails": {
+            "$ref": "RenewalFundingInstructionDetails.json#/components/schemas/RenewalFundingInstructionDetails",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--RenewalFundingInstructionDetails",
+              "propertyTypeKgId": "fbp-product-deposit-app--develop--Model--DTO--RenewalFundingInstructionDetails"
+            }
+          },
+          "renewalPayoutInstructionDetails": {
+            "$ref": "RenewalPayoutInstructionDetails.json#/components/schemas/RenewalPayoutInstructionDetails",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--RenewalPayoutInstructionDetails",
+              "propertyTypeKgId": "fbp-product-deposit-app--develop--Model--DTO--RenewalPayoutInstructionDetails"
+            }
+          }
+        },
+        "x-fbp-params": {
+          "kgId": "fbp-product-deposit-app--develop--Model--DTO--RenewalInstruction",
+          "version": "develop",
+          "generatedAt": "2026-07-03T05:35:21.292111+00:00",
+          "sha": "0dd5a567962fa1b6e3a3db048db6ab64f102a9fda631e551125dd8ff970946fe",
+          "repoName": "fbp-product-deposit-app",
+          "type": "DTO"
+        }
+      }
+    }
+  }
+}

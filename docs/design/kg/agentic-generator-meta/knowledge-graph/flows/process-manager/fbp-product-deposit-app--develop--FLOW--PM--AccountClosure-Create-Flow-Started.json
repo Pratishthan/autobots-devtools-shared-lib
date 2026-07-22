@@ -1,0 +1,128 @@
+{
+  "kgId": "fbp-product-deposit-app--develop--FLOW--PM--AccountClosure-Create-Flow-Started",
+  "serviceKgId": "fbp-product-deposit-app--develop--Service--AccountClosure--CloseAccount",
+  "name": "AccountClosure-Create-Flow-Started",
+  "flowType": "PROCESS_MANAGER",
+  "processingNodes": [
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--State--AccountClosure-Create-Flow-Started",
+      "name": "AccountClosure-Create-Flow-Started",
+      "type": "State",
+      "props": {
+        "state": {
+          "name": "AccountClosure-Create-Flow-Started",
+          "description": "AccountClosure-Create-Flow-Started state",
+          "persist": false,
+          "initiateAsync": false
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--State--ACCOUNT_CLOSURE_INITIATED",
+      "name": "ACCOUNT_CLOSURE_INITIATED",
+      "type": "State",
+      "props": {
+        "state": {
+          "name": "ACCOUNT_CLOSURE_INITIATED",
+          "description": "ACCOUNT_CLOSURE_INITIATED state",
+          "persist": true,
+          "initiateAsync": false
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Action--AccountClosure-Create-Flow-Started_to_ACCOUNT_CLOSURE_INITIATED",
+      "name": "AccountClosure/process",
+      "type": "Action",
+      "props": {
+        "action": {
+          "type": "Local",
+          "feature": "AccountClosure",
+          "operation": "process",
+          "$ref": "../compose-engine/fbp-product-deposit-app--develop--FLOW--CM--AccountClosure-process.json",
+          "actionKgId": "fbp-product-deposit-app--develop--FLOW--CM--AccountClosure-process",
+          "component": "DEP",
+          "mapperIdentifier": "NA"
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--State--ACCOUNT_CLOSURE_COMPLETED",
+      "name": "ACCOUNT_CLOSURE_COMPLETED",
+      "type": "State",
+      "props": {
+        "state": {
+          "name": "ACCOUNT_CLOSURE_COMPLETED",
+          "description": "ACCOUNT_CLOSURE_COMPLETED state",
+          "persist": true,
+          "initiateAsync": false
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Action--ACCOUNT_CLOSURE_INITIATED_to_ACCOUNT_CLOSURE_COMPLETED",
+      "name": "CommandHandler-FinalCommandToExternalSystem/process",
+      "type": "Action",
+      "props": {
+        "action": {
+          "type": "Remote",
+          "feature": "CommandHandler-FinalCommandToExternalSystem",
+          "operation": "process",
+          "$ref": "../compose-engine/fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-FinalCommandToExternalSystem-process.json",
+          "actionKgId": "fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-FinalCommandToExternalSystem-process",
+          "component": "closure",
+          "mapperIdentifier": "account-closure",
+          "remoteCommandKey": "close-account"
+        }
+      }
+    }
+  ],
+  "flowPaths": {
+    "path_1": [
+      {
+        "stepNumber": 1,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--AccountClosure-Create-Flow-Started"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--AccountClosure-Create-Flow-Started_to_ACCOUNT_CLOSURE_INITIATED"
+        }
+      },
+      {
+        "stepNumber": 2,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--AccountClosure-Create-Flow-Started_to_ACCOUNT_CLOSURE_INITIATED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--ACCOUNT_CLOSURE_INITIATED"
+        }
+      },
+      {
+        "stepNumber": 3,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--ACCOUNT_CLOSURE_INITIATED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--ACCOUNT_CLOSURE_INITIATED_to_ACCOUNT_CLOSURE_COMPLETED"
+        }
+      },
+      {
+        "stepNumber": 4,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--ACCOUNT_CLOSURE_INITIATED_to_ACCOUNT_CLOSURE_COMPLETED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--ACCOUNT_CLOSURE_COMPLETED"
+        }
+      }
+    ]
+  },
+  "metadata": {
+    "generatedFrom": "DEP-complete-rules.csv",
+    "generatedAt": "2026-07-03T05:35:29.125857+00:00",
+    "version": "develop",
+    "generatedBy": "flow-kg-generator-phase18",
+    "repoName": "fbp-product-deposit-app",
+    "sha": ""
+  }
+}

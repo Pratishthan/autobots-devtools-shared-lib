@@ -1,0 +1,128 @@
+{
+  "kgId": "fbp-product-deposit-app--develop--FLOW--PM--MultiCreditTransaction-Create-Flow-Started",
+  "serviceKgId": "fbp-product-deposit-app--develop--Service--MultiCreditTransaction--CreditTransaction",
+  "name": "MultiCreditTransaction-Create-Flow-Started",
+  "flowType": "PROCESS_MANAGER",
+  "processingNodes": [
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--State--MultiCreditTransaction-Create-Flow-Started",
+      "name": "MultiCreditTransaction-Create-Flow-Started",
+      "type": "State",
+      "props": {
+        "state": {
+          "name": "MultiCreditTransaction-Create-Flow-Started",
+          "description": "MultiCreditTransaction-Create-Flow-Started state",
+          "persist": false,
+          "initiateAsync": false
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--State--MULTI_CREDIT_INITIATED",
+      "name": "MULTI_CREDIT_INITIATED",
+      "type": "State",
+      "props": {
+        "state": {
+          "name": "MULTI_CREDIT_INITIATED",
+          "description": "MULTI_CREDIT_INITIATED state",
+          "persist": true,
+          "initiateAsync": false
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Action--MultiCreditTransaction-Create-Flow-Started_to_MULTI_CREDIT_INITIATED",
+      "name": "MultiCreditTransaction/process",
+      "type": "Action",
+      "props": {
+        "action": {
+          "type": "Local",
+          "feature": "MultiCreditTransaction",
+          "operation": "process",
+          "$ref": "../compose-engine/fbp-product-deposit-app--develop--FLOW--CM--MultiCreditTransaction-process.json",
+          "actionKgId": "fbp-product-deposit-app--develop--FLOW--CM--MultiCreditTransaction-process",
+          "component": "DEP",
+          "mapperIdentifier": "Checking-account-multi-credit"
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--State--MULTI_CREDIT_COMPLETED",
+      "name": "MULTI_CREDIT_COMPLETED",
+      "type": "State",
+      "props": {
+        "state": {
+          "name": "MULTI_CREDIT_COMPLETED",
+          "description": "MULTI_CREDIT_COMPLETED state",
+          "persist": true,
+          "initiateAsync": false
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Action--MULTI_CREDIT_INITIATED_to_MULTI_CREDIT_COMPLETED",
+      "name": "CommandHandler-transactionCommandToExternalSystem/process",
+      "type": "Action",
+      "props": {
+        "action": {
+          "type": "Remote",
+          "feature": "CommandHandler-transactionCommandToExternalSystem",
+          "operation": "process",
+          "$ref": "../compose-engine/fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-transactionCommandToExternalSystem-process.json",
+          "actionKgId": "fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-transactionCommandToExternalSystem-process",
+          "component": "transaction",
+          "mapperIdentifier": "Checking-account-multi-credit",
+          "remoteCommandKey": "create-multi-transaction"
+        }
+      }
+    }
+  ],
+  "flowPaths": {
+    "path_1": [
+      {
+        "stepNumber": 1,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--MultiCreditTransaction-Create-Flow-Started"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--MultiCreditTransaction-Create-Flow-Started_to_MULTI_CREDIT_INITIATED"
+        }
+      },
+      {
+        "stepNumber": 2,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--MultiCreditTransaction-Create-Flow-Started_to_MULTI_CREDIT_INITIATED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--MULTI_CREDIT_INITIATED"
+        }
+      },
+      {
+        "stepNumber": 3,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--MULTI_CREDIT_INITIATED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--MULTI_CREDIT_INITIATED_to_MULTI_CREDIT_COMPLETED"
+        }
+      },
+      {
+        "stepNumber": 4,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--MULTI_CREDIT_INITIATED_to_MULTI_CREDIT_COMPLETED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--MULTI_CREDIT_COMPLETED"
+        }
+      }
+    ]
+  },
+  "metadata": {
+    "generatedFrom": "DEP-complete-rules.csv",
+    "generatedAt": "2026-07-03T05:35:29.966325+00:00",
+    "version": "develop",
+    "generatedBy": "flow-kg-generator-phase18",
+    "repoName": "fbp-product-deposit-app",
+    "sha": ""
+  }
+}

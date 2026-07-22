@@ -1,0 +1,138 @@
+{
+  "name": "FetchAccount",
+  "type": "Manual",
+  "subType": "Enrichment",
+  "consumes": {
+    "Models": [
+      {
+        "referencedProperties": [
+          {
+            "name": "accountNumber",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountNumber"
+          }
+        ],
+        "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--AccountClosure",
+        "$ref": "../models/fbp-product-deposit-app--develop--Model--DTO--AccountClosure.json#/components/schemas/AccountClosure"
+      },
+      {
+        "referencedProperties": [
+          {
+            "name": "accountNumber",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountNumber"
+          }
+        ],
+        "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--TDAccountPreClosure",
+        "$ref": "../models/fbp-product-deposit-app--develop--Model--DTO--TDAccountPreClosure.json#/components/schemas/TDAccountPreClosure"
+      },
+      {
+        "referencedProperties": [
+          {
+            "name": "tranLines",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--TranLines"
+          }
+        ],
+        "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--Transfer",
+        "$ref": "../models/fbp-product-deposit-app--develop--Model--DTO--Transfer.json#/components/schemas/Transfer"
+      },
+      {
+        "referencedProperties": [
+          {
+            "name": "tranLines",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--TranLines"
+          }
+        ],
+        "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--MultiCreditTransaction",
+        "$ref": "../models/fbp-product-deposit-app--develop--Model--DTO--MultiCreditTransaction.json#/components/schemas/MultiCreditTransaction"
+      },
+      {
+        "referencedProperties": [
+          {
+            "name": "tranLines",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--TranLines"
+          }
+        ],
+        "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--MultiDebitTransaction",
+        "$ref": "../models/fbp-product-deposit-app--develop--Model--DTO--MultiDebitTransaction.json#/components/schemas/MultiDebitTransaction"
+      }
+    ],
+    "Primitives": [
+      {
+        "name": "featureType",
+        "dataType": "String"
+      }
+    ],
+    "apis": [],
+    "dataReaders": [
+      {
+        "referencedProperties": [
+          {
+            "name": "currency",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--Currency"
+          },
+          {
+            "name": "purposeId",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--PurposeId"
+          },
+          {
+            "name": "cifId",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--CifId"
+          },
+          {
+            "name": "initialDeposit",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--InitialDeposit"
+          }
+        ],
+        "modelKgId": "fbp-product-deposit-app--develop--Model--Entity--DepositAccount",
+        "$ref": "../models/fbp-product-deposit-app--develop--Model--Entity--DepositAccount.json#/components/schemas/DepositAccount",
+        "dataAccessKgId": "fbp-product-deposit-app--develop--DataAccess--DepositAccount--findByAccountNumber"
+      }
+    ]
+  },
+  "produces": {
+    "Models": [],
+    "Primitives": [
+      {
+        "name": "accountCurrency",
+        "dataType": "String"
+      },
+      {
+        "name": "purposeId",
+        "dataType": "String"
+      },
+      {
+        "name": "customerId",
+        "dataType": "String"
+      },
+      {
+        "name": "accountId",
+        "dataType": "String"
+      },
+      {
+        "name": "transferLegContexts",
+        "dataType": "List<TransferLegContext>"
+      }
+    ],
+    "apis": [],
+    "dataWriters": []
+  },
+  "businessLogic": [
+    "Determine the feature type from SlotsDTO.",
+    "For 'FundTransfer': retrieve TransferDTO from SlotsDTO, iterate over each TxnLineDTO leg, look up DepositAccountEntity by account number via repository, build a TransferLegContext per leg, store all leg contexts in SlotsDTO, and set purposeId/customerId/accountId from the DEBIT leg.",
+    "For 'MultiCreditTransaction': retrieve MultiCreditTransactionDTO, iterate over each TxnLineDTO leg with indicator 'CREDIT', look up DepositAccountEntity per leg, build TransferLegContext entries, and store all leg contexts in SlotsDTO.",
+    "For 'MultiDebitTransaction': retrieve MultiDebitTransactionDTO, iterate over each TxnLineDTO leg with indicator 'DEBIT', look up DepositAccountEntity per leg, build TransferLegContext entries, and store all leg contexts in SlotsDTO.",
+    "For 'AccountClosure': retrieve AccountClosureDTO from SlotsDTO and extract accountNumber.",
+    "For 'TDAccountPreClosure': retrieve TDAccountPreClosureDTO from SlotsDTO and extract accountNumber.",
+    "For AccountClosure/TDAccountPreClosure: look up DepositAccountEntity by accountNumber via repository; if found, set accountCurrency, purposeId, customerId, and accountId in SlotsDTO; if not found, throw FbpValidationException with ACCOUNT_IS_INVALID error code."
+  ],
+  "errorConstants": [
+    "ACCOUNT_IS_INVALID"
+  ],
+  "kgId": "fbp-product-deposit-app--develop--LPU--FetchAccount",
+  "metadata": {
+    "extractedAt": "2026-07-03T05:38:10.938859+00:00",
+    "generatedBy": "autobots-agents-mer / logical_processing_unit",
+    "version": "develop",
+    "repoName": "fbp-product-deposit-app",
+    "sha": ""
+  }
+}

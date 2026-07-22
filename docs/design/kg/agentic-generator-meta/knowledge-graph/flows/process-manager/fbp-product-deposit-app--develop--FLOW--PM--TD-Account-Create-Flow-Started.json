@@ -1,0 +1,333 @@
+{
+  "kgId": "fbp-product-deposit-app--develop--FLOW--PM--TD-Account-Create-Flow-Started",
+  "serviceKgId": "fbp-product-deposit-app--develop--FLOW--PM--TD-Account-Create-Flow-Started",
+  "name": "TD-Account-Create-Flow-Started",
+  "flowType": "PROCESS_MANAGER",
+  "processingNodes": [
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--State--TD-Account-Create-Flow-Started",
+      "name": "TD-Account-Create-Flow-Started",
+      "type": "State",
+      "props": {
+        "state": {
+          "name": "TD-Account-Create-Flow-Started",
+          "description": "TD-Account-Create-Flow-Started state",
+          "persist": false,
+          "initiateAsync": false
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--State--TD_ACCOUNT_OPEN_INITIATED",
+      "name": "TD_ACCOUNT_OPEN_INITIATED",
+      "type": "State",
+      "props": {
+        "state": {
+          "name": "TD_ACCOUNT_OPEN_INITIATED",
+          "description": "TD_ACCOUNT_OPEN_INITIATED state",
+          "persist": true,
+          "initiateAsync": false
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Action--TD-Account-Create-Flow-Started_to_TD_ACCOUNT_OPEN_INITIATED",
+      "name": "OpenTDAccount/process",
+      "type": "Action",
+      "props": {
+        "action": {
+          "type": "Local",
+          "feature": "OpenTDAccount",
+          "operation": "process",
+          "$ref": "../compose-engine/fbp-product-deposit-app--develop--FLOW--CM--OpenTDAccount-process.json",
+          "actionKgId": "fbp-product-deposit-app--develop--FLOW--CM--OpenTDAccount-process",
+          "component": "DEP",
+          "mapperIdentifier": "Td-account-creation"
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--State--TD_ACCOUNT_OPENED",
+      "name": "TD_ACCOUNT_OPENED",
+      "type": "State",
+      "props": {
+        "state": {
+          "name": "TD_ACCOUNT_OPENED",
+          "description": "TD_ACCOUNT_OPENED state",
+          "persist": true,
+          "initiateAsync": false
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Action--TD_ACCOUNT_OPEN_INITIATED_to_TD_ACCOUNT_OPENED",
+      "name": "CommandHandler-ProcessCommandToExternalSystem/process",
+      "type": "Action",
+      "props": {
+        "action": {
+          "type": "Remote",
+          "feature": "CommandHandler-ProcessCommandToExternalSystem",
+          "operation": "process",
+          "$ref": "../compose-engine/fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-ProcessCommandToExternalSystem-process.json",
+          "actionKgId": "fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-ProcessCommandToExternalSystem-process",
+          "component": "account",
+          "mapperIdentifier": "Td-account-creation",
+          "remoteCommandKey": "create-td-account"
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--State--TD_ACCOUNT_RELATED_PARTY_MAPPING",
+      "name": "TD_ACCOUNT_RELATED_PARTY_MAPPING",
+      "type": "State",
+      "props": {
+        "state": {
+          "name": "TD_ACCOUNT_RELATED_PARTY_MAPPING",
+          "description": "TD_ACCOUNT_RELATED_PARTY_MAPPING state",
+          "persist": true,
+          "initiateAsync": false
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Condition--TD_ACCOUNT_OPENED_to_TD_ACCOUNT_RELATED_PARTY_MAPPING",
+      "name": "Condition: TD_ACCOUNT_OPENED to TD_ACCOUNT_RELATED_PARTY_MAPPING",
+      "type": "Condition",
+      "props": {
+        "condition": {
+          "expression": "[[\"currentCommandPayload.isRelatedPartyPresent\" \"true\"]]"
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Action--TD_ACCOUNT_OPENED_to_TD_ACCOUNT_RELATED_PARTY_MAPPING",
+      "name": "CommandHandler-ProcessCommandToExternalSystem/process",
+      "type": "Action",
+      "props": {
+        "action": {
+          "type": "Remote",
+          "feature": "CommandHandler-ProcessCommandToExternalSystem",
+          "operation": "process",
+          "$ref": "../compose-engine/fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-ProcessCommandToExternalSystem-process.json",
+          "actionKgId": "fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-ProcessCommandToExternalSystem-process",
+          "component": "party",
+          "mapperIdentifier": "deposit-related-party-mapping",
+          "remoteCommandKey": "create-related-party-mapping"
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--State--TD_ACCOUNT_OPEN_COMPLETED",
+      "name": "TD_ACCOUNT_OPEN_COMPLETED",
+      "type": "State",
+      "props": {
+        "state": {
+          "name": "TD_ACCOUNT_OPEN_COMPLETED",
+          "description": "TD_ACCOUNT_OPEN_COMPLETED state",
+          "persist": false,
+          "initiateAsync": false
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Action--TD_ACCOUNT_RELATED_PARTY_MAPPING_to_TD_ACCOUNT_OPEN_COMPLETED",
+      "name": "CommandHandler-AccountOpenRespondToRequest/process",
+      "type": "Action",
+      "props": {
+        "action": {
+          "type": "Local",
+          "feature": "CommandHandler-AccountOpenRespondToRequest",
+          "operation": "process",
+          "$ref": "../compose-engine/fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-AccountOpenRespondToRequest-process.json",
+          "actionKgId": "fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-AccountOpenRespondToRequest-process",
+          "component": "DEP",
+          "mapperIdentifier": "Checking-account-response"
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Condition--TD_ACCOUNT_OPENED_to_TD_ACCOUNT_OPEN_COMPLETED",
+      "name": "Condition: TD_ACCOUNT_OPENED to TD_ACCOUNT_OPEN_COMPLETED",
+      "type": "Condition",
+      "props": {
+        "condition": {
+          "expression": "[[\"currentCommandPayload.isRelatedPartyPresent\" \"false\"]]"
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Action--TD_ACCOUNT_OPENED_to_TD_ACCOUNT_OPEN_COMPLETED",
+      "name": "CommandHandler-AccountOpenRespondToRequest/process",
+      "type": "Action",
+      "props": {
+        "action": {
+          "type": "Local",
+          "feature": "CommandHandler-AccountOpenRespondToRequest",
+          "operation": "process",
+          "$ref": "../compose-engine/fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-AccountOpenRespondToRequest-process.json",
+          "actionKgId": "fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-AccountOpenRespondToRequest-process",
+          "component": "DEP",
+          "mapperIdentifier": "Checking-account-response"
+        }
+      }
+    }
+  ],
+  "flowPaths": {
+    "path_1": [
+      {
+        "stepNumber": 1,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--TD-Account-Create-Flow-Started"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--TD-Account-Create-Flow-Started_to_TD_ACCOUNT_OPEN_INITIATED"
+        }
+      },
+      {
+        "stepNumber": 2,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--TD-Account-Create-Flow-Started_to_TD_ACCOUNT_OPEN_INITIATED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--TD_ACCOUNT_OPEN_INITIATED"
+        }
+      },
+      {
+        "stepNumber": 3,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--TD_ACCOUNT_OPEN_INITIATED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--TD_ACCOUNT_OPEN_INITIATED_to_TD_ACCOUNT_OPENED"
+        }
+      },
+      {
+        "stepNumber": 4,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--TD_ACCOUNT_OPEN_INITIATED_to_TD_ACCOUNT_OPENED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--TD_ACCOUNT_OPENED"
+        }
+      },
+      {
+        "stepNumber": 5,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--TD_ACCOUNT_OPENED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Condition--TD_ACCOUNT_OPENED_to_TD_ACCOUNT_RELATED_PARTY_MAPPING"
+        }
+      },
+      {
+        "stepNumber": 6,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Condition--TD_ACCOUNT_OPENED_to_TD_ACCOUNT_RELATED_PARTY_MAPPING"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--TD_ACCOUNT_OPENED_to_TD_ACCOUNT_RELATED_PARTY_MAPPING"
+        }
+      },
+      {
+        "stepNumber": 7,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--TD_ACCOUNT_OPENED_to_TD_ACCOUNT_RELATED_PARTY_MAPPING"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--TD_ACCOUNT_RELATED_PARTY_MAPPING"
+        }
+      },
+      {
+        "stepNumber": 8,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--TD_ACCOUNT_RELATED_PARTY_MAPPING"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--TD_ACCOUNT_RELATED_PARTY_MAPPING_to_TD_ACCOUNT_OPEN_COMPLETED"
+        }
+      },
+      {
+        "stepNumber": 9,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--TD_ACCOUNT_RELATED_PARTY_MAPPING_to_TD_ACCOUNT_OPEN_COMPLETED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--TD_ACCOUNT_OPEN_COMPLETED"
+        }
+      }
+    ],
+    "path_2": [
+      {
+        "stepNumber": 1,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--TD-Account-Create-Flow-Started"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--TD-Account-Create-Flow-Started_to_TD_ACCOUNT_OPEN_INITIATED"
+        }
+      },
+      {
+        "stepNumber": 2,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--TD-Account-Create-Flow-Started_to_TD_ACCOUNT_OPEN_INITIATED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--TD_ACCOUNT_OPEN_INITIATED"
+        }
+      },
+      {
+        "stepNumber": 3,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--TD_ACCOUNT_OPEN_INITIATED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--TD_ACCOUNT_OPEN_INITIATED_to_TD_ACCOUNT_OPENED"
+        }
+      },
+      {
+        "stepNumber": 4,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--TD_ACCOUNT_OPEN_INITIATED_to_TD_ACCOUNT_OPENED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--TD_ACCOUNT_OPENED"
+        }
+      },
+      {
+        "stepNumber": 5,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--TD_ACCOUNT_OPENED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Condition--TD_ACCOUNT_OPENED_to_TD_ACCOUNT_OPEN_COMPLETED"
+        }
+      },
+      {
+        "stepNumber": 6,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Condition--TD_ACCOUNT_OPENED_to_TD_ACCOUNT_OPEN_COMPLETED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--TD_ACCOUNT_OPENED_to_TD_ACCOUNT_OPEN_COMPLETED"
+        }
+      },
+      {
+        "stepNumber": 7,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--TD_ACCOUNT_OPENED_to_TD_ACCOUNT_OPEN_COMPLETED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--TD_ACCOUNT_OPEN_COMPLETED"
+        }
+      }
+    ]
+  },
+  "metadata": {
+    "generatedFrom": "DEP-complete-rules.csv",
+    "generatedAt": "2026-07-03T05:35:30.596145+00:00",
+    "version": "develop",
+    "generatedBy": "flow-kg-generator-phase18",
+    "repoName": "fbp-product-deposit-app",
+    "sha": ""
+  }
+}

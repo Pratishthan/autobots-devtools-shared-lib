@@ -1,0 +1,36 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "RenewalPayoutInstructionDetails API",
+    "version": "1.0.0",
+    "description": "API schema for MaturityPayoutInstruction entity"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "RenewalPayoutInstructionDetails": {
+        "type": "object",
+        "properties": {
+          "paymentInstructionDetails": {
+            "type": "array",
+            "items": {
+              "$ref": "PaymentInstructionDetails.json#/components/schemas/PaymentInstructionDetails",
+              "x-fbp-params": {
+                "propertyKgId": "fbp-product-deposit-app--develop--Property--PaymentInstructionDetails",
+                "propertyTypeKgId": "fbp-product-deposit-app--develop--Model--DTO--PaymentInstructionDetails"
+              }
+            }
+          }
+        },
+        "x-fbp-params": {
+          "kgId": "fbp-product-deposit-app--develop--Model--DTO--RenewalPayoutInstructionDetails",
+          "version": "develop",
+          "generatedAt": "2026-07-03T05:35:21.413280+00:00",
+          "sha": "a90686bde3015188184789d8ef76231982c17899d60065dc693fca957165484a",
+          "repoName": "fbp-product-deposit-app",
+          "type": "DTO"
+        }
+      }
+    }
+  }
+}

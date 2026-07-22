@@ -1,0 +1,168 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Account Subscription API",
+    "version": "1.0.0",
+    "description": "API schema for AccountSubscriptionDTO entity"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "AccountSubscription": {
+        "type": "object",
+        "properties": {
+          "paymentMethod": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--PaymentMethod"
+            }
+          },
+          "transactionType": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--TransactionType"
+            }
+          },
+          "isCustomerInduced": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--IsCustomerInduced"
+            }
+          },
+          "businessEventInfo": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--BusinessEventInfo"
+            }
+          },
+          "acctNumber": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--AcctNumber"
+            }
+          },
+          "txnAmount": {
+            "$ref": "../common/FbpDtoDataTypes.json#/components/schemas/AmountDTO",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--TxnAmount"
+            }
+          },
+          "sourceChannelId": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--SourceChannelId"
+            }
+          },
+          "sourceChannelType": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--SourceChannelType"
+            }
+          },
+          "sourceChannelDesc": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--SourceChannelDesc"
+            }
+          },
+          "sourceLocation": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--SourceLocation"
+            }
+          },
+          "tranCode": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--TranCode"
+            }
+          },
+          "authMethod": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--AuthMethod"
+            }
+          },
+          "instrumentId": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--InstrumentId"
+            }
+          },
+          "instrumentType": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--InstrumentType"
+            }
+          },
+          "txnMetaInfo": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--TxnMetaInfo"
+            }
+          },
+          "narration": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--Narration"
+            }
+          },
+          "txnValueDate": {
+            "$ref": "../common/FbpDtoDataTypes.json#/components/schemas/BusinessDateDTO",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--TxnValueDate"
+            }
+          },
+          "counterPartyType": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--CounterPartyType"
+            }
+          },
+          "counterPartyDetails": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--CounterPartyDetails"
+            }
+          },
+          "accountDomain": {
+            "$ref": "AccountDomain.json#/components/schemas/AccountDomain",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountDomain",
+              "propertyTypeKgId": "fbp-product-deposit-app--develop--Model--DTO--AccountDomain"
+            }
+          },
+          "documentDetails": {
+            "$ref": "DocumentDetails.json#/components/schemas/DocumentDetails",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--DocumentDetails",
+              "propertyTypeKgId": "fbp-product-deposit-app--develop--Model--Entity--DocumentDetails"
+            }
+          },
+          "limitDetails": {
+            "$ref": "LimitDetails.json#/components/schemas/LimitDetails",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--LimitDetails",
+              "propertyTypeKgId": "fbp-product-deposit-app--develop--Model--DTO--LimitDetails"
+            }
+          },
+          "productSwitchingApplicable": {
+            "type": "string",
+            "maxLength": 3,
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--ProductSwitchingApplicable"
+            }
+          }
+        },
+        "x-fbp-params": {
+          "kgId": "fbp-product-deposit-app--develop--Model--DTO--AccountSubscription",
+          "version": "develop",
+          "generatedAt": "2026-07-03T05:35:18.808191+00:00",
+          "sha": "fc2656a68db7b4c8167bec40f820cbb6c9596910bf2a7e27083c0037cf653a9c",
+          "repoName": "fbp-product-deposit-app",
+          "type": "DTO"
+        }
+      }
+    }
+  }
+}

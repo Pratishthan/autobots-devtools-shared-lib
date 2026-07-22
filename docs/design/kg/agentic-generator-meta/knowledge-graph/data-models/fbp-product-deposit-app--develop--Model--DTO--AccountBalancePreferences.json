@@ -1,0 +1,43 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Account Balance Preferences API",
+    "version": "1.0.0",
+    "description": "API schema for AccountBalancePreferencesDTO entity"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "AccountBalancePreferences": {
+        "type": "object",
+        "properties": {
+          "maximumBalance": {
+            "type": "number",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--MaximumBalance"
+            }
+          },
+          "balanceType": {
+            "type": "string",
+            "enum": [
+              "POSITIVE",
+              "NEGATIVE",
+              "BOTH"
+            ],
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--BalanceType"
+            }
+          }
+        },
+        "x-fbp-params": {
+          "kgId": "fbp-product-deposit-app--develop--Model--DTO--AccountBalancePreferences",
+          "version": "develop",
+          "generatedAt": "2026-07-03T05:35:18.022765+00:00",
+          "sha": "2167eaaa55f5588d2c7b1a7ea399d66bb236e60b69df408e3c8e0606fae0c4f3",
+          "repoName": "fbp-product-deposit-app",
+          "type": "DTO"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,597 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Reference Contract API",
+    "version": "1.0.0"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "ReferenceContract": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--ProductId"
+            }
+          },
+          "contractId": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--ContractId"
+            }
+          },
+          "ciCreditTxnOnInactiveAcctAllowed": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--CiCreditTxnOnInactiveAcctAllowed"
+            }
+          },
+          "ciDebitTxnOnInactiveAcctAllowed": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--CiDebitTxnOnInactiveAcctAllowed"
+            }
+          },
+          "ciCreditTxnOnDormantAcctAllowed": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--CiCreditTxnOnDormantAcctAllowed"
+            }
+          },
+          "ciDebitTxnOnDormantAcctAllowed": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--CiDebitTxnOnDormantAcctAllowed"
+            }
+          },
+          "minimumAmount": {
+            "$ref": "../common/FbpDtoDataTypes.json#/components/schemas/AmountDTO",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--MinimumAmount"
+            }
+          },
+          "maximumAmount": {
+            "$ref": "../common/FbpDtoDataTypes.json#/components/schemas/AmountDTO",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--MaximumAmount"
+            }
+          },
+          "multiplesOf": {
+            "type": "number",
+            "format": "double",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--MultiplesOf"
+            }
+          },
+          "minimumPeriod": {
+            "type": "integer",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--MinimumPeriod"
+            }
+          },
+          "maximumPeriod": {
+            "type": "integer",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--MaximumPeriod"
+            }
+          },
+          "periodInMultiplesOf": {
+            "type": "integer",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--PeriodInMultiplesOf"
+            }
+          },
+          "depositLimit": {
+            "$ref": "../common/FbpDtoDataTypes.json#/components/schemas/AmountDTO",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--DepositLimit"
+            }
+          },
+          "customerAgeCode": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--CustomerAgeCode"
+            }
+          },
+          "customerResidencyStatus": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--CustomerResidencyStatus"
+            }
+          },
+          "minimumPeriodDays": {
+            "type": "integer",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--MinimumPeriodDays"
+            }
+          },
+          "minimumPeriodMonths": {
+            "type": "integer",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--MinimumPeriodMonths"
+            }
+          },
+          "maximumPeriodDays": {
+            "type": "integer",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--MaximumPeriodDays"
+            }
+          },
+          "maximumPeriodMonths": {
+            "type": "integer",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--MaximumPeriodMonths"
+            }
+          },
+          "periodMonthsInMultiplesOf": {
+            "type": "integer",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--PeriodMonthsInMultiplesOf"
+            }
+          },
+          "periodDaysInMultiplesOf": {
+            "type": "integer",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--PeriodDaysInMultiplesOf"
+            }
+          },
+          "accountTenureStartsFrom": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountTenureStartsFrom"
+            }
+          },
+          "generationSequence": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--GenerationSequence"
+            }
+          },
+          "zeroFill": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--ZeroFill"
+            }
+          },
+          "financialTransactionInactivityPeriodMonths": {
+            "type": "integer",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--FinancialTransactionInactivityPeriodMonths"
+            }
+          },
+          "allowCustomerInitiatedCreditOnInactiveAccount": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--AllowCustomerInitiatedCreditOnInactiveAccount"
+            }
+          },
+          "allowCustomerInitiatedDebitOnInactiveAccount": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--AllowCustomerInitiatedDebitOnInactiveAccount"
+            }
+          },
+          "financialTransactionDormancyPeriodMonths": {
+            "type": "integer",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--FinancialTransactionDormancyPeriodMonths"
+            }
+          },
+          "allowCustomerInitiatedCreditOnDormantAccount": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--AllowCustomerInitiatedCreditOnDormantAccount"
+            }
+          },
+          "allowCustomerInitiatedDebitOnDormantAccount": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--AllowCustomerInitiatedDebitOnDormantAccount"
+            }
+          },
+          "limitCheckRequiredDuringTransaction": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--LimitCheckRequiredDuringTransaction"
+            }
+          },
+          "productName": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--ProductName"
+            }
+          },
+          "productShortName": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--ProductShortName"
+            }
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--StartDate"
+            }
+          },
+          "expiryDate": {
+            "type": "string",
+            "format": "date",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--ExpiryDate"
+            }
+          },
+          "currency": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--Currency"
+            }
+          },
+          "dispatchMode": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--DispatchMode"
+            }
+          },
+          "statementType": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--StatementType"
+            }
+          },
+          "statementFrequency": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--StatementFrequency"
+            }
+          },
+          "statementMethod": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--StatementMethod"
+            }
+          },
+          "balanceType": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--BalanceType"
+            }
+          },
+          "maximumBalance": {
+            "$ref": "../common/FbpDtoDataTypes.json#/components/schemas/AmountDTO",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--MaximumBalance"
+            }
+          },
+          "applicableMtMxStatements": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--ApplicableMtMxStatements"
+            }
+          },
+          "interestType": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--InterestType"
+            }
+          },
+          "interestApplicability": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--InterestApplicability"
+            }
+          },
+          "interestRateCode": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--InterestRateCode"
+            }
+          },
+          "interestFloorRate": {
+            "type": "number",
+            "format": "double",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--InterestFloorRate"
+            }
+          },
+          "interestCapRate": {
+            "type": "number",
+            "format": "double",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--InterestCapRate"
+            }
+          },
+          "dayCountConventionMethod": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--DayCountConventionMethod"
+            }
+          },
+          "tierBandMethod": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--TierBandMethod"
+            }
+          },
+          "baseAmountForTierBand": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--BaseAmountForTierBand"
+            }
+          },
+          "balanceMethod": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--BalanceMethod"
+            }
+          },
+          "computationMethod": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--ComputationMethod"
+            }
+          },
+          "compoundingFrequency": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--CompoundingFrequency"
+            }
+          },
+          "irrApplication": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--IrrApplication"
+            }
+          },
+          "interestAmountRoundOffType": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--InterestAmountRoundOffType"
+            }
+          },
+          "interestAmountRoundOffDecimal": {
+            "type": "integer",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--InterestAmountRoundOffDecimal"
+            }
+          },
+          "interestMethodology": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--InterestMethodology"
+            }
+          },
+          "startTriggerEvent": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--StartTriggerEvent"
+            }
+          },
+          "stopTriggerEvent": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--StopTriggerEvent"
+            }
+          },
+          "interestApplicationVia": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--InterestApplicationVia"
+            }
+          },
+          "frequency": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--Frequency"
+            }
+          },
+          "applicationFrequencyType": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--ApplicationFrequencyType"
+            }
+          },
+          "taxGroup": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--TaxGroup"
+            }
+          },
+          "interestRepricingPlan": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--InterestRepricingPlan"
+            }
+          },
+          "rateRepricingFrequency": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--RateRepricingFrequency"
+            }
+          },
+          "rateRepricingFrequencyType": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--RateRepricingFrequencyType"
+            }
+          },
+          "recalcTrigger": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--RecalcTrigger"
+            }
+          },
+          "calculateApy": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--CalculateApy"
+            }
+          },
+          "riskFreeRateRfrMethod": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--RiskFreeRateRfrMethod"
+            }
+          },
+          "creditLimitDaily": {
+            "$ref": "../common/FbpDtoDataTypes.json#/components/schemas/AmountDTO",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--CreditLimitDaily"
+            }
+          },
+          "creditLimitMonthly": {
+            "$ref": "../common/FbpDtoDataTypes.json#/components/schemas/AmountDTO",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--CreditLimitMonthly"
+            }
+          },
+          "creditLimitYearly": {
+            "$ref": "../common/FbpDtoDataTypes.json#/components/schemas/AmountDTO",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--CreditLimitYearly"
+            }
+          },
+          "numberOfCreditsDaily": {
+            "type": "integer",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--NumberOfCreditsDaily"
+            }
+          },
+          "numberOfCreditsMonthly": {
+            "type": "integer",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--NumberOfCreditsMonthly"
+            }
+          },
+          "numberOfCreditsYearly": {
+            "type": "integer",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--NumberOfCreditsYearly"
+            }
+          },
+          "cashDepositLimitMonthly": {
+            "$ref": "../common/FbpDtoDataTypes.json#/components/schemas/AmountDTO",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--CashDepositLimitMonthly"
+            }
+          },
+          "debitLimitDaily": {
+            "$ref": "../common/FbpDtoDataTypes.json#/components/schemas/AmountDTO",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--DebitLimitDaily"
+            }
+          },
+          "debitLimitMonthly": {
+            "$ref": "../common/FbpDtoDataTypes.json#/components/schemas/AmountDTO",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--DebitLimitMonthly"
+            }
+          },
+          "debitLimitYearly": {
+            "$ref": "../common/FbpDtoDataTypes.json#/components/schemas/AmountDTO",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--DebitLimitYearly"
+            }
+          },
+          "numberOfDebitsDaily": {
+            "type": "integer",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--NumberOfDebitsDaily"
+            }
+          },
+          "numberOfDebitsMonthly": {
+            "type": "integer",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--NumberOfDebitsMonthly"
+            }
+          },
+          "numberOfDebitsYearly": {
+            "type": "integer",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--NumberOfDebitsYearly"
+            }
+          },
+          "cashWithdrawalLimitMonthly": {
+            "$ref": "../common/FbpDtoDataTypes.json#/components/schemas/AmountDTO",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--CashWithdrawalLimitMonthly"
+            }
+          },
+          "transferWithdrawalLimit": {
+            "$ref": "../common/FbpDtoDataTypes.json#/components/schemas/AmountDTO",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--TransferWithdrawalLimit"
+            }
+          },
+          "courtesyOverdafts": {
+            "type": "object",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--CourtesyOverdafts"
+            }
+          },
+          "withholdingTaxApplicable": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--WithholdingTaxApplicable"
+            }
+          },
+          "withholdingTaxCode": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--WithholdingTaxCode"
+            }
+          },
+          "chequeBookRequired": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--ChequeBookRequired"
+            }
+          },
+          "depositFee": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--DepositFee"
+            }
+          },
+          "withdrawalFee": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--WithdrawalFee"
+            }
+          },
+          "transferFee": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--TransferFee"
+            }
+          }
+        },
+        "x-fbp-params": {
+          "kgId": "fbp-product-deposit-app--develop--Model--DTO--ReferenceContract",
+          "version": "develop",
+          "generatedAt": "2026-07-03T05:35:21.043388+00:00",
+          "sha": "2b3ec1db419b0c983c896af48069ce68b291cd4d881a2471f3a5ebac0fafd0e4",
+          "repoName": "fbp-product-deposit-app",
+          "type": "DTO"
+        }
+      }
+    }
+  }
+}

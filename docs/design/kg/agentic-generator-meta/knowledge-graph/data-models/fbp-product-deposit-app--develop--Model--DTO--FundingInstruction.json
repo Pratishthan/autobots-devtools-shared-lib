@@ -1,0 +1,48 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "FundingInstruction API",
+    "version": "1.0.0",
+    "description": "API schema for FundingInstruction entity"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "FundingInstruction": {
+        "type": "object",
+        "properties": {
+          "fundingVia": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--FundingVia"
+            }
+          },
+          "fundingAmount": {
+            "$ref": "../common/FbpDtoDataTypes.json#/components/schemas/AmountDTO",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--FundingAmount"
+            }
+          },
+          "paymentInstructionDetails": {
+            "type": "array",
+            "items": {
+              "$ref": "PaymentInstructionDetails.json#/components/schemas/PaymentInstructionDetails",
+              "x-fbp-params": {
+                "propertyKgId": "fbp-product-deposit-app--develop--Property--PaymentInstructionDetails",
+                "propertyTypeKgId": "fbp-product-deposit-app--develop--Model--DTO--PaymentInstructionDetails"
+              }
+            }
+          }
+        },
+        "x-fbp-params": {
+          "kgId": "fbp-product-deposit-app--develop--Model--DTO--FundingInstruction",
+          "version": "develop",
+          "generatedAt": "2026-07-03T05:35:19.725215+00:00",
+          "sha": "e9e77dde4b0da2175d7fcf60f9f0f624cc61071b90e769da23b3f66fec25c895",
+          "repoName": "fbp-product-deposit-app",
+          "type": "DTO"
+        }
+      }
+    }
+  }
+}

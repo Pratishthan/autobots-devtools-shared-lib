@@ -1,0 +1,33 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Echo API",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:1160/echo",
+      "description": "Generated server url"
+    }
+  ],
+  "paths": {},
+  "components": {
+    "schemas": {
+      "EchoMessageType": {
+        "type": "string",
+        "enum": [
+          "LONG",
+          "SHORT"
+        ],
+        "x-fbp-params": {
+          "kgId": "fbp-product-deposit-app--develop--Model--ENUM--EchoMessageType",
+          "version": "develop",
+          "generatedAt": "2026-07-03T05:35:19.644714+00:00",
+          "sha": "9a8aacdf49e56da16584beb393a06e0e6c071b9aef5c9f0c6aa63d356ffae097",
+          "repoName": "fbp-product-deposit-app",
+          "type": "ENUM"
+        }
+      }
+    }
+  }
+}

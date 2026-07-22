@@ -1,0 +1,44 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "DocumentDetails API",
+    "version": "1.0.0",
+    "description": "API schema for DocumentDetails entity"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "DocumentDetails": {
+        "type": "object",
+        "properties": {
+          "documentCode": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--DocumentCode"
+            }
+          },
+          "documentReceivedDate": {
+            "$ref": "../common/FbpDtoDataTypes.json#/components/schemas/BusinessDateDTO",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--DocumentReceivedDate"
+            }
+          },
+          "documentExpiryDate": {
+            "$ref": "../common/FbpDtoDataTypes.json#/components/schemas/BusinessDateDTO",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--DocumentExpiryDate"
+            }
+          }
+        },
+        "x-fbp-params": {
+          "kgId": "fbp-product-deposit-app--develop--Model--DTO--DocumentDetails",
+          "version": "develop",
+          "generatedAt": "2026-07-03T05:35:19.469070+00:00",
+          "sha": "aa14d8c4be0d2bd5aa34cf8e057eeaf9a4baf015a64e3d21ea75a6113e430eb1",
+          "repoName": "fbp-product-deposit-app",
+          "type": "DTO"
+        }
+      }
+    }
+  }
+}

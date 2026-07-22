@@ -1,0 +1,183 @@
+{
+  "name": "FetchContract",
+  "type": "Manual",
+  "subType": "Enrichment",
+  "consumes": {
+    "Models": [
+      {
+        "referencedProperties": [
+          {
+            "name": "cifId",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--CifId"
+          },
+          {
+            "name": "purposeId",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--PurposeId"
+          },
+          {
+            "name": "accountNumber",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountNumber"
+          },
+          {
+            "name": "productId",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--ProductId"
+          }
+        ],
+        "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--Apy",
+        "$ref": "../models/fbp-product-deposit-app--develop--Model--DTO--Apy.json#/components/schemas/Apy"
+      },
+      {
+        "referencedProperties": [
+          {
+            "name": "cifId",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--CifId"
+          },
+          {
+            "name": "purposeId",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--PurposeId"
+          }
+        ],
+        "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--Account",
+        "$ref": "../models/fbp-product-deposit-app--develop--Model--DTO--Account.json#/components/schemas/Account"
+      },
+      {
+        "referencedProperties": [
+          {
+            "name": "contractId",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--ContractId"
+          },
+          {
+            "name": "depositAmount",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--DepositAmount"
+          }
+        ],
+        "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--ReferenceContract",
+        "$ref": "../models/fbp-product-deposit-app--develop--Model--DTO--ReferenceContract.json#/components/schemas/ReferenceContract"
+      }
+    ],
+    "Primitives": [
+      {
+        "name": "customerId",
+        "dataType": "String"
+      },
+      {
+        "name": "purposeId",
+        "dataType": "String"
+      },
+      {
+        "name": "accountId",
+        "dataType": "String"
+      },
+      {
+        "name": "currentCommandPayLoad",
+        "dataType": "String"
+      }
+    ],
+    "apis": [
+      {
+        "clientType": "retrievalClient",
+        "name": "retrieveContract",
+        "component": "ContractHelperService",
+        "requestModelName": "RequestContext",
+        "responseModelName": "JsonNode",
+        "referencedProperties": [
+          {
+            "name": "contractId",
+            "propertyKgId": ""
+          },
+          {
+            "name": "depositAmount",
+            "propertyKgId": ""
+          },
+          {
+            "name": "interestRateCode",
+            "propertyKgId": ""
+          },
+          {
+            "name": "currency",
+            "propertyKgId": ""
+          }
+        ],
+        "url": ""
+      }
+    ],
+    "dataReaders": []
+  },
+  "produces": {
+    "Models": [
+      {
+        "enrichedProperties": {
+          "complete": false,
+          "partial": [
+            {
+              "name": "contractId",
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--ContractId"
+            },
+            {
+              "name": "depositAmount",
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--DepositAmount"
+            }
+          ]
+        },
+        "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--ReferenceContract",
+        "$ref": "../models/fbp-product-deposit-app--develop--Model--DTO--ReferenceContract.json#/components/schemas/ReferenceContract"
+      },
+      {
+        "enrichedProperties": {
+          "complete": true,
+          "partial": []
+        },
+        "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--Account",
+        "$ref": "../models/fbp-product-deposit-app--develop--Model--DTO--Account.json#/components/schemas/Account"
+      }
+    ],
+    "Primitives": [
+      {
+        "name": "cifId",
+        "dataType": "String"
+      },
+      {
+        "name": "contractId",
+        "dataType": "String"
+      },
+      {
+        "name": "purposeId",
+        "dataType": "String"
+      },
+      {
+        "name": "interestRateCode",
+        "dataType": "String"
+      },
+      {
+        "name": "currencyCode",
+        "dataType": "String"
+      }
+    ],
+    "apis": [],
+    "dataWriters": []
+  },
+  "businessLogic": [
+    "Determine the featureType from SlotsDTO to route contract-fetching logic.",
+    "If featureType is ApyCreate: extract ApyDTO from InternalDataModel, retrieve interest rate and currency via ContractHelperService using MAPPER_ID_INTEREST_RATE and CustomerContract type, then set interestRateCode and currencyCode into SlotsDTO.",
+    "If featureType is FundTransfer, MultiCreditTransaction, or MultiDebitTransaction: iterate over each TransferLegContext in TRANSFER_LEG_CONTEXTS, fetch CustomerContract and AccountContract for each leg via ContractHelperService, enrich ReferenceContractDTO with depositAmount from account-level contract, set the contract on each leg, and update TRANSFER_LEG_CONTEXTS in SlotsDTO.",
+    "For OpenAccount featureType: parse AccountDTO from current command payload, extract cifId and purposeId, set CIF_ID in SlotsDTO, then retrieve CustomerContract via ContractHelperService.",
+    "For AccountClosure or TDAccountPreClosure featureType: extract cifId, purposeId, and accountId from SlotsDTO domain slots, then retrieve AccountContract via ContractHelperService.",
+    "Validate that contract details are not null or empty; throw FbpApplicationException with UNABLE_TO_RETRIEVE_CONTRACT_FROM_SOURCE_SYSTEM if missing.",
+    "Parse the retrieved contract JSON into ReferenceContractDTO; validate that contractId is not null, throwing FbpValidationException with CONTRACT_DETAILS_DO_NOT_EXIST_FOR_THE_GIVEN_PRODUCT if missing.",
+    "For transaction features with a non-null accountId, enrich ReferenceContractDTO with depositAmount by fetching the account-level contract and extracting the depositAmount object (value and currencyCode).",
+    "Set the populated ReferenceContractDTO into SlotsDTO under REFERENCE_CONTRACT_PARAMS.",
+    "Update CONTRACT_ID and PURPOSE_ID slots in SlotsDTO based on the fetched contract data."
+  ],
+  "errorConstants": [
+    "UNABLE_TO_RETRIEVE_CONTRACT_FROM_SOURCE_SYSTEM",
+    "CONTRACT_DETAILS_DO_NOT_EXIST_FOR_THE_GIVEN_PRODUCT"
+  ],
+  "kgId": "fbp-product-deposit-app--develop--LPU--FetchContract",
+  "metadata": {
+    "extractedAt": "2026-07-03T05:38:11.269377+00:00",
+    "generatedBy": "autobots-agents-mer / logical_processing_unit",
+    "version": "develop",
+    "repoName": "fbp-product-deposit-app",
+    "sha": ""
+  }
+}

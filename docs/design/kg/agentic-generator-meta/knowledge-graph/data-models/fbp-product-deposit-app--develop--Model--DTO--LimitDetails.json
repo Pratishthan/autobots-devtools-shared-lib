@@ -1,0 +1,50 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "LimitDetails API",
+    "version": "1.0.0",
+    "description": "API schema for LimitDetailsDto entity"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "LimitDetails": {
+        "type": "object",
+        "properties": {
+          "sanctionLimit": {
+            "$ref": "../common/FbpDtoDataTypes.json#/components/schemas/AmountDTO",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--SanctionLimit"
+            }
+          },
+          "drawingPower": {
+            "$ref": "../common/FbpDtoDataTypes.json#/components/schemas/AmountDTO",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--DrawingPower"
+            }
+          },
+          "sanctionLimitExpiryDate": {
+            "$ref": "../common/FbpDtoDataTypes.json#/components/schemas/BusinessDateDTO",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--SanctionLimitExpiryDate"
+            }
+          },
+          "drawingPowerExpiryDate": {
+            "$ref": "../common/FbpDtoDataTypes.json#/components/schemas/BusinessDateDTO",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--DrawingPowerExpiryDate"
+            }
+          }
+        },
+        "x-fbp-params": {
+          "kgId": "fbp-product-deposit-app--develop--Model--DTO--LimitDetails",
+          "version": "develop",
+          "generatedAt": "2026-07-03T05:35:20.179614+00:00",
+          "sha": "957c2206bd0a0aef0a253d07cd03fca9a2dbbf9ec3a800731ae66ed8b1da7ef2",
+          "repoName": "fbp-product-deposit-app",
+          "type": "DTO"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "TxnLine API",
+    "version": "1.0.0",
+    "description": "API schema for TxnLineDTO entity"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "TxnLine": {
+        "type": "object",
+        "properties": {
+          "acctNumber": {
+            "type": "string",
+            "maxLength": 34,
+            "description": "Account number with a maximum length of 34 characters",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--AcctNumber"
+            }
+          },
+          "txnAmount": {
+            "$ref": "../common/FbpDtoDataTypes.json#/components/schemas/AmountDTO",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--TxnAmount"
+            }
+          },
+          "partTranCode": {
+            "type": "string",
+            "description": "Partial transaction code",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--PartTranCode"
+            }
+          },
+          "narration": {
+            "type": "string",
+            "description": "Narration for the transaction",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--Narration"
+            }
+          },
+          "creditDebitIndicator": {
+            "type": "string",
+            "description": "Indicator for credit or debit",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--CreditDebitIndicator"
+            }
+          },
+          "balanceCategory": {
+            "type": "string",
+            "description": "Category of the balance",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--BalanceCategory"
+            }
+          }
+        },
+        "x-fbp-params": {
+          "kgId": "fbp-product-deposit-app--develop--Model--DTO--TxnLine",
+          "version": "develop",
+          "generatedAt": "2026-07-03T05:35:21.859912+00:00",
+          "sha": "f2b8aca1595f699c83d84545fad775ad55e713c4e4c7ffc60db6814a1d51ab65",
+          "repoName": "fbp-product-deposit-app",
+          "type": "DTO"
+        }
+      }
+    }
+  }
+}

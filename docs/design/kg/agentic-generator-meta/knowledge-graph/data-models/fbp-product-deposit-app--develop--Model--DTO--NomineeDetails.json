@@ -1,0 +1,38 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Nominee Details DTO",
+    "version": "1.0.0",
+    "description": "API schema for NomineeDetails DTO"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "NomineeDetails": {
+        "type": "object",
+        "properties": {
+          "cifId": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--CifId"
+            }
+          },
+          "partyNumber": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--PartyNumber"
+            }
+          }
+        },
+        "x-fbp-params": {
+          "kgId": "fbp-product-deposit-app--develop--Model--DTO--NomineeDetails",
+          "version": "develop",
+          "generatedAt": "2026-07-03T05:35:20.509000+00:00",
+          "sha": "d4b5e07a3e1b02122b62808c020fb012d82071b0b4dc4e3c4bfdc29dd10cc12e",
+          "repoName": "fbp-product-deposit-app",
+          "type": "DTO"
+        }
+      }
+    }
+  }
+}

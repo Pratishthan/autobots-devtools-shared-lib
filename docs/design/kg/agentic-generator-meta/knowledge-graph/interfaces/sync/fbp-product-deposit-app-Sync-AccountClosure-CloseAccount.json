@@ -1,0 +1,93 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "AccountClosure - AccountClosureCreateCloseAccount",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/closeAccount": {
+      "post": {
+        "tags": [
+          "AccountClosure"
+        ],
+        "description": "AccountClosure create - closeAccount",
+        "operationId": "AccountClosureCreateCloseAccount",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "../../data-models/fbp-product-deposit-app--develop--Model--DTO--AccountClosure.json#/components/schemas/AccountClosure"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "AccountClosure create - closeAccount",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "../../data-models/fbp-product-deposit-app--develop--Model--DTO--GenerateResponse.json#/components/schemas/GenerateResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "../../models/ApiResponseAbstractDTO"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "You are not authorized to view the resource"
+          },
+          "403": {
+            "description": "Accessing the resource you were trying to reach is forbidden"
+          },
+          "404": {
+            "description": "The resource you were trying to reach is not found",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "../../models/ApiResponseAbstractDTO"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "../../models/ApiResponseAbstractDTO"
+                }
+              }
+            }
+          }
+        },
+        "x-fbp-params": {
+          "isCreate": true,
+          "singleResponse": true,
+          "interfaceKgId": "fbp-product-deposit-app-Sync-AccountClosure-CloseAccount",
+          "version": "develop",
+          "generatedAt": "2026-07-03T05:35:25.857911+00:00",
+          "sha": "9a75c67a351ef757f33d6d57233a9e566ccbc9898ab3d8cf1b1cf064d1e958ca",
+          "repoName": "fbp-product-deposit-app",
+          "serviceKgId": "fbp-product-deposit-app--develop--Service--AccountClosure--CloseAccount",
+          "inputDataModel": {
+            "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--AccountClosure"
+          },
+          "outputDataModel": {
+            "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--GenerateResponse"
+          }
+        }
+      }
+    }
+  }
+}

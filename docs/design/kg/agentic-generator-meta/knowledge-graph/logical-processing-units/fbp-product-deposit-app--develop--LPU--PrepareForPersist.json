@@ -1,0 +1,205 @@
+{
+  "name": "PrepareForPersist",
+  "type": "Manual",
+  "subType": "Persistence",
+  "consumes": {
+    "Models": [
+      {
+        "referencedProperties": [
+          {
+            "name": "noticeInstruction",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--NoticeInstruction"
+          }
+        ],
+        "modelKgId": "fbp-product-deposit-app--develop--Model--Hybrid--NoticeInstruction",
+        "$ref": "../models/fbp-product-deposit-app--develop--Model--Hybrid--NoticeInstruction.json#/components/schemas/NoticeInstruction"
+      },
+      {
+        "referencedProperties": [
+          {
+            "name": "accountName",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountName"
+          },
+          {
+            "name": "accountNumber",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountNumber"
+          },
+          {
+            "name": "cifId",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--CifId"
+          },
+          {
+            "name": "purposeId",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--PurposeId"
+          },
+          {
+            "name": "purpose",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--Purpose"
+          },
+          {
+            "name": "currency",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--Currency"
+          }
+        ],
+        "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--Account",
+        "$ref": "../models/fbp-product-deposit-app--develop--Model--DTO--Account.json#/components/schemas/Account"
+      },
+      {
+        "referencedProperties": [
+          {
+            "name": "documentCode",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--DocumentCode"
+          },
+          {
+            "name": "documentExpiryDate",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--DocumentExpiryDate"
+          },
+          {
+            "name": "documentReceivedDate",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--DocumentReceivedDate"
+          }
+        ],
+        "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--DocumentDetails",
+        "$ref": "../models/fbp-product-deposit-app--develop--Model--DTO--DocumentDetails.json#/components/schemas/DocumentDetails"
+      }
+    ],
+    "Primitives": [
+      {
+        "name": "feeApplicableAccounts",
+        "dataType": "List<String>"
+      },
+      {
+        "name": "currentCommandPayload",
+        "dataType": "String"
+      },
+      {
+        "name": "transferLegContexts",
+        "dataType": "List<TransferLegContext>"
+      }
+    ],
+    "apis": [],
+    "dataReaders": [
+      {
+        "referencedProperties": [
+          {
+            "name": "accountNumber",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountNumber"
+          },
+          {
+            "name": "initialDeposit",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--InitialDeposit"
+          }
+        ],
+        "modelKgId": "fbp-product-deposit-app--develop--Model--Entity--DepositAccount",
+        "$ref": "../models/fbp-product-deposit-app--develop--Model--Entity--DepositAccount.json#/components/schemas/DepositAccount",
+        "dataAccessKgId": "fbp-product-deposit-app--develop--DataAccess--DepositAccount--findByAccountNumber"
+      }
+    ]
+  },
+  "produces": {
+    "Models": [
+      {
+        "enrichedProperties": {
+          "complete": true,
+          "partial": []
+        },
+        "modelKgId": "fbp-product-deposit-app--develop--Model--Hybrid--NoticeInstruction",
+        "$ref": "../models/fbp-product-deposit-app--develop--Model--Hybrid--NoticeInstruction.json#/components/schemas/NoticeInstruction"
+      },
+      {
+        "enrichedProperties": {
+          "complete": false,
+          "partial": [
+            {
+              "name": "documentCode",
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--DocumentCode"
+            },
+            {
+              "name": "documentExpiryDate",
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--DocumentExpiryDate"
+            },
+            {
+              "name": "documentReceivedDate",
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--DocumentReceivedDate"
+            }
+          ]
+        },
+        "modelKgId": "fbp-product-deposit-app--develop--Model--Entity--DocumentDetails",
+        "$ref": "../models/fbp-product-deposit-app--develop--Model--Entity--DocumentDetails.json#/components/schemas/DocumentDetails"
+      },
+      {
+        "enrichedProperties": {
+          "complete": false,
+          "partial": [
+            {
+              "name": "accountName",
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountName"
+            },
+            {
+              "name": "accountNumber",
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountNumber"
+            },
+            {
+              "name": "cifId",
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--CifId"
+            },
+            {
+              "name": "purposeId",
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--PurposeId"
+            },
+            {
+              "name": "purpose",
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--Purpose"
+            },
+            {
+              "name": "currency",
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--Currency"
+            },
+            {
+              "name": "orgCode",
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--OrgCode"
+            },
+            {
+              "name": "initialDeposit",
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--InitialDeposit"
+            }
+          ]
+        },
+        "modelKgId": "fbp-product-deposit-app--develop--Model--Entity--DepositAccount",
+        "$ref": "../models/fbp-product-deposit-app--develop--Model--Entity--DepositAccount.json#/components/schemas/DepositAccount"
+      }
+    ],
+    "Primitives": [
+      {
+        "name": "currentCommandPayload",
+        "dataType": "String"
+      },
+      {
+        "name": "depositAccountsList",
+        "dataType": "List<DepositAccountEntity>"
+      }
+    ],
+    "apis": [],
+    "dataWriters": []
+  },
+  "businessLogic": [
+    "Check the featureType from slotsDTO to determine the processing branch.",
+    "If featureType is 'CreateNotice': retrieve NoticeInstructionDTO from slotsDTO, transform it to NoticeInstructionEntity via inope transformation 'noticeinstruction-dto-to-entity', set orgCode from request context, and set the entity back onto slotsDTO.",
+    "If featureType is 'FundTransfer', 'MultiCreditTransaction', or 'MultiDebitTransaction': retrieve feeApplicableAccounts from slotsDTO; if present, inject them into the currentCommandPayload JSON map and set the updated payload back onto slotsDTO.",
+    "For 'FundTransfer' and 'MultiCreditTransaction' (not 'MultiDebitTransaction'): invoke handleFundTransferInitialDeposit to process CREDIT legs \u2014 for each CREDIT leg with initialDeposit='Y', fetch the DepositAccountEntity by account number, set initialDeposit='Y', and set the updated list onto slotsDTO as DEPOSIT_ACCOUNTS_LIST.",
+    "For all other featureTypes: retrieve AccountDTO from slotsDTO and map its fields (accountName, accountNumber, cifId, purposeId, purpose, currency) onto a new DepositAccountEntity; set orgCode and initialDeposit='N'.",
+    "If DocumentDetailsDTO is present, map its fields (documentCode, documentExpiryDate, documentReceivedDate) onto a new DocumentDetailsEntity and set it onto slotsDTO.",
+    "Set the populated DepositAccountEntity onto slotsDTO."
+  ],
+  "errorConstants": [
+    "ERROR_PARSING_PAYLOAD_JSON"
+  ],
+  "kgId": "fbp-product-deposit-app--develop--LPU--PrepareForPersist",
+  "metadata": {
+    "extractedAt": "2026-07-03T05:38:11.998133+00:00",
+    "generatedBy": "autobots-agents-mer / logical_processing_unit",
+    "version": "develop",
+    "repoName": "fbp-product-deposit-app",
+    "sha": ""
+  }
+}

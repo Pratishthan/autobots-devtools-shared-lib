@@ -1,0 +1,52 @@
+{
+  "name": "CheckFeeApplicable",
+  "type": "Standard",
+  "subType": "Validation",
+  "consumes": {
+    "Models": [],
+    "Primitives": [
+      {
+        "name": "featureType",
+        "dataType": "String"
+      },
+      {
+        "name": "transferLegContexts",
+        "dataType": "List<TransferLegContext>"
+      }
+    ],
+    "apis": [],
+    "dataReaders": []
+  },
+  "produces": {
+    "Models": [],
+    "Primitives": [
+      {
+        "name": "isFeeApplicable",
+        "dataType": "String"
+      },
+      {
+        "name": "feeApplicableAccounts",
+        "dataType": "List<String>"
+      }
+    ],
+    "apis": [],
+    "dataWriters": []
+  },
+  "businessLogic": [
+    "Read featureType from SlotsDTO and initialise isFeeApplicable to 'false'.",
+    "If featureType is 'FundTransfer', retrieve the list of TransferLegContext from SlotsDTO; filter DEBIT legs whose referenceContract contains a non-empty transferFee; collect matching account numbers into feeApplicableAccounts; set isFeeApplicable to 'true' if the list is non-empty.",
+    "If featureType is 'MultiCreditTransaction', retrieve the list of TransferLegContext from SlotsDTO; filter CREDIT legs whose referenceContract contains a non-empty depositFee; collect matching account numbers into feeApplicableAccounts; set isFeeApplicable to 'true' if the list is non-empty.",
+    "If featureType is 'MultiDebitTransaction', retrieve the list of TransferLegContext from SlotsDTO; filter DEBIT legs whose referenceContract contains a non-empty withdrawalFee; collect matching account numbers into feeApplicableAccounts; set isFeeApplicable to 'true' if the list is non-empty.",
+    "If no leg contexts are found for any feature type, set feeApplicableAccounts to an empty list and leave isFeeApplicable as 'false'.",
+    "Set the computed isFeeApplicable and feeApplicableAccounts values back onto SlotsDTO."
+  ],
+  "errorConstants": [],
+  "kgId": "fbp-product-deposit-app--develop--LPU--CheckFeeApplicable",
+  "metadata": {
+    "extractedAt": "2026-07-03T05:38:10.668281+00:00",
+    "generatedBy": "autobots-agents-mer / logical_processing_unit",
+    "version": "develop",
+    "repoName": "fbp-product-deposit-app",
+    "sha": ""
+  }
+}

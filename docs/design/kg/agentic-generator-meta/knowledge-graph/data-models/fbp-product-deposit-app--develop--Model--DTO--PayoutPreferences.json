@@ -1,0 +1,69 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Payout Preferences DTO",
+    "version": "1.0.0",
+    "description": "API schema for PayoutPreferences DTO"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "PayoutPreferences": {
+        "required": [
+          "interestType"
+        ],
+        "type": "object",
+        "properties": {
+          "interestType": {
+            "type": "string",
+            "enum": [
+              "REGULAR_CREDIT",
+              "REGULAR_DEBIT",
+              "PENAL",
+              "BONUS",
+              "OVERDUE"
+            ],
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--InterestType"
+            }
+          },
+          "interestApplicationVia": {
+            "type": "string",
+            "enum": [
+              "OTHER_ACCOUNT",
+              "OWN_ACCOUNT"
+            ],
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--InterestApplicationVia"
+            }
+          },
+          "applicationFrequency": {
+            "$ref": "./ApplicationFrequency.json#/components/schemas/ApplicationFrequency",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--ApplicationFrequency",
+              "propertyTypeKgId": "fbp-product-deposit-app--develop--Model--DTO--ApplicationFrequency"
+            }
+          },
+          "settlementPreferences": {
+            "type": "array",
+            "items": {
+              "$ref": "CollectionManagementParameters.json#/components/schemas/CollectionManagementParameters",
+              "x-fbp-params": {
+                "propertyKgId": "fbp-product-deposit-app--develop--Property--SettlementPreferences",
+                "propertyTypeKgId": "fbp-product-deposit-app--develop--Model--DTO--CollectionManagementParameters"
+              }
+            }
+          }
+        },
+        "x-fbp-params": {
+          "kgId": "fbp-product-deposit-app--develop--Model--DTO--PayoutPreferences",
+          "version": "develop",
+          "generatedAt": "2026-07-03T05:35:20.872045+00:00",
+          "sha": "26a0c5cb629a445353d6cc6bc78bb7ec14ed2a7817ef3f8c3d8a079faa9d0f11",
+          "repoName": "fbp-product-deposit-app",
+          "type": "DTO"
+        }
+      }
+    }
+  }
+}

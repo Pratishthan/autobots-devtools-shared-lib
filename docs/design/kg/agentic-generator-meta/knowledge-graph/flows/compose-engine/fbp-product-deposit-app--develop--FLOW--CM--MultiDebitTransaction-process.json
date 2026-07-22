@@ -1,0 +1,228 @@
+{
+  "kgId": "fbp-product-deposit-app--develop--FLOW--CM--MultiDebitTransaction-process",
+  "serviceKgId": "",
+  "name": "MultiDebitTransaction-process",
+  "feature": "MultiDebitTransaction",
+  "flowType": "COMPOSE_ENGINE",
+  "operation": "process",
+  "processingNodes": [
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--ValidateInput",
+      "name": "ValidateInput",
+      "type": "Behaviour",
+      "props": {
+        "behaviour": {
+          "name": "ValidateInput",
+          "$ref": "../../logical-processing-units/fbp-product-deposit-app--develop--LPU--ValidateInput.json",
+          "lpuKgId": "fbp-product-deposit-app--develop--LPU--ValidateInput.json"
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--FetchAccount",
+      "name": "FetchAccount",
+      "type": "Behaviour",
+      "props": {
+        "behaviour": {
+          "name": "FetchAccount",
+          "$ref": "../../logical-processing-units/fbp-product-deposit-app--develop--LPU--FetchAccount.json",
+          "lpuKgId": "fbp-product-deposit-app--develop--LPU--FetchAccount.json"
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--FetchContract",
+      "name": "FetchContract",
+      "type": "Behaviour",
+      "props": {
+        "behaviour": {
+          "name": "FetchContract",
+          "$ref": "../../logical-processing-units/fbp-product-deposit-app--develop--LPU--FetchContract.json",
+          "lpuKgId": "fbp-product-deposit-app--develop--LPU--FetchContract.json",
+          "properties": {
+            "mapperId": "fetch-check-in-account"
+          }
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--ValidateDebitAllowed",
+      "name": "ValidateDebitAllowed",
+      "type": "Behaviour",
+      "props": {
+        "behaviour": {
+          "name": "ValidateDebitAllowed",
+          "$ref": "../../logical-processing-units/fbp-product-deposit-app--develop--LPU--ValidateDebitAllowed.json",
+          "lpuKgId": "fbp-product-deposit-app--develop--LPU--ValidateDebitAllowed.json"
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--ValidateMultiTransactionLimits",
+      "name": "ValidateMultiTransactionLimits",
+      "type": "Behaviour",
+      "props": {
+        "behaviour": {
+          "name": "ValidateMultiTransactionLimits",
+          "$ref": "../../logical-processing-units/fbp-product-deposit-app--develop--LPU--ValidateMultiTransactionLimits.json",
+          "lpuKgId": "fbp-product-deposit-app--develop--LPU--ValidateMultiTransactionLimits.json"
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--CheckFeeApplicable",
+      "name": "CheckFeeApplicable",
+      "type": "Behaviour",
+      "props": {
+        "behaviour": {
+          "name": "CheckFeeApplicable",
+          "$ref": "../../logical-processing-units/fbp-product-deposit-app--develop--LPU--CheckFeeApplicable.json",
+          "lpuKgId": "fbp-product-deposit-app--develop--LPU--CheckFeeApplicable.json"
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--PrepareForPersist",
+      "name": "PrepareForPersist",
+      "type": "Behaviour",
+      "props": {
+        "behaviour": {
+          "name": "PrepareForPersist",
+          "$ref": "../../logical-processing-units/fbp-product-deposit-app--develop--LPU--PrepareForPersist.json",
+          "lpuKgId": "fbp-product-deposit-app--develop--LPU--PrepareForPersist.json"
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--PrepareProcessContextData",
+      "name": "PrepareProcessContextData",
+      "type": "Behaviour",
+      "props": {
+        "behaviour": {
+          "name": "PrepareProcessContextData",
+          "$ref": "../../logical-processing-units/fbp-product-deposit-app--develop--LPU--PrepareProcessContextData.json",
+          "lpuKgId": "fbp-product-deposit-app--develop--LPU--PrepareProcessContextData.json"
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--StoreProcessContext",
+      "name": "StoreProcessContext",
+      "type": "Behaviour",
+      "props": {
+        "behaviour": {
+          "name": "StoreProcessContext",
+          "$ref": "../../logical-processing-units/fbp-product-deposit-app--develop--LPU--StoreProcessContext.json",
+          "lpuKgId": "fbp-product-deposit-app--develop--LPU--StoreProcessContext.json",
+          "standard": true
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--ProcessManager",
+      "name": "ProcessManager",
+      "type": "Behaviour",
+      "props": {
+        "behaviour": {
+          "name": "ProcessManager",
+          "$ref": "../../logical-processing-units/fbp-product-deposit-app--develop--LPU--ProcessManager.json",
+          "lpuKgId": "fbp-product-deposit-app--develop--LPU--ProcessManager.json",
+          "standard": true
+        }
+      }
+    }
+  ],
+  "flowPaths": {
+    "path_1": [
+      {
+        "stepNumber": 1,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--ValidateInput"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--FetchAccount"
+        }
+      },
+      {
+        "stepNumber": 2,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--FetchAccount"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--FetchContract"
+        }
+      },
+      {
+        "stepNumber": 3,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--FetchContract"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--ValidateDebitAllowed"
+        }
+      },
+      {
+        "stepNumber": 4,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--ValidateDebitAllowed"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--ValidateMultiTransactionLimits"
+        }
+      },
+      {
+        "stepNumber": 5,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--ValidateMultiTransactionLimits"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--CheckFeeApplicable"
+        }
+      },
+      {
+        "stepNumber": 6,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--CheckFeeApplicable"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--PrepareForPersist"
+        }
+      },
+      {
+        "stepNumber": 7,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--PrepareForPersist"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--PrepareProcessContextData"
+        }
+      },
+      {
+        "stepNumber": 8,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--PrepareProcessContextData"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--StoreProcessContext"
+        }
+      },
+      {
+        "stepNumber": 9,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--StoreProcessContext"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--ProcessManager"
+        }
+      }
+    ]
+  },
+  "metadata": {
+    "generatedFrom": "deposit-configuration.behaviour",
+    "generatedAt": "2026-07-03T05:35:27.904692+00:00",
+    "version": "develop",
+    "generatedBy": "compose-flow-kg-generator",
+    "repoName": "fbp-product-deposit-app",
+    "sha": "388c0f56abd4908809c054383990b6d49acf434e5834573805cf331f4c58b844"
+  }
+}

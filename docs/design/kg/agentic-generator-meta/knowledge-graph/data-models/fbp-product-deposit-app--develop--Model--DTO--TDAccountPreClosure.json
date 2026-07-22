@@ -1,0 +1,45 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "TD Account Pre-Closure API",
+    "version": "1.0.0",
+    "description": "API schema for TD Account Pre-Closure"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "TDAccountPreClosure": {
+        "type": "object",
+        "properties": {
+          "accountNumber": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountNumber"
+            }
+          },
+          "closureDate": {
+            "$ref": "../common/FbpDtoDataTypes.json#/components/schemas/BusinessDateDTO",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--ClosureDate"
+            }
+          },
+          "closureRemarks": {
+            "type": "string",
+            "nullable": "true",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--ClosureRemarks"
+            }
+          }
+        },
+        "x-fbp-params": {
+          "kgId": "fbp-product-deposit-app--develop--Model--DTO--TDAccountPreClosure",
+          "version": "develop",
+          "generatedAt": "2026-07-03T05:35:21.584504+00:00",
+          "sha": "a5e84dec9f0f487fb1033bf093837932587721b6053b7eef0662d0469f81a3a4",
+          "repoName": "fbp-product-deposit-app",
+          "type": "DTO"
+        }
+      }
+    }
+  }
+}

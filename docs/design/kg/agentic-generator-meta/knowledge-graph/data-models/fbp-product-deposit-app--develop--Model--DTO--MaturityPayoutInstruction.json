@@ -1,0 +1,36 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "MaturityPayoutInstruction API",
+    "version": "1.0.0",
+    "description": "API schema for MaturityPayoutInstruction entity"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "MaturityPayoutInstruction": {
+        "type": "object",
+        "properties": {
+          "paymentInstructionDetails": {
+            "type": "array",
+            "items": {
+              "$ref": "PaymentInstructionDetails.json#/components/schemas/PaymentInstructionDetails",
+              "x-fbp-params": {
+                "propertyKgId": "fbp-product-deposit-app--develop--Property--PaymentInstructionDetails",
+                "propertyTypeKgId": "fbp-product-deposit-app--develop--Model--DTO--PaymentInstructionDetails"
+              }
+            }
+          }
+        },
+        "x-fbp-params": {
+          "kgId": "fbp-product-deposit-app--develop--Model--DTO--MaturityPayoutInstruction",
+          "version": "develop",
+          "generatedAt": "2026-07-03T05:35:20.250100+00:00",
+          "sha": "7cf414d7887c5457dfb0cbd2c5b94ecbb75b7d93e186bbe68acf2b1b1421c116",
+          "repoName": "fbp-product-deposit-app",
+          "type": "DTO"
+        }
+      }
+    }
+  }
+}

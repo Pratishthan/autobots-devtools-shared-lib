@@ -1,0 +1,50 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Echo API",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:1160/echo",
+      "description": "Generated server url"
+    }
+  ],
+  "paths": {},
+  "components": {
+    "schemas": {
+      "Echo": {
+        "description": "Creating an echo",
+        "required": [
+          "message"
+        ],
+        "type": "object",
+        "properties": {
+          "message": {
+            "description": "Message to be echoed",
+            "type": "string",
+            "minLength": 1,
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--Message"
+            }
+          },
+          "messageType": {
+            "$ref": "./EchoMessageType.json#/components/schemas/EchoMessageType",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--MessageType",
+              "propertyTypeKgId": "fbp-product-deposit-app--develop--Model--ENUM--EchoMessageType"
+            }
+          }
+        },
+        "x-fbp-params": {
+          "kgId": "fbp-product-deposit-app--develop--Model--Hybrid--Echo",
+          "version": "develop",
+          "generatedAt": "2026-07-03T05:35:19.577695+00:00",
+          "sha": "dbb40b8cd327fa0553be375a80ad7949f7e5385e7d8691f89ca65c2eace6460e",
+          "repoName": "fbp-product-deposit-app",
+          "type": "Hybrid"
+        }
+      }
+    }
+  }
+}

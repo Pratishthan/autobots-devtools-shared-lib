@@ -1,0 +1,111 @@
+{
+  "name": "FetchInterestDetails",
+  "type": "Manual",
+  "subType": "Enrichment",
+  "consumes": {
+    "Models": [
+      {
+        "referencedProperties": [
+          {
+            "name": "accountNumber",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountNumber"
+          },
+          {
+            "name": "fromDate",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--FromDate"
+          },
+          {
+            "name": "toDate",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--ToDate"
+          }
+        ],
+        "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--Apye",
+        "$ref": "../models/fbp-product-deposit-app--develop--Model--DTO--Apye.json#/components/schemas/Apye"
+      }
+    ],
+    "Primitives": [
+      {
+        "name": "interestRateCode",
+        "dataType": "String"
+      },
+      {
+        "name": "currencyCode",
+        "dataType": "String"
+      }
+    ],
+    "apis": [
+      {
+        "clientType": "retrievalClient",
+        "name": "fetch-apye-calculation-data",
+        "component": "interest",
+        "requestModelName": "inputMap",
+        "responseModelName": "intLedgerList",
+        "referencedProperties": [
+          {
+            "name": "interestAmt",
+            "propertyKgId": ""
+          },
+          {
+            "name": "averagePrincipal",
+            "propertyKgId": ""
+          }
+        ],
+        "url": ""
+      },
+      {
+        "clientType": "retrievalClient",
+        "name": "fetch-interest-rate",
+        "component": "interest",
+        "requestModelName": "inputMap",
+        "responseModelName": "result",
+        "referencedProperties": [
+          {
+            "name": "amt",
+            "propertyKgId": ""
+          }
+        ],
+        "url": ""
+      }
+    ],
+    "dataReaders": []
+  },
+  "produces": {
+    "Models": [],
+    "Primitives": [
+      {
+        "name": "interestEarned",
+        "dataType": "BigDecimal"
+      },
+      {
+        "name": "avgPrincipal",
+        "dataType": "BigDecimal"
+      },
+      {
+        "name": "interestAmount",
+        "dataType": "BigDecimal"
+      },
+      {
+        "name": "principal",
+        "dataType": "Integer"
+      }
+    ],
+    "apis": [],
+    "dataWriters": []
+  },
+  "businessLogic": [
+    "Check featureType from slotsDTO.",
+    "If featureType is APYE_CREATE: retrieve ApyeDTO from slotsDTO, extract accountNumber, fromDate, and toDate, call retrieval_client with 'fetch-apye-calculation-data' to get interest ledger data, parse the response JSON to extract interestAmt and averagePrincipal as BigDecimal values, and set INTEREST_EARNED and AVG_PRINCIPAL onto slotsDTO. Throw FbpValidationException with NO_RECORDS_FOUND on any error.",
+    "If featureType is APY_CREATE: retrieve interestRateCode and currencyCode from slotsDTO, call retrieval_client with 'fetch-interest-rate' to get interest terms, apply 'interestFormula' transformation via inope, calculate interest using the expression parser engine, extract the calculated amount from system-info.calculated-obj.amt, and set INTEREST_AMOUNT and PRINCIPAL (hardcoded to 1 for MVP 1) onto slotsDTO."
+  ],
+  "errorConstants": [
+    "NO_RECORDS_FOUND"
+  ],
+  "kgId": "fbp-product-deposit-app--develop--LPU--FetchInterestDetails",
+  "metadata": {
+    "extractedAt": "2026-07-03T05:38:11.526224+00:00",
+    "generatedBy": "autobots-agents-mer / logical_processing_unit",
+    "version": "develop",
+    "repoName": "fbp-product-deposit-app",
+    "sha": ""
+  }
+}

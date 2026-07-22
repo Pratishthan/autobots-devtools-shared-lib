@@ -1,0 +1,92 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Calculator API",
+    "version": "1.0.0",
+    "description": "API schema for FBP Yield calculations- Annual Percentage Yield"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "Apy": {
+        "type": "object",
+        "properties": {
+          "accountNumber": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountNumber"
+            }
+          },
+          "productId": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--ProductId"
+            }
+          },
+          "fromDate": {
+            "$ref": "../common/FbpDtoDataTypes.json#/components/schemas/BusinessDateDTO",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--FromDate"
+            }
+          },
+          "toDate": {
+            "$ref": "../common/FbpDtoDataTypes.json#/components/schemas/BusinessDateDTO",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--ToDate"
+            }
+          },
+          "baseDays": {
+            "type": "integer",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--BaseDays"
+            }
+          },
+          "rate": {
+            "type": "number",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--Rate"
+            }
+          },
+          "principal": {
+            "type": "number",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--Principal"
+            }
+          },
+          "intAmt": {
+            "type": "number",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--IntAmt"
+            }
+          },
+          "cifId": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--CifId"
+            }
+          },
+          "purposeId": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--PurposeId"
+            }
+          },
+          "currency": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--Currency"
+            }
+          }
+        },
+        "x-fbp-params": {
+          "kgId": "fbp-product-deposit-app--develop--Model--DTO--Apy",
+          "version": "develop",
+          "generatedAt": "2026-07-03T05:35:19.037302+00:00",
+          "sha": "78da17c8058cbc3b40a3dfbbca76b8a618594675bd017306f52dee51a0897fe7",
+          "repoName": "fbp-product-deposit-app",
+          "type": "DTO"
+        }
+      }
+    }
+  }
+}

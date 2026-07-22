@@ -1,0 +1,62 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Account Statement Preferences DTO",
+    "version": "1.0.0",
+    "description": "API schema for accountStatementPreferences DTO"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "AccountStatementPreferences": {
+        "type": "object",
+        "properties": {
+          "statementType": {
+            "type": "string",
+            "enum": [
+              "STATEMENT",
+              "NONE"
+            ],
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--StatementType"
+            }
+          },
+          "statementMethod": {
+            "type": "string",
+            "enum": [
+              "FIXED_DATE",
+              "ANNIVERSARY_BASED"
+            ],
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--StatementMethod"
+            }
+          },
+          "statementFrequency": {
+            "$ref": "./ApplicationFrequency.json#/components/schemas/ApplicationFrequency",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--StatementFrequency",
+              "propertyTypeKgId": "fbp-product-deposit-app--develop--Model--DTO--ApplicationFrequency"
+            }
+          },
+          "dispatchMode": {
+            "type": "string",
+            "enum": [
+              "EMAIL_ONLY"
+            ],
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--DispatchMode"
+            }
+          }
+        },
+        "x-fbp-params": {
+          "kgId": "fbp-product-deposit-app--develop--Model--DTO--AccountStatementPreferences",
+          "version": "develop",
+          "generatedAt": "2026-07-03T05:35:18.719371+00:00",
+          "sha": "9cb56dc70b987ee50135d323c3f5cc9044cb7188efa1f9137ee54d16ecde96fb",
+          "repoName": "fbp-product-deposit-app",
+          "type": "DTO"
+        }
+      }
+    }
+  }
+}

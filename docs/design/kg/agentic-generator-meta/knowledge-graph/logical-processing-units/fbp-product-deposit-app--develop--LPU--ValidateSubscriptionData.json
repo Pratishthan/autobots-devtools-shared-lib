@@ -1,0 +1,75 @@
+{
+  "name": "ValidateSubscriptionData",
+  "type": "Manual",
+  "subType": "Validation",
+  "consumes": {
+    "Models": [
+      {
+        "referencedProperties": [
+          {
+            "name": "interestType",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--InterestType"
+          },
+          {
+            "name": "computationMethod",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--ComputationMethod"
+          }
+        ],
+        "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--ReferenceContract",
+        "$ref": "../models/fbp-product-deposit-app--develop--Model--DTO--ReferenceContract.json#/components/schemas/ReferenceContract"
+      },
+      {
+        "referencedProperties": [
+          {
+            "name": "accountInterestPreferences",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountInterestPreferences"
+          },
+          {
+            "name": "accountStatementPreferences",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountStatementPreferences"
+          }
+        ],
+        "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--Account",
+        "$ref": "../models/fbp-product-deposit-app--develop--Model--DTO--Account.json#/components/schemas/Account"
+      }
+    ],
+    "Primitives": [],
+    "apis": [],
+    "dataReaders": []
+  },
+  "produces": {
+    "Models": [],
+    "Primitives": [],
+    "apis": [],
+    "dataWriters": []
+  },
+  "businessLogic": [
+    "Check if featureType is 'OpenAccount'; if not, skip all validation.",
+    "Retrieve ReferenceContractDTO from SlotsDTO using REFERENCE_CONTRACT_PARAMS key; throw FbpApplicationException with UNABLE_TO_RETRIEVE_CONTRACT_FROM_SOURCE_SYSTEM if null.",
+    "Retrieve AccountDTO from SlotsDTO using ACCOUNT_IDENTITY key.",
+    "Insert ReferenceContractDTO and AccountDTO as facts into Clara rules session and fire rules.",
+    "Query Clara rules for subscription validation result; if result is ':INVALID_INTEREST_TYPE', throw FbpValidationException with INVALID_INTEREST_TYPE.",
+    "If result is ':COMPOUNDING_FREQUENCY_NOT_ALLOWED', throw FbpValidationException with COMPOUNDING_FREQUENCY_NOT_ALLOWED.",
+    "If result is ':COMPOUNDING_FREQUENCY_REQUIRED', throw FbpValidationException with COMPOUNDING_FREQUENCY_REQUIRED.",
+    "If result is null or empty, interest and compounding validation passes.",
+    "Retrieve AccountDTO from SlotsDTO for statement preferences validation; if AccountDTO or accountStatementPreferences is null, skip statement validation.",
+    "Insert AccountDTO as fact into Clara rules session and fire rules for statement preferences.",
+    "Query Clara rules for statement validation result; if result is ':STATEMENT_FIELDS_NOT_ALLOWED', throw FbpValidationException with STATEMENT_FIELDS_NOT_ALLOWED_WHEN_TYPE_IS_NONE.",
+    "If result is null or empty, statement preferences validation passes."
+  ],
+  "errorConstants": [
+    "UNABLE_TO_RETRIEVE_CONTRACT_FROM_SOURCE_SYSTEM",
+    "INVALID_INTEREST_TYPE",
+    "COMPOUNDING_FREQUENCY_NOT_ALLOWED",
+    "COMPOUNDING_FREQUENCY_REQUIRED",
+    "STATEMENT_FIELDS_NOT_ALLOWED_WHEN_TYPE_IS_NONE"
+  ],
+  "kgId": "fbp-product-deposit-app--develop--LPU--ValidateSubscriptionData",
+  "metadata": {
+    "extractedAt": "2026-07-03T05:38:13.813098+00:00",
+    "generatedBy": "autobots-agents-mer / logical_processing_unit",
+    "version": "develop",
+    "repoName": "fbp-product-deposit-app",
+    "sha": ""
+  }
+}

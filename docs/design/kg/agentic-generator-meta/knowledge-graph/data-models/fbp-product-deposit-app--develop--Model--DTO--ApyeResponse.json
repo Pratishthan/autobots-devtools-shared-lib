@@ -1,0 +1,32 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "APYE Response DTO",
+    "version": "1.0.0",
+    "description": "Schema for APYE Response DTO entity"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "ApyeResponse": {
+        "type": "object",
+        "properties": {
+          "apye": {
+            "type": "number",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--Apye"
+            }
+          }
+        },
+        "x-fbp-params": {
+          "kgId": "fbp-product-deposit-app--develop--Model--DTO--ApyeResponse",
+          "version": "develop",
+          "generatedAt": "2026-07-03T05:35:19.274170+00:00",
+          "sha": "ed3dc7a9e6ed300d1e8c2ec9a86d5106b0652a5dbadc8a77ba280c381bd6d618",
+          "repoName": "fbp-product-deposit-app",
+          "type": "DTO"
+        }
+      }
+    }
+  }
+}

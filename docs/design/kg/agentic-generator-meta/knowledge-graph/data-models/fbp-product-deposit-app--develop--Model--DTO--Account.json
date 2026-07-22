@@ -1,0 +1,148 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Account API",
+    "version": "1.0.0",
+    "description": "API schema for AccountDTO entity"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "Account": {
+        "required": [
+          "cifId",
+          "purposeId",
+          "currency",
+          "accountName",
+          "accountOpeningDate"
+        ],
+        "type": "object",
+        "properties": {
+          "accountName": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountName"
+            }
+          },
+          "cifId": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--CifId"
+            }
+          },
+          "purposeId": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--PurposeId"
+            }
+          },
+          "purpose": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--Purpose"
+            }
+          },
+          "currency": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--Currency"
+            }
+          },
+          "accountNumber": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountNumber"
+            }
+          },
+          "accountOpeningDate": {
+            "$ref": "../common/FbpDtoDataTypes.json#/components/schemas/BusinessDateDTO",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountOpeningDate"
+            }
+          },
+          "accountAdditionalInfo": {
+            "type": "array",
+            "items": {
+              "$ref": "AccountAdditionalInfo.json#/components/schemas/AccountAdditionalInfo",
+              "x-fbp-params": {
+                "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountAdditionalInfo",
+                "propertyTypeKgId": "fbp-product-deposit-app--develop--Model--DTO--AccountAdditionalInfo"
+              }
+            }
+          },
+          "acctTransactionPreferences": {
+            "$ref": "AccountTransactionPreferences.json#/components/schemas/AccountTransactionPreferences",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--AcctTransactionPreferences",
+              "propertyTypeKgId": "fbp-product-deposit-app--develop--Model--DTO--AccountTransactionPreferences"
+            }
+          },
+          "acctBalancePreferences": {
+            "$ref": "AccountBalancePreferences.json#/components/schemas/AccountBalancePreferences",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--AcctBalancePreferences",
+              "propertyTypeKgId": "fbp-product-deposit-app--develop--Model--DTO--AccountBalancePreferences"
+            }
+          },
+          "acctDepositPreferences": {
+            "$ref": "AccountDepositPreferences.json#/components/schemas/AccountDepositPreferences",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--AcctDepositPreferences",
+              "propertyTypeKgId": "fbp-product-deposit-app--develop--Model--DTO--AccountDepositPreferences"
+            }
+          },
+          "acctRenewalPreferences": {
+            "$ref": "AccountRenewalPreferences.json#/components/schemas/AccountRenewalPreferences",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--AcctRenewalPreferences",
+              "propertyTypeKgId": "fbp-product-deposit-app--develop--Model--DTO--AccountRenewalPreferences"
+            }
+          },
+          "accountInterestPreferences": {
+            "$ref": "AccountInterestPreferences.json#/components/schemas/AccountInterestPreferences",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountInterestPreferences",
+              "propertyTypeKgId": "fbp-product-deposit-app--develop--Model--DTO--AccountInterestPreferences"
+            }
+          },
+          "accountStatementPreferences": {
+            "$ref": "AccountStatementPreferences.json#/components/schemas/AccountStatementPreferences",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountStatementPreferences",
+              "propertyTypeKgId": "fbp-product-deposit-app--develop--Model--DTO--AccountStatementPreferences"
+            }
+          },
+          "relatedPartyDetails": {
+            "$ref": "RelatedPartyDetails.json#/components/schemas/RelatedPartyDetails",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--RelatedPartyDetails",
+              "propertyTypeKgId": "fbp-product-deposit-app--develop--Model--DTO--RelatedPartyDetails"
+            }
+          },
+          "accountFeePreferences": {
+            "$ref": "AccountFeePreferences.json#/components/schemas/AccountFeePreferences",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountFeePreferences",
+              "propertyTypeKgId": "fbp-product-deposit-app--develop--Model--DTO--AccountFeePreferences"
+            }
+          },
+          "accountClosurePreferences": {
+            "$ref": "AccountClosurePreferences.json#/components/schemas/AccountClosurePreferences",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountClosurePreferences",
+              "propertyTypeKgId": "fbp-product-deposit-app--develop--Model--DTO--AccountClosurePreferences"
+            }
+          }
+        },
+        "x-fbp-params": {
+          "kgId": "fbp-product-deposit-app--develop--Model--DTO--Account",
+          "version": "develop",
+          "generatedAt": "2026-07-03T05:35:17.865763+00:00",
+          "sha": "c577b8d712ecb6b07fb19367fb39034791ff68114bdd23ea282a8a38d3292430",
+          "repoName": "fbp-product-deposit-app",
+          "type": "DTO"
+        }
+      }
+    }
+  }
+}

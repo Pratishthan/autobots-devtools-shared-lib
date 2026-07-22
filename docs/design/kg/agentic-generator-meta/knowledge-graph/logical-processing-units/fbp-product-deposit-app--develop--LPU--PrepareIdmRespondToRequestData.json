@@ -1,0 +1,48 @@
+{
+  "name": "PrepareIdmRespondToRequestData",
+  "type": "Manual",
+  "subType": "Transformation",
+  "consumes": {
+    "Models": [],
+    "Primitives": [
+      {
+        "name": "DOMAIN_CURRENT_STATE",
+        "dataType": "String"
+      },
+      {
+        "name": "DOMAIN_CURRENT_COMMAND_PAYLOAD",
+        "dataType": "String"
+      }
+    ],
+    "apis": [],
+    "dataReaders": []
+  },
+  "produces": {
+    "Models": [],
+    "Primitives": [],
+    "apis": [],
+    "dataWriters": []
+  },
+  "businessLogic": [
+    "Retrieve InternalDataModel from SlotsDTO.",
+    "Check if the current state equals 'PRODUCT_SWITCHED'; if so, read commandStatusString from DOMAIN_CURRENT_COMMAND_PAYLOAD.",
+    "Otherwise, iterate over persisted process contexts from PMInternalDataModel to find the context whose commandStatus JSON contains a 'results' array with an 'acctNum' field; set commandStatusString to that context's commandStatus.",
+    "If no matching context is found, fall back to the last persisted context's commandStatus.",
+    "Parse commandStatusString as a JsonNode; if state is 'PRODUCT_SWITCHED', extract and reshape the 'output' node by removing the 'response' field from the first result.",
+    "Extract the 'results' node from the parsed JSON; if absent or null, fall back to the 'result' node.",
+    "Set the extracted process response node onto a new ResponseDTO, wrap it in an ApiSingleResponse, and set it on InternalDataModel via setApiSingleResponseEntity.",
+    "Set the updated InternalDataModel back onto SlotsDTO.",
+    "On JacksonException, throw FbpApplicationException with ERROR_IN_PARSING_JSON error code."
+  ],
+  "errorConstants": [
+    "ERROR_IN_PARSING_JSON"
+  ],
+  "kgId": "fbp-product-deposit-app--develop--LPU--PrepareIdmRespondToRequestData",
+  "metadata": {
+    "extractedAt": "2026-07-03T05:38:12.337993+00:00",
+    "generatedBy": "autobots-agents-mer / logical_processing_unit",
+    "version": "develop",
+    "repoName": "fbp-product-deposit-app",
+    "sha": ""
+  }
+}

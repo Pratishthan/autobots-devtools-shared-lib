@@ -1,0 +1,56 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Related Party Details DTO",
+    "version": "1.0.0",
+    "description": "API schema for RelatedPartyDetails DTO"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "RelatedPartyDetails": {
+        "type": "object",
+        "properties": {
+          "jointHolderDetails": {
+            "type": "array",
+            "items": {
+              "$ref": "JointHolderDetails.json#/components/schemas/JointHolderDetails",
+              "x-fbp-params": {
+                "propertyKgId": "fbp-product-deposit-app--develop--Property--JointHolderDetails",
+                "propertyTypeKgId": "fbp-product-deposit-app--develop--Model--DTO--JointHolderDetails"
+              }
+            }
+          },
+          "nomineeDetails": {
+            "type": "array",
+            "items": {
+              "$ref": "NomineeDetails.json#/components/schemas/NomineeDetails",
+              "x-fbp-params": {
+                "propertyKgId": "fbp-product-deposit-app--develop--Property--NomineeDetails",
+                "propertyTypeKgId": "fbp-product-deposit-app--develop--Model--DTO--NomineeDetails"
+              }
+            }
+          },
+          "partyDetails": {
+            "type": "array",
+            "items": {
+              "$ref": "PartyDetails.json#/components/schemas/PartyDetails",
+              "x-fbp-params": {
+                "propertyKgId": "fbp-product-deposit-app--develop--Property--PartyDetails",
+                "propertyTypeKgId": "fbp-product-deposit-app--develop--Model--DTO--PartyDetails"
+              }
+            }
+          }
+        },
+        "x-fbp-params": {
+          "kgId": "fbp-product-deposit-app--develop--Model--DTO--RelatedPartyDetails",
+          "version": "develop",
+          "generatedAt": "2026-07-03T05:35:21.122867+00:00",
+          "sha": "9669cfed833675e51c8c343bede3ed65147518cdb8844bc62caf4acc6395b0df",
+          "repoName": "fbp-product-deposit-app",
+          "type": "DTO"
+        }
+      }
+    }
+  }
+}

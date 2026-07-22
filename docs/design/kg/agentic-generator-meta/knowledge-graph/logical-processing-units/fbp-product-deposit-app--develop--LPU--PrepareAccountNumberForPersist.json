@@ -1,0 +1,48 @@
+{
+  "name": "PrepareAccountNumberForPersist",
+  "type": "Manual",
+  "subType": "Enrichment",
+  "consumes": {
+    "Models": [
+      {
+        "referencedProperties": [
+          {
+            "name": "persistedProcessContexts",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--PersistedProcessContexts"
+          }
+        ]
+      }
+    ],
+    "Primitives": [],
+    "apis": [],
+    "dataReaders": []
+  },
+  "produces": {
+    "Models": [],
+    "Primitives": [
+      {
+        "name": "accountNumber",
+        "dataType": "String"
+      }
+    ],
+    "apis": [],
+    "dataWriters": []
+  },
+  "businessLogic": [
+    "Retrieve PMInternalDataModel from SlotsDTO and get the list of persisted process contexts.",
+    "Iterate over each persisted ProcessContext and parse the commandStatus JSON to find the first result containing 'acctNum'.",
+    "Extract the account number from the first matching result node; break out of the loop once found.",
+    "If no account number is found in any context, log an error and return early.",
+    "Retrieve DepositAccountEntity from SlotsDTO and set the extracted account number on it; log an error if the entity is null.",
+    "Retrieve DocumentDetailsEntity from SlotsDTO and set the extracted account number on it; log an error if the entity is null."
+  ],
+  "errorConstants": [],
+  "kgId": "fbp-product-deposit-app--develop--LPU--PrepareAccountNumberForPersist",
+  "metadata": {
+    "extractedAt": "2026-07-03T05:38:11.908950+00:00",
+    "generatedBy": "autobots-agents-mer / logical_processing_unit",
+    "version": "develop",
+    "repoName": "fbp-product-deposit-app",
+    "sha": ""
+  }
+}

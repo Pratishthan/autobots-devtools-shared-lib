@@ -1,0 +1,132 @@
+{
+  "kgId": "fbp-product-deposit-app--develop--Service--Apy--Apy",
+  "metadata": {
+    "repoName": "fbp-product-deposit-app",
+    "version": "develop",
+    "generatedAt": "2026-07-03T05:38:17Z"
+  },
+  "name": "apy",
+  "domain": "Apy",
+  "operationType": "CREATE",
+  "invocationType": [
+    "SYNC"
+  ],
+  "description": [
+    "This service handles the creation of Annual Percentage Yield (APY) or Annual Percentage Yield Earned (APYE) calculations by orchestrating a multi-stage enrichment and computation flow. It begins by fetching the relevant contract details \u2014 routing logic based on the feature type (such as ApyCreate, FundTransfer, OpenAccount, or AccountClosure) to retrieve the appropriate customer or account contract via a contract helper, validating that contract data is present and well-formed before storing it in the shared slot context. Next, it fetches interest details appropriate to the feature type: for APYE, it retrieves ledger-based interest and average principal figures, while for APY it fetches interest rate terms and applies a formula-driven calculation engine to derive the interest amount. The service then computes the yield calculation using the current bank operating date as a reference, invoking a dedicated yield calculation engine (handling leap-year day-count adjustments and zero-principal edge cases) to produce either an APY or APYE result. Finally, it validates that a response entity has been populated and returns the computed yield result with an HTTP 201 Created status."
+  ],
+  "requestType": "SINGLE",
+  "inputDataModel": {
+    "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--Apy"
+  },
+  "responseType": "SINGLE",
+  "outputDataModels": [
+    {
+      "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--ApyResponse",
+      "enrichedProperties": {
+        "complete": false,
+        "partial": []
+      }
+    },
+    {
+      "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--ReferenceContract",
+      "enrichedProperties": {
+        "complete": false,
+        "partial": [
+          {
+            "name": "contractId",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--ContractId"
+          },
+          {
+            "name": "depositAmount",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--DepositAmount"
+          }
+        ]
+      }
+    },
+    {
+      "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--Account",
+      "enrichedProperties": {
+        "complete": true,
+        "partial": []
+      }
+    }
+  ],
+  "referencedModels": [
+    {
+      "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--Apy",
+      "referencedProperties": [
+        {
+          "name": "cifId",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--CifId"
+        },
+        {
+          "name": "purposeId",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--PurposeId"
+        },
+        {
+          "name": "accountNumber",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountNumber"
+        },
+        {
+          "name": "productId",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--ProductId"
+        }
+      ]
+    },
+    {
+      "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--Account",
+      "referencedProperties": [
+        {
+          "name": "cifId",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--CifId"
+        },
+        {
+          "name": "purposeId",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--PurposeId"
+        }
+      ]
+    },
+    {
+      "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--ReferenceContract",
+      "referencedProperties": [
+        {
+          "name": "contractId",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--ContractId"
+        },
+        {
+          "name": "depositAmount",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--DepositAmount"
+        }
+      ]
+    },
+    {
+      "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--Apye",
+      "referencedProperties": [
+        {
+          "name": "accountNumber",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountNumber"
+        },
+        {
+          "name": "fromDate",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--FromDate"
+        },
+        {
+          "name": "toDate",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--ToDate"
+        }
+      ]
+    }
+  ],
+  "engine": "COMPOSE_ENGINE",
+  "enableAudit": false,
+  "flows": [
+    {
+      "flowKgId": "fbp-product-deposit-app--develop--FLOW--CM--ApyCreate-process",
+      "flowKgRef": "../flows/compose-engine/fbp-product-deposit-app--develop--FLOW--CM--ApyCreate-process.json"
+    },
+    {
+      "flowKgId": "fbp-product-deposit-app--develop--FLOW--CM--ApyCreate-validate",
+      "flowKgRef": "../flows/compose-engine/fbp-product-deposit-app--develop--FLOW--CM--ApyCreate-validate.json"
+    }
+  ]
+}

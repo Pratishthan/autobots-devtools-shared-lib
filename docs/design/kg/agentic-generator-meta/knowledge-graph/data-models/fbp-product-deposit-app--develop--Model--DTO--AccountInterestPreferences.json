@@ -1,0 +1,61 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Account Interest Preferences DTO",
+    "version": "1.0.0",
+    "description": "API schema for AccountInterestPreferences DTO"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "AccountInterestPreferences": {
+        "required": [
+          "payoutPreferences"
+        ],
+        "type": "object",
+        "properties": {
+          "payoutPreferences": {
+            "type": "array",
+            "items": {
+              "$ref": "PayoutPreferences.json#/components/schemas/PayoutPreferences",
+              "x-fbp-params": {
+                "propertyKgId": "fbp-product-deposit-app--develop--Property--PayoutPreferences",
+                "propertyTypeKgId": "fbp-product-deposit-app--develop--Model--DTO--PayoutPreferences"
+              }
+            }
+          },
+          "interestRateCode": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--InterestRateCode"
+            }
+          },
+          "compoundingFrequency": {
+            "type": "string",
+            "enum": [
+              "",
+              "DAILY",
+              "WEEKLY",
+              "MONTHLY",
+              "YEARLY",
+              "FORTNIGHTLY",
+              "QUARTERLY",
+              "HALF_YEARLY"
+            ],
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--CompoundingFrequency"
+            }
+          }
+        },
+        "x-fbp-params": {
+          "kgId": "fbp-product-deposit-app--develop--Model--DTO--AccountInterestPreferences",
+          "version": "develop",
+          "generatedAt": "2026-07-03T05:35:18.498518+00:00",
+          "sha": "d14782ff0a5a215e9069f1f761ee36ec0381723fb243c4857f59aeb0f653bfb7",
+          "repoName": "fbp-product-deposit-app",
+          "type": "DTO"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,98 @@
+{
+  "kgId": "fbp-product-deposit-app--develop--FLOW--CM--ApyeCreate-process",
+  "serviceKgId": "fbp-product-deposit-app--develop--Service--Apye--Apye",
+  "name": "ApyeCreate-process",
+  "feature": "ApyeCreate",
+  "flowType": "COMPOSE_ENGINE",
+  "operation": "process",
+  "processingNodes": [
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--FetchInterestDetails",
+      "name": "FetchInterestDetails",
+      "type": "Behaviour",
+      "props": {
+        "behaviour": {
+          "name": "FetchInterestDetails",
+          "$ref": "../../logical-processing-units/fbp-product-deposit-app--develop--LPU--FetchInterestDetails.json",
+          "lpuKgId": "fbp-product-deposit-app--develop--LPU--FetchInterestDetails.json"
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--ComputeYieldCalculation",
+      "name": "ComputeYieldCalculation",
+      "type": "Behaviour",
+      "props": {
+        "behaviour": {
+          "name": "ComputeYieldCalculation",
+          "$ref": "../../logical-processing-units/fbp-product-deposit-app--develop--LPU--ComputeYieldCalculation.json",
+          "lpuKgId": "fbp-product-deposit-app--develop--LPU--ComputeYieldCalculation.json"
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--RespondToRequest",
+      "name": "RespondToRequest",
+      "type": "Behaviour",
+      "props": {
+        "behaviour": {
+          "name": "RespondToRequest",
+          "$ref": "../../logical-processing-units/fbp-product-deposit-app--develop--LPU--RespondToRequest.json",
+          "lpuKgId": "fbp-product-deposit-app--develop--LPU--RespondToRequest.json"
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--LogHandler",
+      "name": "LogHandler",
+      "type": "Behaviour",
+      "props": {
+        "behaviour": {
+          "name": "LogHandler",
+          "$ref": "../../logical-processing-units/fbp-product-deposit-app--develop--LPU--LogHandler.json",
+          "lpuKgId": "fbp-product-deposit-app--develop--LPU--LogHandler.json",
+          "standard": true
+        }
+      }
+    }
+  ],
+  "flowPaths": {
+    "path_1": [
+      {
+        "stepNumber": 1,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--FetchInterestDetails"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--ComputeYieldCalculation"
+        }
+      },
+      {
+        "stepNumber": 2,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--ComputeYieldCalculation"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--RespondToRequest"
+        }
+      },
+      {
+        "stepNumber": 3,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--RespondToRequest"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--LogHandler"
+        }
+      }
+    ]
+  },
+  "metadata": {
+    "generatedFrom": "deposit-configuration.behaviour",
+    "generatedAt": "2026-07-03T05:35:28.314138+00:00",
+    "version": "develop",
+    "generatedBy": "compose-flow-kg-generator",
+    "repoName": "fbp-product-deposit-app",
+    "sha": "388c0f56abd4908809c054383990b6d49acf434e5834573805cf331f4c58b844"
+  }
+}

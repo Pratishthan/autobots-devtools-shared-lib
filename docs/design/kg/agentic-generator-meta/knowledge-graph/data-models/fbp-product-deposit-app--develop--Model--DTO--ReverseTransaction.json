@@ -1,0 +1,32 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Transaction Reversal API",
+    "version": "1.0.0",
+    "description": "API schema for Transaction Reversal"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "ReverseTransaction": {
+        "type": "object",
+        "properties": {
+          "transactionId": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--TransactionId"
+            }
+          }
+        },
+        "x-fbp-params": {
+          "kgId": "fbp-product-deposit-app--develop--Model--DTO--ReverseTransaction",
+          "version": "develop",
+          "generatedAt": "2026-07-03T05:35:21.497095+00:00",
+          "sha": "3879f9d3c64a3c423283c722895b65121c0dd5bddfa09c4ac3f15e974b5b20d3",
+          "repoName": "fbp-product-deposit-app",
+          "type": "DTO"
+        }
+      }
+    }
+  }
+}

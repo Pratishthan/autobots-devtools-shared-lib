@@ -1,0 +1,40 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "InterestDetails API",
+    "version": "1.0.0",
+    "description": "API schema for InterestDetailsDto entity"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "InterestDetails": {
+        "type": "object",
+        "properties": {
+          "interestCreditAccountNumber": {
+            "type": "string",
+            "description": "Account number to which interest is credited",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--InterestCreditAccountNumber"
+            }
+          },
+          "interestDebitAccountNumber": {
+            "type": "string",
+            "description": "Account number from which interest is debited",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--InterestDebitAccountNumber"
+            }
+          }
+        },
+        "x-fbp-params": {
+          "kgId": "fbp-product-deposit-app--develop--Model--DTO--InterestDetails",
+          "version": "develop",
+          "generatedAt": "2026-07-03T05:35:19.870270+00:00",
+          "sha": "1531a8df148a5d52d331915c701f3216dfc6435bfb10267231c3b632cc0a530e",
+          "repoName": "fbp-product-deposit-app",
+          "type": "DTO"
+        }
+      }
+    }
+  }
+}

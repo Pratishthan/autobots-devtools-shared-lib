@@ -1,0 +1,94 @@
+{
+  "flows": [
+    {
+      "startState": "Account-Create-Flow-Started",
+      "serviceKgId": "fbp-product-deposit-app--develop--FLOW--PM--Account-Create-Flow-Started",
+      "file": "fbp-product-deposit-app--develop--FLOW--PM--Account-Create-Flow-Started.json",
+      "$ref": "agentic-generator-meta/knowledge-graph/flows/process-manager/fbp-product-deposit-app--develop--FLOW--PM--Account-Create-Flow-Started.json"
+    },
+    {
+      "startState": "AccountClosure-Create-Flow-Started",
+      "serviceKgId": "fbp-product-deposit-app--develop--FLOW--PM--AccountClosure-Create-Flow-Started",
+      "file": "fbp-product-deposit-app--develop--FLOW--PM--AccountClosure-Create-Flow-Started.json",
+      "$ref": "agentic-generator-meta/knowledge-graph/flows/process-manager/fbp-product-deposit-app--develop--FLOW--PM--AccountClosure-Create-Flow-Started.json"
+    },
+    {
+      "startState": "CHECKING_ACCOUNT_FEE_INITIATED",
+      "serviceKgId": "fbp-product-deposit-app--develop--FLOW--PM--CHECKING_ACCOUNT_FEE_INITIATED",
+      "file": "fbp-product-deposit-app--develop--FLOW--PM--CHECKING_ACCOUNT_FEE_INITIATED.json",
+      "$ref": "agentic-generator-meta/knowledge-graph/flows/process-manager/fbp-product-deposit-app--develop--FLOW--PM--CHECKING_ACCOUNT_FEE_INITIATED.json"
+    },
+    {
+      "startState": "CHECKING_ACCOUNT_TRANSFER_WITH_FEE_INITIATED",
+      "serviceKgId": "fbp-product-deposit-app--develop--FLOW--PM--CHECKING_ACCOUNT_TRANSFER_WITH_FEE_INITIATED",
+      "file": "fbp-product-deposit-app--develop--FLOW--PM--CHECKING_ACCOUNT_TRANSFER_WITH_FEE_INITIATED.json",
+      "$ref": "agentic-generator-meta/knowledge-graph/flows/process-manager/fbp-product-deposit-app--develop--FLOW--PM--CHECKING_ACCOUNT_TRANSFER_WITH_FEE_INITIATED.json"
+    },
+    {
+      "startState": "MULTI_CREDIT_WITH_FEE_INITIATED",
+      "serviceKgId": "fbp-product-deposit-app--develop--FLOW--PM--MULTI_CREDIT_WITH_FEE_INITIATED",
+      "file": "fbp-product-deposit-app--develop--FLOW--PM--MULTI_CREDIT_WITH_FEE_INITIATED.json",
+      "$ref": "agentic-generator-meta/knowledge-graph/flows/process-manager/fbp-product-deposit-app--develop--FLOW--PM--MULTI_CREDIT_WITH_FEE_INITIATED.json"
+    },
+    {
+      "startState": "MULTI_DEBIT_WITH_FEE_INITIATED",
+      "serviceKgId": "fbp-product-deposit-app--develop--FLOW--PM--MULTI_DEBIT_WITH_FEE_INITIATED",
+      "file": "fbp-product-deposit-app--develop--FLOW--PM--MULTI_DEBIT_WITH_FEE_INITIATED.json",
+      "$ref": "agentic-generator-meta/knowledge-graph/flows/process-manager/fbp-product-deposit-app--develop--FLOW--PM--MULTI_DEBIT_WITH_FEE_INITIATED.json"
+    },
+    {
+      "startState": "MultiCreditTransaction-Create-Flow-Started",
+      "serviceKgId": "fbp-product-deposit-app--develop--FLOW--PM--MultiCreditTransaction-Create-Flow-Started",
+      "file": "fbp-product-deposit-app--develop--FLOW--PM--MultiCreditTransaction-Create-Flow-Started.json",
+      "$ref": "agentic-generator-meta/knowledge-graph/flows/process-manager/fbp-product-deposit-app--develop--FLOW--PM--MultiCreditTransaction-Create-Flow-Started.json"
+    },
+    {
+      "startState": "MultiDebitTransaction-Create-Flow-Started",
+      "serviceKgId": "fbp-product-deposit-app--develop--FLOW--PM--MultiDebitTransaction-Create-Flow-Started",
+      "file": "fbp-product-deposit-app--develop--FLOW--PM--MultiDebitTransaction-Create-Flow-Started.json",
+      "$ref": "agentic-generator-meta/knowledge-graph/flows/process-manager/fbp-product-deposit-app--develop--FLOW--PM--MultiDebitTransaction-Create-Flow-Started.json"
+    },
+    {
+      "startState": "NoticeInstruction-Create-Flow-Started",
+      "serviceKgId": "fbp-product-deposit-app--develop--FLOW--PM--NoticeInstruction-Create-Flow-Started",
+      "file": "fbp-product-deposit-app--develop--FLOW--PM--NoticeInstruction-Create-Flow-Started.json",
+      "$ref": "agentic-generator-meta/knowledge-graph/flows/process-manager/fbp-product-deposit-app--develop--FLOW--PM--NoticeInstruction-Create-Flow-Started.json"
+    },
+    {
+      "startState": "ProductSwitch-Create-Flow-Started",
+      "serviceKgId": "fbp-product-deposit-app--develop--FLOW--PM--ProductSwitch-Create-Flow-Started",
+      "file": "fbp-product-deposit-app--develop--FLOW--PM--ProductSwitch-Create-Flow-Started.json",
+      "$ref": "agentic-generator-meta/knowledge-graph/flows/process-manager/fbp-product-deposit-app--develop--FLOW--PM--ProductSwitch-Create-Flow-Started.json"
+    },
+    {
+      "startState": "REQUEST_TO_AH_INITIATED",
+      "serviceKgId": "fbp-product-deposit-app--develop--FLOW--PM--REQUEST_TO_AH_INITIATED",
+      "file": "fbp-product-deposit-app--develop--FLOW--PM--REQUEST_TO_AH_INITIATED.json",
+      "$ref": "agentic-generator-meta/knowledge-graph/flows/process-manager/fbp-product-deposit-app--develop--FLOW--PM--REQUEST_TO_AH_INITIATED.json"
+    },
+    {
+      "startState": "ReverseTransaction-Create-Flow-Started",
+      "serviceKgId": "fbp-product-deposit-app--develop--FLOW--PM--ReverseTransaction-Create-Flow-Started",
+      "file": "fbp-product-deposit-app--develop--FLOW--PM--ReverseTransaction-Create-Flow-Started.json",
+      "$ref": "agentic-generator-meta/knowledge-graph/flows/process-manager/fbp-product-deposit-app--develop--FLOW--PM--ReverseTransaction-Create-Flow-Started.json"
+    },
+    {
+      "startState": "TD-Account-Create-Flow-Started",
+      "serviceKgId": "fbp-product-deposit-app--develop--FLOW--PM--TD-Account-Create-Flow-Started",
+      "file": "fbp-product-deposit-app--develop--FLOW--PM--TD-Account-Create-Flow-Started.json",
+      "$ref": "agentic-generator-meta/knowledge-graph/flows/process-manager/fbp-product-deposit-app--develop--FLOW--PM--TD-Account-Create-Flow-Started.json"
+    },
+    {
+      "startState": "TDAccountPreClosure-Create-Flow-Started",
+      "serviceKgId": "fbp-product-deposit-app--develop--FLOW--PM--TDAccountPreClosure-Create-Flow-Started",
+      "file": "fbp-product-deposit-app--develop--FLOW--PM--TDAccountPreClosure-Create-Flow-Started.json",
+      "$ref": "agentic-generator-meta/knowledge-graph/flows/process-manager/fbp-product-deposit-app--develop--FLOW--PM--TDAccountPreClosure-Create-Flow-Started.json"
+    },
+    {
+      "startState": "Transfer-Create-Flow-Started",
+      "serviceKgId": "fbp-product-deposit-app--develop--FLOW--PM--Transfer-Create-Flow-Started",
+      "file": "fbp-product-deposit-app--develop--FLOW--PM--Transfer-Create-Flow-Started.json",
+      "$ref": "agentic-generator-meta/knowledge-graph/flows/process-manager/fbp-product-deposit-app--develop--FLOW--PM--Transfer-Create-Flow-Started.json"
+    }
+  ]
+}

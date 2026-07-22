@@ -1,0 +1,129 @@
+{
+  "kgId": "fbp-product-deposit-app--develop--FLOW--PM--CHECKING_ACCOUNT_TRANSFER_WITH_FEE_INITIATED",
+  "serviceKgId": "fbp-product-deposit-app--develop--FLOW--PM--CHECKING_ACCOUNT_TRANSFER_WITH_FEE_INITIATED",
+  "name": "CHECKING_ACCOUNT_TRANSFER_WITH_FEE_INITIATED",
+  "flowType": "PROCESS_MANAGER",
+  "processingNodes": [
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--State--CHECKING_ACCOUNT_TRANSFER_WITH_FEE_INITIATED",
+      "name": "CHECKING_ACCOUNT_TRANSFER_WITH_FEE_INITIATED",
+      "type": "State",
+      "props": {
+        "state": {
+          "name": "CHECKING_ACCOUNT_TRANSFER_WITH_FEE_INITIATED",
+          "description": "CHECKING_ACCOUNT_TRANSFER_WITH_FEE_INITIATED state",
+          "persist": false,
+          "initiateAsync": false
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--State--COMPUTE_FEE_TRF",
+      "name": "COMPUTE_FEE_TRF",
+      "type": "State",
+      "props": {
+        "state": {
+          "name": "COMPUTE_FEE_TRF",
+          "description": "COMPUTE_FEE_TRF state",
+          "persist": true,
+          "initiateAsync": false
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Action--CHECKING_ACCOUNT_TRANSFER_WITH_FEE_INITIATED_to_COMPUTE_FEE_TRF",
+      "name": "CommandHandler-ProcessCommandToExternalSystem/process",
+      "type": "Action",
+      "props": {
+        "action": {
+          "type": "Remote",
+          "feature": "CommandHandler-ProcessCommandToExternalSystem",
+          "operation": "process",
+          "$ref": "../compose-engine/fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-ProcessCommandToExternalSystem-process.json",
+          "actionKgId": "fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-ProcessCommandToExternalSystem-process",
+          "component": "fees",
+          "mapperIdentifier": "transfer-fee-compute",
+          "remoteCommandKey": "fee-transfer-compute"
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--State--TRF_WITH_FEE_INITIATED",
+      "name": "TRF_WITH_FEE_INITIATED",
+      "type": "State",
+      "props": {
+        "state": {
+          "name": "TRF_WITH_FEE_INITIATED",
+          "description": "TRF_WITH_FEE_INITIATED state",
+          "persist": true,
+          "initiateAsync": false
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Action--COMPUTE_FEE_TRF_to_TRF_WITH_FEE_INITIATED",
+      "name": "CommandHandler-TransactionCommandToExternalSystem/process",
+      "type": "Action",
+      "props": {
+        "action": {
+          "type": "Remote",
+          "feature": "CommandHandler-TransactionCommandToExternalSystem",
+          "operation": "process",
+          "$ref": "../compose-engine/fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-TransactionCommandToExternalSystem-process.json",
+          "actionKgId": "fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-TransactionCommandToExternalSystem-process",
+          "component": "transaction",
+          "mapperIdentifier": "transfer-payload-multi-creation-gross",
+          "remoteCommandKey": "create-multi-transaction"
+        }
+      }
+    }
+  ],
+  "flowPaths": {
+    "path_1": [
+      {
+        "stepNumber": 1,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--CHECKING_ACCOUNT_TRANSFER_WITH_FEE_INITIATED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--CHECKING_ACCOUNT_TRANSFER_WITH_FEE_INITIATED_to_COMPUTE_FEE_TRF"
+        }
+      },
+      {
+        "stepNumber": 2,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--CHECKING_ACCOUNT_TRANSFER_WITH_FEE_INITIATED_to_COMPUTE_FEE_TRF"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--COMPUTE_FEE_TRF"
+        }
+      },
+      {
+        "stepNumber": 3,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--COMPUTE_FEE_TRF"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--COMPUTE_FEE_TRF_to_TRF_WITH_FEE_INITIATED"
+        }
+      },
+      {
+        "stepNumber": 4,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--COMPUTE_FEE_TRF_to_TRF_WITH_FEE_INITIATED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--TRF_WITH_FEE_INITIATED"
+        }
+      }
+    ]
+  },
+  "metadata": {
+    "generatedFrom": "DEP-complete-rules.csv",
+    "generatedAt": "2026-07-03T05:35:29.399823+00:00",
+    "version": "develop",
+    "generatedBy": "flow-kg-generator-phase18",
+    "repoName": "fbp-product-deposit-app",
+    "sha": ""
+  }
+}

@@ -1,0 +1,126 @@
+{
+  "name": "ValidateMultiTransactionLimits",
+  "type": "Manual",
+  "subType": "Validation",
+  "consumes": {
+    "Models": [
+      {
+        "referencedProperties": [
+          {
+            "name": "tranLines",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--TranLines"
+          },
+          {
+            "name": "txnValueDate",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--TxnValueDate"
+          },
+          {
+            "name": "sourceChannelType",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--SourceChannelType"
+          }
+        ],
+        "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--MultiCreditTransaction",
+        "$ref": "../models/fbp-product-deposit-app--develop--Model--DTO--MultiCreditTransaction.json#/components/schemas/MultiCreditTransaction"
+      },
+      {
+        "referencedProperties": [
+          {
+            "name": "tranLines",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--TranLines"
+          },
+          {
+            "name": "txnValueDate",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--TxnValueDate"
+          },
+          {
+            "name": "sourceChannelType",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--SourceChannelType"
+          }
+        ],
+        "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--MultiDebitTransaction",
+        "$ref": "../models/fbp-product-deposit-app--develop--Model--DTO--MultiDebitTransaction.json#/components/schemas/MultiDebitTransaction"
+      },
+      {
+        "referencedProperties": [
+          {
+            "name": "tranLines",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--TranLines"
+          },
+          {
+            "name": "txnValueDate",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--TxnValueDate"
+          },
+          {
+            "name": "sourceChannelType",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--SourceChannelType"
+          }
+        ],
+        "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--Transfer",
+        "$ref": "../models/fbp-product-deposit-app--develop--Model--DTO--Transfer.json#/components/schemas/Transfer"
+      }
+    ],
+    "Primitives": [
+      {
+        "name": "TRANSFER_LEG_CONTEXTS",
+        "dataType": "List<TransferLegContext>"
+      }
+    ],
+    "apis": [],
+    "dataReaders": []
+  },
+  "produces": {
+    "Models": [],
+    "Primitives": [
+      {
+        "name": "LIMIT_EXTERNAL_REF_IDS",
+        "dataType": "List<String>"
+      },
+      {
+        "name": "LIMIT_REVERSAL_TXN_DATE",
+        "dataType": "BusinessDateDTO"
+      }
+    ],
+    "apis": [
+      {
+        "clientType": "externalClient",
+        "name": "evaluateAllLegs",
+        "component": "LimitEvaluationServiceUtil",
+        "requestModelName": "LegEvaluation",
+        "responseModelName": "List<String>",
+        "referencedProperties": [
+          {
+            "name": "limitExternalRefIds",
+            "propertyKgId": ""
+          }
+        ],
+        "url": ""
+      }
+    ],
+    "dataWriters": []
+  },
+  "businessLogic": [
+    "Check if limit evaluation is enabled via configuration flag; if disabled, return immediately.",
+    "Determine the feature type from slotsDTO (MultiCreditTransaction, MultiDebitTransaction, or FundTransfer); skip if not a supported multi-leg transaction type.",
+    "Read the appropriate multi-leg DTO from slots based on feature type: MultiCreditTransactionDTO (MULTI_CREDIT_DETAILS), MultiDebitTransactionDTO (MULTI_DEBIT_DETAILS), or TransferDTO (TRANSFER_DETAILS); return if DTO is missing or has no tranLines.",
+    "Read the list of TransferLegContexts from slots (TRANSFER_LEG_CONTEXTS); skip if absent or empty.",
+    "For each TxnLineDTO leg in tranLines: determine operation type (DEPOSIT for CREDIT indicator, WITHDRAWAL for DEBIT indicator); skip legs with null or unrecognised creditDebitIndicator.",
+    "For each leg, find the matching TransferLegContext by account number and creditDebitIndicator; skip if no matching context or no ReferenceContractDTO is found.",
+    "Retrieve the applicable operational limits from the leg's ReferenceContractDTO: depositOpLimits for DEPOSIT, withdrawalOpLimits for WITHDRAWAL; skip leg if no limits configured.",
+    "Partition operational limit names into AMOUNT-suffixed and COUNT-suffixed lists; warn on unrecognised suffixes.",
+    "Build limit codes by combining purposeId, operationType, and limit field name (uppercased) for both AMOUNT and COUNT categories.",
+    "Build per-leg txn event ObjectNodes for amount and/or count evaluations, populating txnDate, txnAmount, currencyCode, txnCount, serviceCode, customerId, accountId, paymentChannel, financialFlag, and a random txnId.",
+    "Collect all LegEvaluation objects (one per valid leg) into a list and pass them to LimitEvaluationServiceUtil.evaluateAllLegs() for atomic evaluation within a single transactional boundary.",
+    "If any limit external reference IDs are returned, store them in slots under LIMIT_EXTERNAL_REF_IDS and store the transaction value date under LIMIT_REVERSAL_TXN_DATE for potential downstream reversal."
+  ],
+  "errorConstants": [
+    "TRANSACTION_LIMIT_EXCEEDED"
+  ],
+  "kgId": "fbp-product-deposit-app--develop--LPU--ValidateMultiTransactionLimits",
+  "metadata": {
+    "extractedAt": "2026-07-03T05:38:13.511391+00:00",
+    "generatedBy": "autobots-agents-mer / logical_processing_unit",
+    "version": "develop",
+    "repoName": "fbp-product-deposit-app",
+    "sha": ""
+  }
+}

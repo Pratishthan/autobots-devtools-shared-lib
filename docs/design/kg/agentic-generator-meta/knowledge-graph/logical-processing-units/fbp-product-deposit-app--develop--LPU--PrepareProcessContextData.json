@@ -1,0 +1,76 @@
+{
+  "name": "PrepareProcessContextData",
+  "type": "Manual",
+  "subType": "Transformation",
+  "consumes": {
+    "Models": [],
+    "Primitives": [
+      {
+        "name": "isFeeApplicable",
+        "dataType": "boolean"
+      },
+      {
+        "name": "currentCommandPayLoad",
+        "dataType": "String"
+      },
+      {
+        "name": "currentAggregate",
+        "dataType": "Object"
+      },
+      {
+        "name": "nextCommandIsAsync",
+        "dataType": "Object"
+      }
+    ],
+    "apis": [],
+    "dataReaders": []
+  },
+  "produces": {
+    "Models": [],
+    "Primitives": [
+      {
+        "name": "DOMAIN_CURRENT_AGGREGATE",
+        "dataType": "Object"
+      },
+      {
+        "name": "DOMAIN_CURRENT_COMMAND_PAYLOAD",
+        "dataType": "String"
+      },
+      {
+        "name": "DOMAIN_NEXT_COMMAND_IS_ASYNC",
+        "dataType": "Object"
+      },
+      {
+        "name": "ORIGINAL_OPERATION",
+        "dataType": "Object"
+      },
+      {
+        "name": "DOMAIN_CURRENT_STATE",
+        "dataType": "String"
+      }
+    ],
+    "apis": [],
+    "dataWriters": []
+  },
+  "businessLogic": [
+    "Read isFeeApplicable flag from SlotsDTO using DDLCConstants.DOMAIN + '.isFeeApplicable' key and parse it as boolean.",
+    "Retrieve InternalDataModel from SlotsDTO using PMConstants.DOMAIN_INTERNAL_DATA_MODEL key.",
+    "Retrieve currentCommandPayLoad string from SlotsDTO using PMConstants.DOMAIN_CURRENT_COMMAND_PAYLOAD key.",
+    "Set DOMAIN_CURRENT_AGGREGATE on SlotsDTO using idm.getCurrentAggregate().",
+    "Set DOMAIN_CURRENT_COMMAND_PAYLOAD on SlotsDTO using the retrieved currentCommandPayLoad.",
+    "Set DOMAIN_NEXT_COMMAND_IS_ASYNC on SlotsDTO using idm.getNextCommandIsAsync().",
+    "Set ORIGINAL_OPERATION on SlotsDTO using slotsDTO.getOperation().",
+    "If isFeeApplicable is true and featureType is 'FundTransfer', set DOMAIN_CURRENT_STATE to 'CHECKING_ACCOUNT_TRANSFER_WITH_FEE_INITIATED'.",
+    "If isFeeApplicable is true and featureType is 'MultiCreditTransaction', set DOMAIN_CURRENT_STATE to 'MULTI_CREDIT_WITH_FEE_INITIATED'.",
+    "If isFeeApplicable is true and featureType is 'MultiDebitTransaction', set DOMAIN_CURRENT_STATE to 'MULTI_DEBIT_WITH_FEE_INITIATED'."
+  ],
+  "errorConstants": [],
+  "kgId": "fbp-product-deposit-app--develop--LPU--PrepareProcessContextData",
+  "metadata": {
+    "extractedAt": "2026-07-03T05:38:12.380408+00:00",
+    "generatedBy": "autobots-agents-mer / logical_processing_unit",
+    "version": "develop",
+    "repoName": "fbp-product-deposit-app",
+    "sha": ""
+  }
+}

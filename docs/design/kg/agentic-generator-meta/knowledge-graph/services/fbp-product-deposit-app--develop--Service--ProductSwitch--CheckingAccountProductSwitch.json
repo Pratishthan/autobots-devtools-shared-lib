@@ -1,0 +1,40 @@
+{
+  "kgId": "fbp-product-deposit-app--develop--Service--ProductSwitch--CheckingAccountProductSwitch",
+  "metadata": {
+    "repoName": "fbp-product-deposit-app",
+    "version": "develop",
+    "generatedAt": "2026-07-03T05:38:20Z"
+  },
+  "name": "CheckingAccountProductSwitch",
+  "domain": "ProductSwitch",
+  "operationType": "CREATE",
+  "invocationType": [
+    "SYNC"
+  ],
+  "description": [
+    "This service orchestrates a checking account product switch by first preparing the process context, reading fee applicability flags and internal data model state to determine the appropriate workflow state \u2014 distinguishing between fund transfer, multi-credit, and multi-debit fee scenarios. Once the context is established, the service dispatches a series of commands to external systems, beginning with a call to the related-party domain entity role mapping creation endpoint, followed by additional external system interactions. After all external commands are processed, the service compiles the final response by inspecting the current state: if the account has reached a 'PRODUCT_SWITCHED' state, it extracts and reshapes the output from the current command payload; otherwise, it searches persisted process contexts for a result containing an account number, falling back to the last available context if needed. The assembled response is wrapped in a standardised API response object and returned to the caller with an HTTP 201 Created status, with appropriate error handling for JSON parsing failures or missing response entities."
+  ],
+  "requestType": "SINGLE",
+  "inputDataModel": {
+    "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--ProductSwitch"
+  },
+  "responseType": "SINGLE",
+  "outputDataModels": [
+    {
+      "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--GenerateResponse",
+      "enrichedProperties": {
+        "complete": false,
+        "partial": []
+      }
+    }
+  ],
+  "referencedModels": [],
+  "engine": "PROCESS_MANAGER",
+  "enableAudit": false,
+  "flows": [
+    {
+      "flowKgId": "fbp-product-deposit-app--develop--FLOW--PM--ProductSwitch-Create-Flow-Started",
+      "flowKgRef": "../flows/process-manager/fbp-product-deposit-app--develop--FLOW--PM--ProductSwitch-Create-Flow-Started.json"
+    }
+  ]
+}

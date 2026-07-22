@@ -1,0 +1,38 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Account Renewal Preferences API",
+    "version": "1.0.0",
+    "description": "API schema for AccountRenewalPreferencesDTO entity"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "AccountRenewalPreferences": {
+        "type": "object",
+        "properties": {
+          "autoRenewalAllowed": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--AutoRenewalAllowed"
+            }
+          },
+          "autoClosureAllowed": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--AutoClosureAllowed"
+            }
+          }
+        },
+        "x-fbp-params": {
+          "kgId": "fbp-product-deposit-app--develop--Model--DTO--AccountRenewalPreferences",
+          "version": "develop",
+          "generatedAt": "2026-07-03T05:35:18.644482+00:00",
+          "sha": "cb134c1466645383eec12cba0b358b9309198884b7ce93c583bc4172417bb808",
+          "repoName": "fbp-product-deposit-app",
+          "type": "DTO"
+        }
+      }
+    }
+  }
+}

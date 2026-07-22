@@ -1,0 +1,47 @@
+{
+  "name": "RespondToRequest",
+  "type": "Manual",
+  "subType": "Response",
+  "consumes": {
+    "Models": [
+      {
+        "referencedProperties": [
+          {
+            "name": "apiResponseEntity",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--ApiResponseEntity"
+          },
+          {
+            "name": "apiSingleResponseEntity",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--ApiSingleResponseEntity"
+          }
+        ]
+      }
+    ],
+    "Primitives": [],
+    "apis": [],
+    "dataReaders": []
+  },
+  "produces": {
+    "Models": [],
+    "Primitives": [],
+    "apis": [],
+    "dataWriters": []
+  },
+  "businessLogic": [
+    "Retrieve InternalDataModel from SlotsDTO.",
+    "Validate that InternalDataModel is not empty and that at least one of apiResponseEntity or apiSingleResponseEntity is present; throw FbpApplicationException with DEPSystemErrorCode.ERROR_IN_PROCESSING_THE_REQUEST if validation fails.",
+    "If apiResponseEntity is not empty, complete the response with apiResponseEntity and HTTP status 201 CREATED.",
+    "Otherwise, complete the response with apiSingleResponseEntity and HTTP status 201 CREATED."
+  ],
+  "errorConstants": [
+    "ERROR_IN_PROCESSING_THE_REQUEST"
+  ],
+  "kgId": "fbp-product-deposit-app--develop--LPU--RespondToRequest",
+  "metadata": {
+    "extractedAt": "2026-07-03T05:38:12.590698+00:00",
+    "generatedBy": "autobots-agents-mer / logical_processing_unit",
+    "version": "develop",
+    "repoName": "fbp-product-deposit-app",
+    "sha": ""
+  }
+}

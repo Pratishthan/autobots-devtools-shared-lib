@@ -1,0 +1,186 @@
+{
+  "compose_flows": [
+    {
+      "feature": "CommandHandler-AccountOpenRespondToRequest",
+      "operation": "process",
+      "serviceKgId": "",
+      "file": "fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-AccountOpenRespondToRequest-process.json",
+      "$ref": "agentic-generator-meta/knowledge-graph/flows/compose-engine/fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-AccountOpenRespondToRequest-process.json"
+    },
+    {
+      "feature": "CommandHandler-FinalCommandToExternalSystem",
+      "operation": "process",
+      "serviceKgId": "",
+      "file": "fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-FinalCommandToExternalSystem-process.json",
+      "$ref": "agentic-generator-meta/knowledge-graph/flows/compose-engine/fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-FinalCommandToExternalSystem-process.json"
+    },
+    {
+      "feature": "CommandHandler-TransactionCommandToExternalSystem",
+      "operation": "process",
+      "serviceKgId": "",
+      "file": "fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-TransactionCommandToExternalSystem-process.json",
+      "$ref": "agentic-generator-meta/knowledge-graph/flows/compose-engine/fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-TransactionCommandToExternalSystem-process.json"
+    },
+    {
+      "feature": "CommandHandler-ProcessCommandToExternalSystem",
+      "operation": "process",
+      "serviceKgId": "",
+      "file": "fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-ProcessCommandToExternalSystem-process.json",
+      "$ref": "agentic-generator-meta/knowledge-graph/flows/compose-engine/fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-ProcessCommandToExternalSystem-process.json"
+    },
+    {
+      "feature": "OpenAccount",
+      "operation": "validate",
+      "serviceKgId": "",
+      "file": "fbp-product-deposit-app--develop--FLOW--CM--OpenAccount-validate.json",
+      "$ref": "agentic-generator-meta/knowledge-graph/flows/compose-engine/fbp-product-deposit-app--develop--FLOW--CM--OpenAccount-validate.json"
+    },
+    {
+      "feature": "OpenAccount",
+      "operation": "process",
+      "serviceKgId": "",
+      "file": "fbp-product-deposit-app--develop--FLOW--CM--OpenAccount-process.json",
+      "$ref": "agentic-generator-meta/knowledge-graph/flows/compose-engine/fbp-product-deposit-app--develop--FLOW--CM--OpenAccount-process.json"
+    },
+    {
+      "feature": "FundTransfer",
+      "operation": "validate",
+      "serviceKgId": "",
+      "file": "fbp-product-deposit-app--develop--FLOW--CM--FundTransfer-validate.json",
+      "$ref": "agentic-generator-meta/knowledge-graph/flows/compose-engine/fbp-product-deposit-app--develop--FLOW--CM--FundTransfer-validate.json"
+    },
+    {
+      "feature": "FundTransfer",
+      "operation": "process",
+      "serviceKgId": "",
+      "file": "fbp-product-deposit-app--develop--FLOW--CM--FundTransfer-process.json",
+      "$ref": "agentic-generator-meta/knowledge-graph/flows/compose-engine/fbp-product-deposit-app--develop--FLOW--CM--FundTransfer-process.json"
+    },
+    {
+      "feature": "MultiCreditTransaction",
+      "operation": "validate",
+      "serviceKgId": "",
+      "file": "fbp-product-deposit-app--develop--FLOW--CM--MultiCreditTransaction-validate.json",
+      "$ref": "agentic-generator-meta/knowledge-graph/flows/compose-engine/fbp-product-deposit-app--develop--FLOW--CM--MultiCreditTransaction-validate.json"
+    },
+    {
+      "feature": "MultiCreditTransaction",
+      "operation": "process",
+      "serviceKgId": "",
+      "file": "fbp-product-deposit-app--develop--FLOW--CM--MultiCreditTransaction-process.json",
+      "$ref": "agentic-generator-meta/knowledge-graph/flows/compose-engine/fbp-product-deposit-app--develop--FLOW--CM--MultiCreditTransaction-process.json"
+    },
+    {
+      "feature": "MultiDebitTransaction",
+      "operation": "validate",
+      "serviceKgId": "",
+      "file": "fbp-product-deposit-app--develop--FLOW--CM--MultiDebitTransaction-validate.json",
+      "$ref": "agentic-generator-meta/knowledge-graph/flows/compose-engine/fbp-product-deposit-app--develop--FLOW--CM--MultiDebitTransaction-validate.json"
+    },
+    {
+      "feature": "MultiDebitTransaction",
+      "operation": "process",
+      "serviceKgId": "",
+      "file": "fbp-product-deposit-app--develop--FLOW--CM--MultiDebitTransaction-process.json",
+      "$ref": "agentic-generator-meta/knowledge-graph/flows/compose-engine/fbp-product-deposit-app--develop--FLOW--CM--MultiDebitTransaction-process.json"
+    },
+    {
+      "feature": "Fee-Processing",
+      "operation": "validate",
+      "serviceKgId": "",
+      "file": "fbp-product-deposit-app--develop--FLOW--CM--Fee-Processing-validate.json",
+      "$ref": "agentic-generator-meta/knowledge-graph/flows/compose-engine/fbp-product-deposit-app--develop--FLOW--CM--Fee-Processing-validate.json"
+    },
+    {
+      "feature": "Fee-Processing",
+      "operation": "process",
+      "serviceKgId": "",
+      "file": "fbp-product-deposit-app--develop--FLOW--CM--Fee-Processing-process.json",
+      "$ref": "agentic-generator-meta/knowledge-graph/flows/compose-engine/fbp-product-deposit-app--develop--FLOW--CM--Fee-Processing-process.json"
+    },
+    {
+      "feature": "Transaction-Reversal",
+      "operation": "validate",
+      "serviceKgId": "",
+      "file": "fbp-product-deposit-app--develop--FLOW--CM--Transaction-Reversal-validate.json",
+      "$ref": "agentic-generator-meta/knowledge-graph/flows/compose-engine/fbp-product-deposit-app--develop--FLOW--CM--Transaction-Reversal-validate.json"
+    },
+    {
+      "feature": "Transaction-Reversal",
+      "operation": "process",
+      "serviceKgId": "",
+      "file": "fbp-product-deposit-app--develop--FLOW--CM--Transaction-Reversal-process.json",
+      "$ref": "agentic-generator-meta/knowledge-graph/flows/compose-engine/fbp-product-deposit-app--develop--FLOW--CM--Transaction-Reversal-process.json"
+    },
+    {
+      "feature": "CheckingAccount-ProductSwitch",
+      "operation": "validate",
+      "serviceKgId": "",
+      "file": "fbp-product-deposit-app--develop--FLOW--CM--CheckingAccount-ProductSwitch-validate.json",
+      "$ref": "agentic-generator-meta/knowledge-graph/flows/compose-engine/fbp-product-deposit-app--develop--FLOW--CM--CheckingAccount-ProductSwitch-validate.json"
+    },
+    {
+      "feature": "CheckingAccount-ProductSwitch",
+      "operation": "process",
+      "serviceKgId": "",
+      "file": "fbp-product-deposit-app--develop--FLOW--CM--CheckingAccount-ProductSwitch-process.json",
+      "$ref": "agentic-generator-meta/knowledge-graph/flows/compose-engine/fbp-product-deposit-app--develop--FLOW--CM--CheckingAccount-ProductSwitch-process.json"
+    },
+    {
+      "feature": "CommandHandler-FlowCompleted",
+      "operation": "process",
+      "serviceKgId": "",
+      "file": "fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-FlowCompleted-process.json",
+      "$ref": "agentic-generator-meta/knowledge-graph/flows/compose-engine/fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-FlowCompleted-process.json"
+    },
+    {
+      "feature": "ApyeCreate",
+      "operation": "process",
+      "serviceKgId": "",
+      "file": "fbp-product-deposit-app--develop--FLOW--CM--ApyeCreate-process.json",
+      "$ref": "agentic-generator-meta/knowledge-graph/flows/compose-engine/fbp-product-deposit-app--develop--FLOW--CM--ApyeCreate-process.json"
+    },
+    {
+      "feature": "ApyCreate",
+      "operation": "process",
+      "serviceKgId": "",
+      "file": "fbp-product-deposit-app--develop--FLOW--CM--ApyCreate-process.json",
+      "$ref": "agentic-generator-meta/knowledge-graph/flows/compose-engine/fbp-product-deposit-app--develop--FLOW--CM--ApyCreate-process.json"
+    },
+    {
+      "feature": "CreateNotice",
+      "operation": "process",
+      "serviceKgId": "",
+      "file": "fbp-product-deposit-app--develop--FLOW--CM--CreateNotice-process.json",
+      "$ref": "agentic-generator-meta/knowledge-graph/flows/compose-engine/fbp-product-deposit-app--develop--FLOW--CM--CreateNotice-process.json"
+    },
+    {
+      "feature": "AccountClosure",
+      "operation": "validate",
+      "serviceKgId": "",
+      "file": "fbp-product-deposit-app--develop--FLOW--CM--AccountClosure-validate.json",
+      "$ref": "agentic-generator-meta/knowledge-graph/flows/compose-engine/fbp-product-deposit-app--develop--FLOW--CM--AccountClosure-validate.json"
+    },
+    {
+      "feature": "AccountClosure",
+      "operation": "process",
+      "serviceKgId": "",
+      "file": "fbp-product-deposit-app--develop--FLOW--CM--AccountClosure-process.json",
+      "$ref": "agentic-generator-meta/knowledge-graph/flows/compose-engine/fbp-product-deposit-app--develop--FLOW--CM--AccountClosure-process.json"
+    },
+    {
+      "feature": "TDAccountPreClosure",
+      "operation": "validate",
+      "serviceKgId": "",
+      "file": "fbp-product-deposit-app--develop--FLOW--CM--TDAccountPreClosure-validate.json",
+      "$ref": "agentic-generator-meta/knowledge-graph/flows/compose-engine/fbp-product-deposit-app--develop--FLOW--CM--TDAccountPreClosure-validate.json"
+    },
+    {
+      "feature": "TDAccountPreClosure",
+      "operation": "process",
+      "serviceKgId": "",
+      "file": "fbp-product-deposit-app--develop--FLOW--CM--TDAccountPreClosure-process.json",
+      "$ref": "agentic-generator-meta/knowledge-graph/flows/compose-engine/fbp-product-deposit-app--develop--FLOW--CM--TDAccountPreClosure-process.json"
+    }
+  ]
+}

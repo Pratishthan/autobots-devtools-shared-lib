@@ -1,0 +1,128 @@
+{
+  "kgId": "fbp-product-deposit-app--develop--FLOW--PM--ReverseTransaction-Create-Flow-Started",
+  "serviceKgId": "fbp-product-deposit-app--develop--Service--ReverseTransaction--ReverseTransaction",
+  "name": "ReverseTransaction-Create-Flow-Started",
+  "flowType": "PROCESS_MANAGER",
+  "processingNodes": [
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--State--ReverseTransaction-Create-Flow-Started",
+      "name": "ReverseTransaction-Create-Flow-Started",
+      "type": "State",
+      "props": {
+        "state": {
+          "name": "ReverseTransaction-Create-Flow-Started",
+          "description": "ReverseTransaction-Create-Flow-Started state",
+          "persist": false,
+          "initiateAsync": false
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--State--TRANSACTION_REVERSAL_INITIATED",
+      "name": "TRANSACTION_REVERSAL_INITIATED",
+      "type": "State",
+      "props": {
+        "state": {
+          "name": "TRANSACTION_REVERSAL_INITIATED",
+          "description": "TRANSACTION_REVERSAL_INITIATED state",
+          "persist": true,
+          "initiateAsync": false
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Action--ReverseTransaction-Create-Flow-Started_to_TRANSACTION_REVERSAL_INITIATED",
+      "name": "Transaction-Reversal/process",
+      "type": "Action",
+      "props": {
+        "action": {
+          "type": "Local",
+          "feature": "Transaction-Reversal",
+          "operation": "process",
+          "$ref": "../compose-engine/fbp-product-deposit-app--develop--FLOW--CM--Transaction-Reversal-process.json",
+          "actionKgId": "fbp-product-deposit-app--develop--FLOW--CM--Transaction-Reversal-process",
+          "component": "DEP",
+          "mapperIdentifier": "Checking-account-transaction-reversal"
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--State--TRANSACTION_REVERSAL_COMPLETED",
+      "name": "TRANSACTION_REVERSAL_COMPLETED",
+      "type": "State",
+      "props": {
+        "state": {
+          "name": "TRANSACTION_REVERSAL_COMPLETED",
+          "description": "TRANSACTION_REVERSAL_COMPLETED state",
+          "persist": true,
+          "initiateAsync": false
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Action--TRANSACTION_REVERSAL_INITIATED_to_TRANSACTION_REVERSAL_COMPLETED",
+      "name": "CommandHandler-FinalCommandToExternalSystem/process",
+      "type": "Action",
+      "props": {
+        "action": {
+          "type": "Remote",
+          "feature": "CommandHandler-FinalCommandToExternalSystem",
+          "operation": "process",
+          "$ref": "../compose-engine/fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-FinalCommandToExternalSystem-process.json",
+          "actionKgId": "fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-FinalCommandToExternalSystem-process",
+          "component": "transaction",
+          "mapperIdentifier": "Checking-account-transaction-reversal",
+          "remoteCommandKey": "transaction-reversal"
+        }
+      }
+    }
+  ],
+  "flowPaths": {
+    "path_1": [
+      {
+        "stepNumber": 1,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--ReverseTransaction-Create-Flow-Started"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--ReverseTransaction-Create-Flow-Started_to_TRANSACTION_REVERSAL_INITIATED"
+        }
+      },
+      {
+        "stepNumber": 2,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--ReverseTransaction-Create-Flow-Started_to_TRANSACTION_REVERSAL_INITIATED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--TRANSACTION_REVERSAL_INITIATED"
+        }
+      },
+      {
+        "stepNumber": 3,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--TRANSACTION_REVERSAL_INITIATED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--TRANSACTION_REVERSAL_INITIATED_to_TRANSACTION_REVERSAL_COMPLETED"
+        }
+      },
+      {
+        "stepNumber": 4,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--TRANSACTION_REVERSAL_INITIATED_to_TRANSACTION_REVERSAL_COMPLETED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--TRANSACTION_REVERSAL_COMPLETED"
+        }
+      }
+    ]
+  },
+  "metadata": {
+    "generatedFrom": "DEP-complete-rules.csv",
+    "generatedAt": "2026-07-03T05:35:30.472965+00:00",
+    "version": "develop",
+    "generatedBy": "flow-kg-generator-phase18",
+    "repoName": "fbp-product-deposit-app",
+    "sha": ""
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Account Additional Information API",
+    "version": "1.0.0",
+    "description": "API schema for AccountAdditionalInfoDTO entity"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "AccountAdditionalInfo": {
+        "type": "object",
+        "properties": {
+          "accountAdditionalInfoCategory": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountAdditionalInfoCategory"
+            }
+          },
+          "key": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--Key"
+            }
+          },
+          "value": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--Value"
+            }
+          }
+        },
+        "x-fbp-params": {
+          "kgId": "fbp-product-deposit-app--develop--Model--DTO--AccountAdditionalInfo",
+          "version": "develop",
+          "generatedAt": "2026-07-03T05:35:17.941104+00:00",
+          "sha": "3ca7d58759a0d9ca0fa69471c34ac058de2b0184c39ef81711f11d728e6ff6f6",
+          "repoName": "fbp-product-deposit-app",
+          "type": "DTO"
+        }
+      }
+    }
+  }
+}

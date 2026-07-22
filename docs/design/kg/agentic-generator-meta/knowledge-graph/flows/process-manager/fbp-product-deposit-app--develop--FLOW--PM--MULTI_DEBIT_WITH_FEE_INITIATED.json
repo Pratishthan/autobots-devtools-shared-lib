@@ -1,0 +1,167 @@
+{
+  "kgId": "fbp-product-deposit-app--develop--FLOW--PM--MULTI_DEBIT_WITH_FEE_INITIATED",
+  "serviceKgId": "fbp-product-deposit-app--develop--FLOW--PM--MULTI_DEBIT_WITH_FEE_INITIATED",
+  "name": "MULTI_DEBIT_WITH_FEE_INITIATED",
+  "flowType": "PROCESS_MANAGER",
+  "processingNodes": [
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--State--MULTI_DEBIT_WITH_FEE_INITIATED",
+      "name": "MULTI_DEBIT_WITH_FEE_INITIATED",
+      "type": "State",
+      "props": {
+        "state": {
+          "name": "MULTI_DEBIT_WITH_FEE_INITIATED",
+          "description": "MULTI_DEBIT_WITH_FEE_INITIATED state",
+          "persist": false,
+          "initiateAsync": false
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--State--COMPUTE_FEE_MDR",
+      "name": "COMPUTE_FEE_MDR",
+      "type": "State",
+      "props": {
+        "state": {
+          "name": "COMPUTE_FEE_MDR",
+          "description": "COMPUTE_FEE_MDR state",
+          "persist": true,
+          "initiateAsync": false
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Action--MULTI_DEBIT_WITH_FEE_INITIATED_to_COMPUTE_FEE_MDR",
+      "name": "CommandHandler-ProcessCommandToExternalSystem/process",
+      "type": "Action",
+      "props": {
+        "action": {
+          "type": "Remote",
+          "feature": "CommandHandler-ProcessCommandToExternalSystem",
+          "operation": "process",
+          "$ref": "../compose-engine/fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-ProcessCommandToExternalSystem-process.json",
+          "actionKgId": "fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-ProcessCommandToExternalSystem-process",
+          "component": "fees",
+          "mapperIdentifier": "multi-debit-fee-compute",
+          "remoteCommandKey": "fee-transfer-compute"
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--State--MULTI_DEBIT_GROSS_INITIATED",
+      "name": "MULTI_DEBIT_GROSS_INITIATED",
+      "type": "State",
+      "props": {
+        "state": {
+          "name": "MULTI_DEBIT_GROSS_INITIATED",
+          "description": "MULTI_DEBIT_GROSS_INITIATED state",
+          "persist": true,
+          "initiateAsync": false
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Action--COMPUTE_FEE_MDR_to_MULTI_DEBIT_GROSS_INITIATED",
+      "name": "CommandHandler-TransactionCommandToExternalSystem/process",
+      "type": "Action",
+      "props": {
+        "action": {
+          "type": "Remote",
+          "feature": "CommandHandler-TransactionCommandToExternalSystem",
+          "operation": "process",
+          "$ref": "../compose-engine/fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-TransactionCommandToExternalSystem-process.json",
+          "actionKgId": "fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-TransactionCommandToExternalSystem-process",
+          "component": "transaction",
+          "mapperIdentifier": "multi-debit-payload-multi-creation-gross",
+          "remoteCommandKey": "create-multi-transaction"
+        }
+      }
+    }
+  ],
+  "flowPaths": {
+    "path_1": [
+      {
+        "stepNumber": 1,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--MULTI_DEBIT_WITH_FEE_INITIATED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--MULTI_DEBIT_WITH_FEE_INITIATED_to_COMPUTE_FEE_MDR"
+        }
+      },
+      {
+        "stepNumber": 2,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--MULTI_DEBIT_WITH_FEE_INITIATED_to_COMPUTE_FEE_MDR"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--COMPUTE_FEE_MDR"
+        }
+      },
+      {
+        "stepNumber": 3,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--COMPUTE_FEE_MDR"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--COMPUTE_FEE_MDR_to_MULTI_DEBIT_GROSS_INITIATED"
+        }
+      },
+      {
+        "stepNumber": 4,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--COMPUTE_FEE_MDR_to_MULTI_DEBIT_GROSS_INITIATED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--MULTI_DEBIT_GROSS_INITIATED"
+        }
+      }
+    ],
+    "path_2": [
+      {
+        "stepNumber": 1,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--MULTI_DEBIT_WITH_FEE_INITIATED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--MULTI_DEBIT_WITH_FEE_INITIATED_to_COMPUTE_FEE_MDR"
+        }
+      },
+      {
+        "stepNumber": 2,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--MULTI_DEBIT_WITH_FEE_INITIATED_to_COMPUTE_FEE_MDR"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--COMPUTE_FEE_MDR"
+        }
+      },
+      {
+        "stepNumber": 3,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--COMPUTE_FEE_MDR"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--COMPUTE_FEE_MDR_to_MULTI_DEBIT_GROSS_INITIATED"
+        }
+      },
+      {
+        "stepNumber": 4,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--COMPUTE_FEE_MDR_to_MULTI_DEBIT_GROSS_INITIATED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--MULTI_DEBIT_GROSS_INITIATED"
+        }
+      }
+    ]
+  },
+  "metadata": {
+    "generatedFrom": "DEP-complete-rules.csv",
+    "generatedAt": "2026-07-03T05:35:29.791231+00:00",
+    "version": "develop",
+    "generatedBy": "flow-kg-generator-phase18",
+    "repoName": "fbp-product-deposit-app",
+    "sha": ""
+  }
+}

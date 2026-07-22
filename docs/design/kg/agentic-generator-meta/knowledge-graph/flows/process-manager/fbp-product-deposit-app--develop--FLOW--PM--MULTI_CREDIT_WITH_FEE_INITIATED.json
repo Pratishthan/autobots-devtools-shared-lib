@@ -1,0 +1,129 @@
+{
+  "kgId": "fbp-product-deposit-app--develop--FLOW--PM--MULTI_CREDIT_WITH_FEE_INITIATED",
+  "serviceKgId": "fbp-product-deposit-app--develop--FLOW--PM--MULTI_CREDIT_WITH_FEE_INITIATED",
+  "name": "MULTI_CREDIT_WITH_FEE_INITIATED",
+  "flowType": "PROCESS_MANAGER",
+  "processingNodes": [
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--State--MULTI_CREDIT_WITH_FEE_INITIATED",
+      "name": "MULTI_CREDIT_WITH_FEE_INITIATED",
+      "type": "State",
+      "props": {
+        "state": {
+          "name": "MULTI_CREDIT_WITH_FEE_INITIATED",
+          "description": "MULTI_CREDIT_WITH_FEE_INITIATED state",
+          "persist": false,
+          "initiateAsync": false
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--State--COMPUTE_FEE_MCR",
+      "name": "COMPUTE_FEE_MCR",
+      "type": "State",
+      "props": {
+        "state": {
+          "name": "COMPUTE_FEE_MCR",
+          "description": "COMPUTE_FEE_MCR state",
+          "persist": true,
+          "initiateAsync": false
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Action--MULTI_CREDIT_WITH_FEE_INITIATED_to_COMPUTE_FEE_MCR",
+      "name": "CommandHandler-ProcessCommandToExternalSystem/process",
+      "type": "Action",
+      "props": {
+        "action": {
+          "type": "Remote",
+          "feature": "CommandHandler-ProcessCommandToExternalSystem",
+          "operation": "process",
+          "$ref": "../compose-engine/fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-ProcessCommandToExternalSystem-process.json",
+          "actionKgId": "fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-ProcessCommandToExternalSystem-process",
+          "component": "fees",
+          "mapperIdentifier": "multi-credit-fee-compute",
+          "remoteCommandKey": "fee-transfer-compute"
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--State--MULTI_CREDIT_GROSS_INITIATED",
+      "name": "MULTI_CREDIT_GROSS_INITIATED",
+      "type": "State",
+      "props": {
+        "state": {
+          "name": "MULTI_CREDIT_GROSS_INITIATED",
+          "description": "MULTI_CREDIT_GROSS_INITIATED state",
+          "persist": true,
+          "initiateAsync": false
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Action--COMPUTE_FEE_MCR_to_MULTI_CREDIT_GROSS_INITIATED",
+      "name": "CommandHandler-TransactionCommandToExternalSystem/process",
+      "type": "Action",
+      "props": {
+        "action": {
+          "type": "Remote",
+          "feature": "CommandHandler-TransactionCommandToExternalSystem",
+          "operation": "process",
+          "$ref": "../compose-engine/fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-TransactionCommandToExternalSystem-process.json",
+          "actionKgId": "fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-TransactionCommandToExternalSystem-process",
+          "component": "transaction",
+          "mapperIdentifier": "multi-credit-payload-multi-creation-gross",
+          "remoteCommandKey": "create-multi-transaction"
+        }
+      }
+    }
+  ],
+  "flowPaths": {
+    "path_1": [
+      {
+        "stepNumber": 1,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--MULTI_CREDIT_WITH_FEE_INITIATED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--MULTI_CREDIT_WITH_FEE_INITIATED_to_COMPUTE_FEE_MCR"
+        }
+      },
+      {
+        "stepNumber": 2,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--MULTI_CREDIT_WITH_FEE_INITIATED_to_COMPUTE_FEE_MCR"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--COMPUTE_FEE_MCR"
+        }
+      },
+      {
+        "stepNumber": 3,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--COMPUTE_FEE_MCR"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--COMPUTE_FEE_MCR_to_MULTI_CREDIT_GROSS_INITIATED"
+        }
+      },
+      {
+        "stepNumber": 4,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--COMPUTE_FEE_MCR_to_MULTI_CREDIT_GROSS_INITIATED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--MULTI_CREDIT_GROSS_INITIATED"
+        }
+      }
+    ]
+  },
+  "metadata": {
+    "generatedFrom": "DEP-complete-rules.csv",
+    "generatedAt": "2026-07-03T05:35:29.556059+00:00",
+    "version": "develop",
+    "generatedBy": "flow-kg-generator-phase18",
+    "repoName": "fbp-product-deposit-app",
+    "sha": ""
+  }
+}

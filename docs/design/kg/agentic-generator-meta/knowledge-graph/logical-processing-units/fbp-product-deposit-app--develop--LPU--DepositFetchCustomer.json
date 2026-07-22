@@ -1,0 +1,67 @@
+{
+  "name": "DepositFetchCustomer",
+  "type": "Manual",
+  "subType": "Enrichment",
+  "consumes": {
+    "Models": [],
+    "Primitives": [
+      {
+        "name": "cifId",
+        "dataType": "String"
+      }
+    ],
+    "apis": [
+      {
+        "clientType": "retrievalClient",
+        "name": "retrieveCustomer",
+        "component": "DomainService",
+        "requestModelName": "HashMap",
+        "responseModelName": "ReferenceCustomerDTO",
+        "referencedProperties": [
+          {
+            "name": "entityType",
+            "propertyKgId": ""
+          }
+        ],
+        "url": ""
+      }
+    ],
+    "dataReaders": []
+  },
+  "produces": {
+    "Models": [],
+    "Primitives": [
+      {
+        "name": "isCorporateCustomer",
+        "dataType": "boolean"
+      },
+      {
+        "name": "referenceCustomer",
+        "dataType": "ReferenceCustomerDTO"
+      }
+    ],
+    "apis": [],
+    "dataWriters": []
+  },
+  "businessLogic": [
+    "Read CIF_ID primitive from SlotsDTO; throw FbpValidationException with CIF_ID_IS_NULL_OR_INVALID if null or blank.",
+    "Build a HashMap input with customerId set to cifId and call domainService.retrieveCustomer(input) to retrieve customer JSON; throw FbpValidationException with CUSTOMER_NOT_FOUND_IN_SOURCE_SYSTEM if response is null.",
+    "Deserialize the customer JSON string into a ReferenceCustomerDTO using ObjectMapper; throw FbpValidationException with CUSTOMER_NOT_FOUND_IN_SOURCE_SYSTEM if deserialization yields null.",
+    "Determine isCorporateCustomer by checking if referenceCustomer.getEntityType() equals 'CORPORATE' (case-insensitive) and set IS_CORPORATE_CUSTOMER on SlotsDTO.",
+    "Set REFERENCE_CUSTOMER (ReferenceCustomerDTO) on SlotsDTO.",
+    "Catch JacksonException and throw FbpValidationException with ERROR_PARSING_PAYLOAD_JSON; re-throw FbpValidationException as-is; catch any other Exception and throw FbpValidationException with CUSTOMER_NOT_FOUND_IN_SOURCE_SYSTEM."
+  ],
+  "errorConstants": [
+    "CIF_ID_IS_NULL_OR_INVALID",
+    "CUSTOMER_NOT_FOUND_IN_SOURCE_SYSTEM",
+    "ERROR_PARSING_PAYLOAD_JSON"
+  ],
+  "kgId": "fbp-product-deposit-app--develop--LPU--DepositFetchCustomer",
+  "metadata": {
+    "extractedAt": "2026-07-03T05:38:10.857847+00:00",
+    "generatedBy": "autobots-agents-mer / logical_processing_unit",
+    "version": "develop",
+    "repoName": "fbp-product-deposit-app",
+    "sha": ""
+  }
+}

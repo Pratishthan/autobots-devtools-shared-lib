@@ -1,0 +1,44 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Party Details DTO",
+    "version": "1.0.0",
+    "description": "API schema for PartyDetails DTO"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "PartyDetails": {
+        "type": "object",
+        "properties": {
+          "partyRole": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--PartyRole"
+            }
+          },
+          "cifId": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--CifId"
+            }
+          },
+          "partyNumber": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--PartyNumber"
+            }
+          }
+        },
+        "x-fbp-params": {
+          "kgId": "fbp-product-deposit-app--develop--Model--DTO--PartyDetails",
+          "version": "develop",
+          "generatedAt": "2026-07-03T05:35:20.687154+00:00",
+          "sha": "2dbb82417d7b13e55346e750ecfe56ca6052e50660b4398983381d83592f8b6b",
+          "repoName": "fbp-product-deposit-app",
+          "type": "DTO"
+        }
+      }
+    }
+  }
+}

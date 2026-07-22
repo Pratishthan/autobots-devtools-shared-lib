@@ -1,0 +1,39 @@
+{
+  "name": "ValidateDebitAllowed",
+  "type": "Manual",
+  "subType": "Validation",
+  "consumes": {
+    "Models": [],
+    "Primitives": [
+      {
+        "name": "featureType",
+        "dataType": "String"
+      }
+    ],
+    "apis": [],
+    "dataReaders": []
+  },
+  "produces": {
+    "Models": [],
+    "Primitives": [],
+    "apis": [],
+    "dataWriters": []
+  },
+  "businessLogic": [
+    "Read featureType from SlotsDTO.",
+    "If featureType is 'FundTransfer' or 'MultiDebitTransaction', proceed with debit-allowed validation; otherwise skip.",
+    "Retrieve the list of TransferLegContext objects from SlotsDTO using TRANSFER_LEG_CONTEXTS key.",
+    "If the leg contexts list is null or empty, log a warning and skip validation.",
+    "Filter leg contexts to only those with creditDebitIndicator equal to 'DEBIT'.",
+    "For each DEBIT leg, invoke TransactionTransferValidationService.validateDebitAllowed with referenceContract and acctNumber."
+  ],
+  "errorConstants": [],
+  "kgId": "fbp-product-deposit-app--develop--LPU--ValidateDebitAllowed",
+  "metadata": {
+    "extractedAt": "2026-07-03T05:38:12.927543+00:00",
+    "generatedBy": "autobots-agents-mer / logical_processing_unit",
+    "version": "develop",
+    "repoName": "fbp-product-deposit-app",
+    "sha": ""
+  }
+}

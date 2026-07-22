@@ -1,0 +1,78 @@
+{
+  "kgId": "fbp-product-deposit-app--develop--FLOW--CM--CheckingAccount-ProductSwitch-process",
+  "serviceKgId": "",
+  "name": "CheckingAccount-ProductSwitch-process",
+  "feature": "CheckingAccount-ProductSwitch",
+  "flowType": "COMPOSE_ENGINE",
+  "operation": "process",
+  "processingNodes": [
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--PrepareProcessContextData",
+      "name": "PrepareProcessContextData",
+      "type": "Behaviour",
+      "props": {
+        "behaviour": {
+          "name": "PrepareProcessContextData",
+          "$ref": "../../logical-processing-units/fbp-product-deposit-app--develop--LPU--PrepareProcessContextData.json",
+          "lpuKgId": "fbp-product-deposit-app--develop--LPU--PrepareProcessContextData.json"
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--StoreProcessContext",
+      "name": "StoreProcessContext",
+      "type": "Behaviour",
+      "props": {
+        "behaviour": {
+          "name": "StoreProcessContext",
+          "$ref": "../../logical-processing-units/fbp-product-deposit-app--develop--LPU--StoreProcessContext.json",
+          "lpuKgId": "fbp-product-deposit-app--develop--LPU--StoreProcessContext.json",
+          "standard": true
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--ProcessManager",
+      "name": "ProcessManager",
+      "type": "Behaviour",
+      "props": {
+        "behaviour": {
+          "name": "ProcessManager",
+          "$ref": "../../logical-processing-units/fbp-product-deposit-app--develop--LPU--ProcessManager.json",
+          "lpuKgId": "fbp-product-deposit-app--develop--LPU--ProcessManager.json",
+          "standard": true
+        }
+      }
+    }
+  ],
+  "flowPaths": {
+    "path_1": [
+      {
+        "stepNumber": 1,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--PrepareProcessContextData"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--StoreProcessContext"
+        }
+      },
+      {
+        "stepNumber": 2,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--StoreProcessContext"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Behaviour--ProcessManager"
+        }
+      }
+    ]
+  },
+  "metadata": {
+    "generatedFrom": "deposit-configuration.behaviour",
+    "generatedAt": "2026-07-03T05:35:28.209705+00:00",
+    "version": "develop",
+    "generatedBy": "compose-flow-kg-generator",
+    "repoName": "fbp-product-deposit-app",
+    "sha": "388c0f56abd4908809c054383990b6d49acf434e5834573805cf331f4c58b844"
+  }
+}

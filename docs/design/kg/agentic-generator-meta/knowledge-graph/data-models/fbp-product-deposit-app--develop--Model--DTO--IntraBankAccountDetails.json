@@ -1,0 +1,32 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "IntraBankAccountDetails API",
+    "version": "1.0.0",
+    "description": "API schema for IntraBankAccountDetails entity"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "IntraBankAccountDetails": {
+        "type": "object",
+        "properties": {
+          "accountIdentification": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountIdentification"
+            }
+          }
+        },
+        "x-fbp-params": {
+          "kgId": "fbp-product-deposit-app--develop--Model--DTO--IntraBankAccountDetails",
+          "version": "develop",
+          "generatedAt": "2026-07-03T05:35:20.026916+00:00",
+          "sha": "57d816ab88bbfab1a6d40802df6f6fea4eeb51718ee7579bd3855f1212c60671",
+          "repoName": "fbp-product-deposit-app",
+          "type": "DTO"
+        }
+      }
+    }
+  }
+}

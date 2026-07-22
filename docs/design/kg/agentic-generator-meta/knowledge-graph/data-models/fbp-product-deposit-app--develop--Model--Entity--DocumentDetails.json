@@ -1,0 +1,80 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "DocumentDetails API",
+    "version": "1.0.0",
+    "description": "API schema for DocumentDetails entity"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "DocumentDetails": {
+        "type": "object",
+        "properties": {
+          "accountName": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountName"
+            }
+          },
+          "accountNumber": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountNumber"
+            }
+          },
+          "cifId": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--CifId"
+            }
+          },
+          "purposeId": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--PurposeId"
+            }
+          },
+          "purpose": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--Purpose"
+            }
+          },
+          "currency": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--Currency"
+            }
+          },
+          "documentCode": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--DocumentCode"
+            }
+          },
+          "documentReceivedDate": {
+            "$ref": "../common/FbpEntityDataTypes.json#/components/schemas/BusinessDate",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--DocumentReceivedDate"
+            }
+          },
+          "documentExpiryDate": {
+            "$ref": "../common/FbpEntityDataTypes.json#/components/schemas/BusinessDate",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--DocumentExpiryDate"
+            }
+          }
+        },
+        "x-fbp-params": {
+          "kgId": "fbp-product-deposit-app--develop--Model--Entity--DocumentDetails",
+          "version": "develop",
+          "generatedAt": "2026-07-03T05:35:19.506896+00:00",
+          "sha": "786199cc74731144bd419f1a8776e0b6b4a57feb0630ebbc48d2c2c04688c396",
+          "repoName": "fbp-product-deposit-app",
+          "type": "Entity"
+        }
+      }
+    }
+  }
+}

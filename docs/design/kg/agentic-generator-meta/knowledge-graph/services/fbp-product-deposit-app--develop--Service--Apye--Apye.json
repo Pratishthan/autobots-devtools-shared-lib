@@ -1,0 +1,62 @@
+{
+  "kgId": "fbp-product-deposit-app--develop--Service--Apye--Apye",
+  "metadata": {
+    "repoName": "fbp-product-deposit-app",
+    "version": "develop",
+    "generatedAt": "2026-07-03T05:38:18Z"
+  },
+  "name": "apye",
+  "domain": "Apye",
+  "operationType": "CREATE",
+  "invocationType": [
+    "SYNC"
+  ],
+  "description": [
+    "This service handles the creation of annual percentage yield calculations, supporting two distinct feature types \u2014 APYE and APY. For APYE requests, it fetches interest ledger data for a given account and date range from a retrieval client, extracting interest earned and average principal values. For APY requests, it retrieves the applicable interest rate and currency, applies an interest formula via a transformation engine, and calculates the interest amount. Once interest data is established, the service computes the yield calculation using a dedicated yield engine: for APYE, it calculates the annualised yield based on average balance (returning zero if the balance is zero), and for APY, it determines the yield over a 365- or 366-day base period depending on whether the year is a leap year (returning zero if the principal is zero). The computed result is wrapped in a response entity and, after validating that a valid response object is present, returned to the caller with an HTTP 201 Created status."
+  ],
+  "requestType": "SINGLE",
+  "inputDataModel": {
+    "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--Apye"
+  },
+  "responseType": "SINGLE",
+  "outputDataModels": [
+    {
+      "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--ApyeResponse",
+      "enrichedProperties": {
+        "complete": false,
+        "partial": []
+      }
+    }
+  ],
+  "referencedModels": [
+    {
+      "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--Apye",
+      "referencedProperties": [
+        {
+          "name": "accountNumber",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountNumber"
+        },
+        {
+          "name": "fromDate",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--FromDate"
+        },
+        {
+          "name": "toDate",
+          "propertyKgId": "fbp-product-deposit-app--develop--Property--ToDate"
+        }
+      ]
+    }
+  ],
+  "engine": "COMPOSE_ENGINE",
+  "enableAudit": false,
+  "flows": [
+    {
+      "flowKgId": "fbp-product-deposit-app--develop--FLOW--CM--ApyeCreate-process",
+      "flowKgRef": "../flows/compose-engine/fbp-product-deposit-app--develop--FLOW--CM--ApyeCreate-process.json"
+    },
+    {
+      "flowKgId": "fbp-product-deposit-app--develop--FLOW--CM--ApyeCreate-validate",
+      "flowKgRef": "../flows/compose-engine/fbp-product-deposit-app--develop--FLOW--CM--ApyeCreate-validate.json"
+    }
+  ]
+}

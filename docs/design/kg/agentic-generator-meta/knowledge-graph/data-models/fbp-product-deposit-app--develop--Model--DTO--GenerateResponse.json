@@ -1,0 +1,33 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Generate Response API",
+    "version": "1.0.0",
+    "description": "API schema for GenerateResponse entity"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "GenerateResponse": {
+        "type": "object",
+        "properties": {
+          "response": {
+            "type": "string",
+            "description": "Response message",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--Response"
+            }
+          }
+        },
+        "x-fbp-params": {
+          "kgId": "fbp-product-deposit-app--develop--Model--DTO--GenerateResponse",
+          "version": "develop",
+          "generatedAt": "2026-07-03T05:35:19.798837+00:00",
+          "sha": "b46d62d80e876c138b340ab87f241caa760311a71f2e3c0172607c8a52c04147",
+          "repoName": "fbp-product-deposit-app",
+          "type": "DTO"
+        }
+      }
+    }
+  }
+}

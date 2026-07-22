@@ -1,0 +1,81 @@
+{
+  "kgId": "fbp-product-deposit-app--develop--FLOW--PM--REQUEST_TO_AH_INITIATED",
+  "serviceKgId": "fbp-product-deposit-app--develop--FLOW--PM--REQUEST_TO_AH_INITIATED",
+  "name": "REQUEST_TO_AH_INITIATED",
+  "flowType": "PROCESS_MANAGER",
+  "processingNodes": [
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--State--REQUEST_TO_AH_INITIATED",
+      "name": "REQUEST_TO_AH_INITIATED",
+      "type": "State",
+      "props": {
+        "state": {
+          "name": "REQUEST_TO_AH_INITIATED",
+          "description": "REQUEST_TO_AH_INITIATED state",
+          "persist": false,
+          "initiateAsync": false
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--State--FLOW_COMPLETED",
+      "name": "FLOW_COMPLETED",
+      "type": "State",
+      "props": {
+        "state": {
+          "name": "FLOW_COMPLETED",
+          "description": "FLOW_COMPLETED state",
+          "persist": true,
+          "initiateAsync": false
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Action--REQUEST_TO_AH_INITIATED_to_FLOW_COMPLETED",
+      "name": "CommandHandler/FlowCompleted",
+      "type": "Action",
+      "props": {
+        "action": {
+          "type": "Local",
+          "feature": "CommandHandler",
+          "operation": "FlowCompleted",
+          "$ref": "../compose-engine/fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-FlowCompleted.json",
+          "actionKgId": "fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-FlowCompleted",
+          "component": "DEP",
+          "mapperIdentifier": "Checking-account-response",
+          "remoteCommandKey": "flow-completed"
+        }
+      }
+    }
+  ],
+  "flowPaths": {
+    "path_1": [
+      {
+        "stepNumber": 1,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--REQUEST_TO_AH_INITIATED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--REQUEST_TO_AH_INITIATED_to_FLOW_COMPLETED"
+        }
+      },
+      {
+        "stepNumber": 2,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--REQUEST_TO_AH_INITIATED_to_FLOW_COMPLETED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--FLOW_COMPLETED"
+        }
+      }
+    ]
+  },
+  "metadata": {
+    "generatedFrom": "DEP-complete-rules.csv",
+    "generatedAt": "2026-07-03T05:35:30.432102+00:00",
+    "version": "develop",
+    "generatedBy": "flow-kg-generator-phase18",
+    "repoName": "fbp-product-deposit-app",
+    "sha": ""
+  }
+}

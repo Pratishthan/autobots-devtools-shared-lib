@@ -1,0 +1,128 @@
+{
+  "kgId": "fbp-product-deposit-app--develop--FLOW--PM--MultiDebitTransaction-Create-Flow-Started",
+  "serviceKgId": "fbp-product-deposit-app--develop--Service--MultiDebitTransaction--DebitTransaction",
+  "name": "MultiDebitTransaction-Create-Flow-Started",
+  "flowType": "PROCESS_MANAGER",
+  "processingNodes": [
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--State--MultiDebitTransaction-Create-Flow-Started",
+      "name": "MultiDebitTransaction-Create-Flow-Started",
+      "type": "State",
+      "props": {
+        "state": {
+          "name": "MultiDebitTransaction-Create-Flow-Started",
+          "description": "MultiDebitTransaction-Create-Flow-Started state",
+          "persist": false,
+          "initiateAsync": false
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--State--MULTI_DEBIT_INITIATED",
+      "name": "MULTI_DEBIT_INITIATED",
+      "type": "State",
+      "props": {
+        "state": {
+          "name": "MULTI_DEBIT_INITIATED",
+          "description": "MULTI_DEBIT_INITIATED state",
+          "persist": true,
+          "initiateAsync": false
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Action--MultiDebitTransaction-Create-Flow-Started_to_MULTI_DEBIT_INITIATED",
+      "name": "MultiDebitTransaction/process",
+      "type": "Action",
+      "props": {
+        "action": {
+          "type": "Local",
+          "feature": "MultiDebitTransaction",
+          "operation": "process",
+          "$ref": "../compose-engine/fbp-product-deposit-app--develop--FLOW--CM--MultiDebitTransaction-process.json",
+          "actionKgId": "fbp-product-deposit-app--develop--FLOW--CM--MultiDebitTransaction-process",
+          "component": "DEP",
+          "mapperIdentifier": "Checking-account-multi-debit"
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--State--MULTI_DEBIT_COMPLETED",
+      "name": "MULTI_DEBIT_COMPLETED",
+      "type": "State",
+      "props": {
+        "state": {
+          "name": "MULTI_DEBIT_COMPLETED",
+          "description": "MULTI_DEBIT_COMPLETED state",
+          "persist": true,
+          "initiateAsync": false
+        }
+      }
+    },
+    {
+      "nodeId": "fbp-product-deposit-app--develop--PN--Action--MULTI_DEBIT_INITIATED_to_MULTI_DEBIT_COMPLETED",
+      "name": "CommandHandler-TransactionCommandToExternalSystem/process",
+      "type": "Action",
+      "props": {
+        "action": {
+          "type": "Remote",
+          "feature": "CommandHandler-TransactionCommandToExternalSystem",
+          "operation": "process",
+          "$ref": "../compose-engine/fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-TransactionCommandToExternalSystem-process.json",
+          "actionKgId": "fbp-product-deposit-app--develop--FLOW--CM--CommandHandler-TransactionCommandToExternalSystem-process",
+          "component": "transaction",
+          "mapperIdentifier": "Checking-account-multi-debit",
+          "remoteCommandKey": "create-multi-transaction"
+        }
+      }
+    }
+  ],
+  "flowPaths": {
+    "path_1": [
+      {
+        "stepNumber": 1,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--MultiDebitTransaction-Create-Flow-Started"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--MultiDebitTransaction-Create-Flow-Started_to_MULTI_DEBIT_INITIATED"
+        }
+      },
+      {
+        "stepNumber": 2,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--MultiDebitTransaction-Create-Flow-Started_to_MULTI_DEBIT_INITIATED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--MULTI_DEBIT_INITIATED"
+        }
+      },
+      {
+        "stepNumber": 3,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--MULTI_DEBIT_INITIATED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--MULTI_DEBIT_INITIATED_to_MULTI_DEBIT_COMPLETED"
+        }
+      },
+      {
+        "stepNumber": 4,
+        "from": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--Action--MULTI_DEBIT_INITIATED_to_MULTI_DEBIT_COMPLETED"
+        },
+        "to": {
+          "nodeId": "fbp-product-deposit-app--develop--PN--State--MULTI_DEBIT_COMPLETED"
+        }
+      }
+    ]
+  },
+  "metadata": {
+    "generatedFrom": "DEP-complete-rules.csv",
+    "generatedAt": "2026-07-03T05:35:30.072429+00:00",
+    "version": "develop",
+    "generatedBy": "flow-kg-generator-phase18",
+    "repoName": "fbp-product-deposit-app",
+    "sha": ""
+  }
+}

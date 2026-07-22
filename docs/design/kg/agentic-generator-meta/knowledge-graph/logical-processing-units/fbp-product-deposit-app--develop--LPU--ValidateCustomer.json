@@ -1,0 +1,69 @@
+{
+  "name": "ValidateCustomer",
+  "type": "Manual",
+  "subType": "Validation",
+  "consumes": {
+    "Models": [
+      {
+        "referencedProperties": [
+          {
+            "name": "customerResidencyStatus",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--CustomerResidencyStatus"
+          }
+        ],
+        "modelKgId": "fbp-product-deposit-app--develop--Model--DTO--ReferenceContract",
+        "$ref": "../models/fbp-product-deposit-app--develop--Model--DTO--ReferenceContract.json#/components/schemas/ReferenceContract"
+      },
+      {
+        "referencedProperties": [
+          {
+            "name": "suspended",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--Suspended"
+          },
+          {
+            "name": "periodicReviewReviewStatus",
+            "propertyKgId": "fbp-product-deposit-app--develop--Property--PeriodicReviewReviewStatus"
+          }
+        ]
+      }
+    ],
+    "Primitives": [
+      {
+        "name": "isCorporateCustomer",
+        "dataType": "Boolean"
+      }
+    ],
+    "apis": [],
+    "dataReaders": []
+  },
+  "produces": {
+    "Models": [],
+    "Primitives": [],
+    "apis": [],
+    "dataWriters": []
+  },
+  "businessLogic": [
+    "Read isCorporateCustomer flag from SlotsDTO; if true, skip all validations and return early.",
+    "Read ReferenceContractDTO from SlotsDTO and extract customerResidencyStatus.",
+    "If customerResidencyStatus is non-null and non-blank, proceed with residency validation.",
+    "Read ReferenceCustomerDTO from SlotsDTO and validate it is not null; throw FbpValidationException with CIF_ID_IS_NULL_OR_INVALID if null.",
+    "Check if customer is suspended; throw FbpValidationException with CUSTOMER_IS_SUSPENDED if suspended equals 'SUSPENDED'.",
+    "Check if customer periodic review status is rejected; throw FbpValidationException with KYC_STATUS_REJECTED if periodicReviewReviewStatus equals 'REJECTED'.",
+    "Insert ReferenceCustomerDTO and ReferenceContractDTO as facts into customerRulesSession and fire rules.",
+    "Query the rules engine for customer residency validation output; if result is 'invalidResidentStatus', throw FbpValidationException with INVALID_RESIDENCY_STATUS."
+  ],
+  "errorConstants": [
+    "CIF_ID_IS_NULL_OR_INVALID",
+    "CUSTOMER_IS_SUSPENDED",
+    "KYC_STATUS_REJECTED",
+    "INVALID_RESIDENCY_STATUS"
+  ],
+  "kgId": "fbp-product-deposit-app--develop--LPU--ValidateCustomer",
+  "metadata": {
+    "extractedAt": "2026-07-03T05:38:12.810186+00:00",
+    "generatedBy": "autobots-agents-mer / logical_processing_unit",
+    "version": "develop",
+    "repoName": "fbp-product-deposit-app",
+    "sha": ""
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Product Switch API",
+    "version": "1.0.0",
+    "description": "API schema for Product Switch"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "ProductSwitch": {
+        "type": "object",
+        "properties": {
+          "purposeId": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--PurposeId"
+            }
+          },
+          "accountNumber": {
+            "type": "string",
+            "x-fbp-params": {
+              "propertyKgId": "fbp-product-deposit-app--develop--Property--AccountNumber"
+            }
+          }
+        },
+        "x-fbp-params": {
+          "kgId": "fbp-product-deposit-app--develop--Model--DTO--ProductSwitch",
+          "version": "develop",
+          "generatedAt": "2026-07-03T05:35:20.954963+00:00",
+          "sha": "e1fb801bd4772c41e047c56a87ddcb944fd7cbe46854dae9264b70b805af1647",
+          "repoName": "fbp-product-deposit-app",
+          "type": "DTO"
+        }
+      }
+    }
+  }
+}
