@@ -20,6 +20,7 @@ def anthropic_settings(monkeypatch):
         llm_model="claude-sonnet-4-6",
         llm_temperature=0.0,
         anthropic_api_key="test-key",
+        google_api_key="",
     )
     monkeypatch.setattr(llm_mod, "get_dynagent_settings", lambda: settings)
     return settings
