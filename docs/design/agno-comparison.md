@@ -197,7 +197,32 @@ fronting Dynagent services over A2A/MCP) before building anything.
 
 ## 4. Dynagent-only capabilities
 
+Capabilities verified in shared-lib code with no counterpart anywhere in the Agno cookbook.
+(Isolated history mode is deliberately absent from this list: it is design-and-glossary only —
+`CONTEXT.md` — with no implementation yet, and plans don't count as parity in either direction.)
+
+| Capability | Where | Why Agno's cookbook has no equivalent |
+|-----------|-------|----------------------------------------|
+| Deterministic document rendering | `dynadoc` (`render_document`, `render_tree`, manifest validation, agent tool wrapper) | Agno generates documents through LLM calls; a deterministic JSON → Markdown engine with schema-validated manifests has no cookbook counterpart |
+| Git-tracked, YAML-config-first agent definitions | `dynagent/config` + the `agents.yaml` / `prompts/*.md` / `schemas/*.json` convention | Agno's answer (`93_components`) is DB-backed persistence with its own versioning; Dynagent versions agent definitions in git alongside code review |
+| Two engines behind one config surface | `dynagent/agents` — `create_base_agent` (classic LangGraph) and `create_base_deepagent` (deepagents) share prompts, tool registry, and model profiles | The cookbook has one runtime; engine choice per domain without config rewrites is not a concept there |
+| Evals as pytest tests with cost + trace scoring | `eval/pytest_plugin`, `eval/core` cost tracker, `eval/scoring` Langfuse posting | Agno ships its own suite runner; pytest-native collection (existing CI, markers, fixtures) plus per-eval cost snapshots posted as Langfuse scores has no counterpart |
+| SDLC-automation integration set | `common/tools` Jenkins pipeline/builtin tools, `common/servers/noderedmanagerserver`, file-server sidecar shared across services | Agno's catalog targets consumer/SaaS APIs; CI-pipeline and Node-RED orchestration tooling is out of its scope |
+
 ## 5. Roadmap summary
+
+One row per deep-dive in section 3, ordered by priority. P1 = an app needs it this quarter ·
+P2 = clear future need · P3 = nice-to-have · — = skip.
+
+| Gap | Verdict | Mode (if adopt) | Priority |
+|-----|---------|-----------------|----------|
+| Cross-session memory & learning | adopt | pattern-borrow | P1 — episodic memory work is active, first consumer identified (nurture list-extractors) |
+| Declarative workflow primitives | build | — | P2 — nurture pipeline pays LLM turns today for a fixed sequence |
+| Guardrails | build | — | P2 — externally-facing apps process unscreened input |
+| Knowledge / RAG | build | — | P2 — `ama` domain and KBE output need a retrieval layer eventually |
+| Quickstart example path | adopt | pattern-borrow | P3 — onboarding cost, docs-only effort |
+| Structured reasoning support | adopt | pattern-borrow | P3 — cheap think-tool win for designer/nurture agents |
+| Runtime service surface | skip | — | — revisit on a concrete scheduling/chat-delivery need; evaluate sidecar first |
 
 ## Appendix A: shared-lib module inventory
 
