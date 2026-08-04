@@ -33,7 +33,7 @@ separable · **skip** when no consuming app has a driving use case.
 | `00_quickstart` | Curated 12-file onboarding path: one runnable example per core capability (tools, structured output, storage, memory, RAG, learning, guardrails, HITL, teams, workflows), ending in a deployable `run.py` + `config.yaml` | None — shared-lib has reference docs and tests but no graded runnable example path for new developers | `missing` |
 | `01_demo` | Production-style demo apps (wiki agent with git/Notion backends, code-search agent, voice/PDF ingestion) shipped with their own evals | Demo apps live in consuming repos: Jarvis app, `demo` domains in MER and Pay exercise the framework end to end | `has` |
 | `02_agents` | Single-agent surface, 111 examples: structured/typed I/O, streaming, session state + checkpoint/fork/time-travel, guardrails (PII/injection), pre/post/tool hooks, multimodal (image/audio/video), reasoning models, caching, retries, fallback models | Structured output (`dynagent/services` converter + YAML `output_schema`), streaming (`dynagent/ui` `stream_agent_events`), sessions/state (`dynagent/models`, `dynagent/api` thread store), tool hooks approximated by `dynagent/middleware` + `dynagent/agents` injection middleware. No guardrails, multimodal, fallback models, or session forking | `partial` |
-| `03_teams` | First-class Team object with coordinate/route/broadcast/tasks modes, nested teams, shared member state, member metrics, cancellation, background runs | Multi-agent on a single LangGraph via handoff + `get_agent_list` (`dynagent/agents`), shared session state (`dynagent/models`), isolated history mode with handoff payloads. No nested teams, broadcast mode, or per-member metrics | `partial` |
+| `03_teams` | First-class Team object with coordinate/route/broadcast/tasks modes, nested teams, shared member state, member metrics, cancellation, background runs | Multi-agent on a single LangGraph via handoff + `get_agent_list` (`dynagent/agents`), shared session state (`dynagent/models`); per-agent isolated history is design-stage only (`CONTEXT.md` glossary). No nested teams, broadcast mode, or per-member metrics | `partial` |
 | `04_workflows` | Declarative workflow primitives: sequential steps, conditions, loops, parallel branches, CEL expressions, sequential-HITL decision trees | No workflow primitives in the framework; pipelines are built from coordinator agents + handoff (MER nurture pipeline) and fan-out via `batch_invoker` (`dynagent/agents`) | `partial` |
 | `05_agent_os` | Hosted runtime: ~80 generated REST endpoints, Slack/Telegram/WhatsApp/MCP/A2A/AG-UI interfaces, scheduling, JWT/RBAC, component registry with versioning/approval, background run control | `dynagent/api` FastAPI resource plane (threads, skills, tools, MCP servers) + `dynagent/ui` AG-UI endpoint/Chainlit; consuming apps own their `server.py`. No chat-platform interfaces, scheduling, RBAC, or component registry | `partial` |
 | `06_storage` | Session persistence via a `db` parameter across ~12 backends (Postgres, MySQL, SQLite, MongoDB, DynamoDB, Redis, Firestore, GCS, …), with history-to-context injection and session summarization | Session context via `common/services/context` (Postgres repository, Redis, cache-backed, in-memory) + thread persistence in `dynagent/api` thread store; deep engine has durable LangGraph checkpoints. Fewer backends, no built-in session summarization on the classic engine | `partial` |
@@ -63,9 +63,10 @@ Every `missing`/`partial` matrix row is either deep-dived below or listed here a
 (no consuming app has a plausible near-term use):
 
 - `03_teams` — nested teams/broadcast/per-member metrics: the single-graph handoff architecture is
-  deliberate, and isolated history mode covers context control; Langfuse covers metrics.
-- `06_storage` — backend breadth isn't needed (Postgres/Redis standardized); rolling session
-  summaries are already arriving via isolated history mode.
+  deliberate, and the planned isolated history mode (design-stage, `CONTEXT.md`) addresses context
+  control; Langfuse covers metrics.
+- `06_storage` — backend breadth isn't needed (Postgres/Redis standardized); session summarization
+  is planned as part of isolated history mode (design-stage) rather than a storage feature.
 - `12_context` — provider abstraction duplicates what registered LangChain tools + MCP already do here.
 - `93_components` — DB-backed config versioning conflicts with the deliberate git-tracked-YAML
   approach (see section 4); git is the versioning.
@@ -158,7 +159,7 @@ domain team.
 
 **Verdict: adopt (pattern-borrow)**
 
-Copy the format, not the code: an `examples/` directory in shared-lib with one small runnable
+Copy the format, not the code: a new top-level `examples` directory in shared-lib with one small runnable
 script per existing capability (YAML agent, tools, structured output, context store, batch, eval),
 ordered by dependency. Pure documentation work with no framework changes.
 
