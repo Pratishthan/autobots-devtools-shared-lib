@@ -59,6 +59,142 @@ separable · **skip** when no consuming app has a driving use case.
 
 ## 3. Gap deep-dives
 
+Every `missing`/`partial` matrix row is either deep-dived below or listed here as not actionable
+(no consuming app has a plausible near-term use):
+
+- `03_teams` — nested teams/broadcast/per-member metrics: the single-graph handoff architecture is
+  deliberate, and isolated history mode covers context control; Langfuse covers metrics.
+- `06_storage` — backend breadth isn't needed (Postgres/Redis standardized); rolling session
+  summaries are already arriving via isolated history mode.
+- `12_context` — provider abstraction duplicates what registered LangChain tools + MCP already do here.
+- `93_components` — DB-backed config versioning conflicts with the deliberate git-tracked-YAML
+  approach (see section 4); git is the versioning.
+- `data_labeling` — no app labels data or builds training sets today.
+- `environments` — no app trains or fine-tunes models; `eval/` covers assessment needs.
+- `gemini_3` — multimodal input/TTS/prompt-caching: no app consumes non-text input today.
+- `integrations` — Agno's catalog targets consumer/SaaS breadth; the in-house set targets SDLC
+  automation. Different aims, no overlap worth closing.
+- `02_agents` residual sub-gaps (multimodal, fallback models, session forking/time-travel): no app
+  use case; guardrails, the actionable part, is deep-dived below.
+
+### Gap: Cross-session memory & learning (from `08_learning`, `11_memory`)
+
+**What Agno provides:** A dedicated `agno.learn` subsystem: six typed stores (user profile, user
+memory, session context, entity memory, learned knowledge, decision log) persisted to Postgres +
+PgVector, three extraction modes (ALWAYS after each run, AGENTIC via agent tools like
+`remember_about`/`log_decision`, PROPOSE with human confirmation), and runaway-protection limits.
+`MemoryManager` covers the narrower user-memory slice of the same idea.
+
+**Why it matters here:** MER's episodic memory research (`Memory-1-session.md`) is aiming at
+exactly this: agents that improve across sessions by deriving lessons from traces. The nurture
+pipeline's list-extractor agents would be first consumers.
+
+**Verdict: adopt (pattern-borrow)**
+
+Agno's store taxonomy and extraction-mode split are the mature version of what the episodic memory
+design is groping toward — borrow them as the design vocabulary. The implementation should sit on
+the existing context store (`common/services/context`) and LangGraph state rather than importing
+`agno.learn`, which is coupled to Agno's own Agent runtime, DB schema, and AgentOS endpoints.
+
+### Gap: Knowledge / RAG (from `07_knowledge`)
+
+**What Agno provides:** A complete retrieval stack: vector-DB abstraction (10+ backends), document
+readers, six chunking strategies, hybrid search, rerankers, embedder abstraction, and both basic
+(context-injection) and agentic (agent-controlled search) retrieval modes.
+
+**Why it matters here:** MER's `ama` domain is Q&A over project knowledge, and Pay's KBE produces
+knowledge-base articles that something eventually has to retrieve. Neither has a retrieval layer.
+
+**Verdict: build**
+
+Build a thin knowledge module on LangChain's native primitives (vector stores, retrievers,
+embedders), which slot directly into the existing agent loop and tool registry — adopting Agno's
+stack would drag in a parallel abstraction layer over the same underlying databases. Scope it to
+one vector backend and one chunking strategy until an app demands more.
+
+### Gap: Guardrails (from `02_agents`)
+
+**What Agno provides:** Built-in input/output guardrails — PII detection, prompt-injection
+screening, spam filtering — that set typed `RunStatus` error states, plus pre/post/tool-level hook
+points for custom checks.
+
+**Why it matters here:** Jarvis (concierge, customer-support) and any externally-facing deployment
+process untrusted user input with no screening today.
+
+**Verdict: build**
+
+Guardrails belong in Dynagent's core loop as `AgentMiddleware` (`dynagent/middleware`), where
+`ToolResilienceMiddleware` already establishes the pattern — a natural pre-model/post-model
+counterpart. Borrow Agno's check taxonomy (PII / injection / custom hooks) for scoping, but the
+mechanism is middleware, which is engine-native and can't be imported from a non-LangGraph
+framework.
+
+### Gap: Declarative workflow primitives (from `04_workflows`)
+
+**What Agno provides:** First-class workflow objects: sequential steps, conditions, loops,
+parallel branches, CEL expressions for dynamic evaluation, and sequential human-in-the-loop
+decision trees — deterministic pipelines without a coordinator LLM.
+
+**Why it matters here:** MER's nurture pipeline is a fixed 9-agent sequence today driven by
+coordinator prompts and handoffs — an LLM re-decides a deterministic ordering every run, which
+costs turns and occasionally derails (see trace `93a31abf` findings).
+
+**Verdict: build**
+
+LangGraph is itself a graph/workflow engine; the gap is only that Dynagent's YAML surfaces no way
+to declare fixed edges. Extend the config schema (a `pipeline:` section compiling to LangGraph
+edges with conditions) rather than adopting a second orchestrator. This touches the core loop and
+config — squarely the build case in the rubric.
+
+### Gap: Quickstart example path (from `00_quickstart`)
+
+**What Agno provides:** A graded 12-file onboarding sequence — one runnable file per capability
+(tools → structured output → storage → memory → RAG → guardrails → HITL → teams → workflows) —
+ending in a deployable app skeleton.
+
+**Why it matters here:** New shared-lib consumers currently learn from CLAUDE.md, tests, and the
+Jarvis source; there is no runnable, graded path, which raises onboarding cost for every new
+domain team.
+
+**Verdict: adopt (pattern-borrow)**
+
+Copy the format, not the code: an `examples/` directory in shared-lib with one small runnable
+script per existing capability (YAML agent, tools, structured output, context store, batch, eval),
+ordered by dependency. Pure documentation work with no framework changes.
+
+### Gap: Structured reasoning support (from `10_reasoning`)
+
+**What Agno provides:** A `think` tool giving non-reasoning models a structured scratch space, and
+a reasoning-agent pattern where a separate chain-of-thought agent solves the problem before the
+main agent answers; reasoning-capable models selectable separately from the main model.
+
+**Why it matters here:** Designer and nurture agents do multi-step extraction/generation where
+intermediate reasoning quality directly drives output quality; model profiles already allow
+reasoning models, but there is no think-tool equivalent for the default models.
+
+**Verdict: adopt (pattern-borrow)**
+
+A think tool is a ~20-line registered tool — trivially borrowed into `dynagent/tools` and opt-in
+per agent via `agents.yaml`. The heavier reasoning-agent pattern needs no framework support at all
+(it is a YAML roster + handoff arrangement), so nothing beyond the tool is worth building.
+
+### Gap: Runtime service surface (from `05_agent_os`)
+
+**What Agno provides:** AgentOS: ~80 generated REST endpoints, chat-platform interfaces (Slack,
+Telegram, WhatsApp), A2A/MCP/AG-UI protocols, scheduled execution, JWT/RBAC security, and a
+component registry — a batteries-included hosted runtime.
+
+**Why it matters here:** Apps currently hand-roll their `server.py` per domain; scheduling and
+chat-platform delivery could eventually serve SDLC automation (e.g., nurture runs on a schedule,
+results to Slack).
+
+**Verdict: skip**
+
+`dynagent/api` + AG-UI already cover the surface the apps actually use, and the Design Philosophy
+is non-intrusive tooling, not a hosted platform. Revisit if a concrete need lands for scheduled
+runs or chat-platform delivery — at that point evaluate Agno as a **sidecar** (an AgentOS instance
+fronting Dynagent services over A2A/MCP) before building anything.
+
 ## 4. Dynagent-only capabilities
 
 ## 5. Roadmap summary
