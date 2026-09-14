@@ -22,6 +22,7 @@ def _build_fserver(_cfg, **_kw):
             session_id=state.get("session_id"),
             workspace_context=workspace_context_from_state(state),
         )
+
     return factory
 ```
 
@@ -112,8 +113,14 @@ Ambient context key:
 from contextvars import ContextVar
 
 _context_key_var: ContextVar[str | None] = ContextVar("context_key", default=None)
-def set_context_key(key: str | None) -> None: _context_key_var.set(key)
-def get_context_key() -> str | None: return _context_key_var.get()
+
+
+def set_context_key(key: str | None) -> None:
+    _context_key_var.set(key)
+
+
+def get_context_key() -> str | None:
+    return _context_key_var.get()
 ```
 
 Workspace-context provider seam (use-case-pluggable path formation):
@@ -124,9 +131,11 @@ from collections.abc import Callable
 # (store_context_dict) -> sidecar workspace_context dict
 _workspace_context_provider: Callable[[dict[str, Any]], dict[str, Any]] | None = None
 
+
 def set_workspace_context_provider(fn: Callable[[dict[str, Any]], dict[str, Any]] | None) -> None:
     global _workspace_context_provider
     _workspace_context_provider = fn
+
 
 def resolve_workspace_context(ctx: dict[str, Any]) -> dict[str, Any]:
     if _workspace_context_provider is not None:
@@ -154,15 +163,15 @@ only for file ops.
 ```python
 class FileServerBackend(BackendProtocol):
     def __init__(self, context_key: str | None = None) -> None:
-        self._context_key = context_key                       # identity override; None → ambient
+        self._context_key = context_key  # identity override; None → ambient
 
     def _resolve(self) -> tuple[str | None, dict[str, Any]]:
-        key = self._context_key or get_context_key()          # instance wins, else ambient
+        key = self._context_key or get_context_key()  # instance wins, else ambient
         session_id = get_session_id()
         ctx = get_context(key) if key else {}
         if not key:
             logger.warning("FileServerBackend: no context_key available; workspace unscoped")
-        workspace_context = resolve_workspace_context(ctx)    # → {"workspace_base_path": ...}
+        workspace_context = resolve_workspace_context(ctx)  # → {"workspace_base_path": ...}
         return session_id, workspace_context
 ```
 
@@ -199,13 +208,16 @@ def _workspace_context_from_ctx(ctx: Mapping[str, Any], *, fallback_base: str | 
     jira = (ctx.get("jira_number") or "").strip()
     if user and repo and jira:
         return {"workspace_base_path": f"{user}/{repo}-{jira}"}
-    if user and fallback_base:                       # no-repo/jira domains (e.g. AMA)
+    if user and fallback_base:  # no-repo/jira domains (e.g. AMA)
         return {"workspace_base_path": f"{user}/{fallback_base}"}
     return {}
 
+
 def init_workspace_context_provider(fallback_base: str | None = None) -> None:
     """Register the shared-lib workspace-context provider for this domain/process."""
-    set_workspace_context_provider(lambda ctx: _workspace_context_from_ctx(ctx, fallback_base=fallback_base))
+    set_workspace_context_provider(
+        lambda ctx: _workspace_context_from_ctx(ctx, fallback_base=fallback_base)
+    )
 ```
 
 `get_workspace_context(state)` keeps its current signature/behavior but delegates to
@@ -220,7 +232,7 @@ store key `update_workspace_context` writes under:
 
 ```python
 set_session_id(thread_id)
-set_context_key(user_id)     # NEW
+set_context_key(user_id)  # NEW
 ```
 
 At AMA startup (beside `init_context_key_resolver()`), register the provider with the AMA

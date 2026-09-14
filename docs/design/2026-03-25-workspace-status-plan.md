@@ -28,6 +28,7 @@ Create the SQLModel ORM entity for the `workspace_progress` table. Follows the e
 ```python
 # tests/unit/common/test_models_progress.py
 """Unit tests for WorkspaceProgressEntity model."""
+
 import pytest
 from autobots_agents_mer.common.db.models_progress import WorkspaceProgressEntity
 
@@ -45,18 +46,23 @@ class TestWorkspaceProgressEntity:
     def test_optional_thread_id(self):
         """thread_id is optional (nullable)."""
         entity = WorkspaceProgressEntity(
-            user_name="u", repo_name="r", jira_number="J-1",
-            domain="nurture", stage="model-oas-generator", item="Party", status="pending",
+            user_name="u",
+            repo_name="r",
+            jira_number="J-1",
+            domain="nurture",
+            stage="model-oas-generator",
+            item="Party",
+            status="pending",
         )
         assert entity.thread_id is None
 
     def test_unique_constraint_columns(self):
         """Verify the unique constraint covers (jira_number, repo_name, stage, item)."""
         from sqlmodel import SQLModel
+
         table = SQLModel.metadata.tables["workspace_progress"]
         unique_constraints = [
-            c for c in table.constraints
-            if hasattr(c, "columns") and len(c.columns) == 4
+            c for c in table.constraints if hasattr(c, "columns") and len(c.columns) == 4
         ]
         assert len(unique_constraints) == 1
         col_names = {col.name for col in unique_constraints[0].columns}
@@ -88,7 +94,9 @@ class WorkspaceProgressEntity(SQLModel, table=True):
 
     __tablename__ = "workspace_progress"  # pyright: ignore[reportAssignmentType]
     __table_args__ = (
-        UniqueConstraint("jira_number", "repo_name", "stage", "item", name="uq_wp_jira_repo_stage_item"),
+        UniqueConstraint(
+            "jira_number", "repo_name", "stage", "item", name="uq_wp_jira_repo_stage_item"
+        ),
     )
 
     id: int | None = Field(default=None, primary_key=True)
@@ -147,6 +155,7 @@ The core upsert function. Lives in MER (not shared-lib) because it uses MER's DB
 ```python
 # tests/unit/common/test_progress_service.py
 """Unit tests for update_progress and get_progress."""
+
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -165,20 +174,33 @@ class TestUpdateProgress:
 
         # Should not raise
         update_progress(
-            user_name="alice", repo_name="repo", jira_number="MER-1",
-            domain="nurture", stage="model-oas-generator", item="Party", status="pending",
+            user_name="alice",
+            repo_name="repo",
+            jira_number="MER-1",
+            domain="nurture",
+            stage="model-oas-generator",
+            item="Party",
+            status="pending",
         )
         mock_session.execute.assert_called_once()
         mock_session.commit.assert_called_once()
 
-    @patch("autobots_agents_mer.common.services.progress_service.get_session_factory", side_effect=RuntimeError("not init"))
+    @patch(
+        "autobots_agents_mer.common.services.progress_service.get_session_factory",
+        side_effect=RuntimeError("not init"),
+    )
     def test_noop_when_db_unavailable(self, mock_get_sf):
         from autobots_agents_mer.common.services.progress_service import update_progress
 
         # Should not raise — graceful no-op
         update_progress(
-            user_name="alice", repo_name="repo", jira_number="MER-1",
-            domain="nurture", stage="model-oas-generator", item="Party", status="pending",
+            user_name="alice",
+            repo_name="repo",
+            jira_number="MER-1",
+            domain="nurture",
+            stage="model-oas-generator",
+            item="Party",
+            status="pending",
         )
 
 
@@ -197,7 +219,10 @@ class TestGetProgress:
         result = get_progress(user_name="alice", repo_name="repo", jira_number="MER-1")
         assert isinstance(result, list)
 
-    @patch("autobots_agents_mer.common.services.progress_service.get_session_factory", side_effect=RuntimeError("not init"))
+    @patch(
+        "autobots_agents_mer.common.services.progress_service.get_session_factory",
+        side_effect=RuntimeError("not init"),
+    )
     def test_returns_empty_when_db_unavailable(self, mock_get_sf):
         from autobots_agents_mer.common.services.progress_service import get_progress
 
@@ -259,16 +284,19 @@ def update_progress(
     """)
 
     with session_factory() as session:
-        session.execute(stmt, {
-            "user_name": user_name,
-            "repo_name": repo_name,
-            "jira_number": jira_number,
-            "domain": domain,
-            "stage": stage,
-            "item": item,
-            "status": status,
-            "thread_id": thread_id,
-        })
+        session.execute(
+            stmt,
+            {
+                "user_name": user_name,
+                "repo_name": repo_name,
+                "jira_number": jira_number,
+                "domain": domain,
+                "stage": stage,
+                "item": item,
+                "status": status,
+                "thread_id": thread_id,
+            },
+        )
         session.commit()
 
 
@@ -298,13 +326,22 @@ def get_progress(
     """)
 
     with session_factory() as session:
-        rows = session.execute(stmt, {
-            "user_name": user_name,
-            "repo_name": repo_name,
-            "jira_number": jira_number,
-        }).all()
+        rows = session.execute(
+            stmt,
+            {
+                "user_name": user_name,
+                "repo_name": repo_name,
+                "jira_number": jira_number,
+            },
+        ).all()
         return [
-            {"stage": r.stage, "item": r.item, "status": r.status, "domain": r.domain, "updated_at": r.updated_at}
+            {
+                "stage": r.stage,
+                "item": r.item,
+                "status": r.status,
+                "domain": r.domain,
+                "updated_at": r.updated_at,
+            }
             for r in rows
         ]
 ```
@@ -474,6 +511,7 @@ Add `enable_todos` and `progress_domain` params to `create_base_agent()`. All La
 ```python
 # tests/unit/test_base_agent_params.py
 """Unit tests for create_base_agent opt-in parameters."""
+
 import inspect
 
 from autobots_devtools_shared_lib.dynagent.agents.base_agent import create_base_agent
@@ -622,6 +660,7 @@ Implement the `after_model` hook that reads todos from state and calls `update_p
 ```python
 # tests/unit/test_progress_middleware.py
 """Unit tests for ProgressPersistenceMiddleware."""
+
 from unittest.mock import MagicMock, patch
 
 from autobots_devtools_shared_lib.dynagent.agents.progress_middleware import (
@@ -647,7 +686,9 @@ class TestProgressPersistenceMiddleware:
     def test_after_model_calls_callback_for_each_todo(self, mock_resolve, mock_get_ctx, mock_cb):
         mock_resolve.return_value = "alice"
         mock_get_ctx.return_value = {
-            "user_name": "alice", "repo_name": "repo", "jira_number": "MER-1",
+            "user_name": "alice",
+            "repo_name": "repo",
+            "jira_number": "MER-1",
         }
 
         mw = ProgressPersistenceMiddleware(domain="designer")
@@ -796,6 +837,7 @@ Add `POST /gitStatus` and `POST /gitDiff` endpoints to the existing file server.
 ```python
 # tests/unit/test_fileserver_git.py
 """Unit tests for file server git endpoints."""
+
 from unittest.mock import patch, MagicMock
 import subprocess
 
@@ -807,10 +849,12 @@ from fastapi.testclient import TestClient
 def client():
     """Create a test client with a temp root dir."""
     import tempfile, os
+
     with tempfile.TemporaryDirectory() as tmpdir:
         os.environ["FILE_SERVER_ROOT"] = tmpdir
         # Re-import to pick up new root
         from autobots_devtools_shared_lib.common.servers.fileserver.app import app
+
         yield TestClient(app)
 
 
@@ -834,20 +878,26 @@ class TestGitDiffEndpoint:
         mock_subprocess.run.return_value = MagicMock(
             returncode=0, stdout="diff --git a/file.py b/file.py\n+added line\n", stderr=""
         )
-        resp = client.post("/gitDiff", json={
-            "workspace_context": {},
-            "file_path": "file.py",
-            "session_id": "s1",
-        })
+        resp = client.post(
+            "/gitDiff",
+            json={
+                "workspace_context": {},
+                "file_path": "file.py",
+                "session_id": "s1",
+            },
+        )
         assert resp.status_code == 200
         data = resp.json()
         assert "diff" in data
 
     def test_rejects_empty_file_path(self, client):
-        resp = client.post("/gitDiff", json={
-            "workspace_context": {},
-            "file_path": "",
-        })
+        resp = client.post(
+            "/gitDiff",
+            json={
+                "workspace_context": {},
+                "file_path": "",
+            },
+        )
         assert resp.status_code == 422  # validation error
 ```
 
@@ -907,6 +957,7 @@ from autobots_devtools_shared_lib.common.servers.fileserver.models import (
 )
 
 # Add after createDownloadLink endpoint:
+
 
 @app.post("/gitStatus")
 def git_status(body: GitStatusBody) -> dict[str, Any]:
@@ -995,6 +1046,7 @@ New `@tool` functions that proxy to the file server git endpoints. Follow the ex
 ```python
 # tests/unit/common/test_git_tools.py
 """Unit tests for MER git tools."""
+
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -1049,10 +1101,12 @@ import httpx
 from langchain.tools import ToolRuntime, tool
 
 from autobots_devtools_shared_lib.common.observability.logging_utils import get_logger
+
 # Use the same URL constant as all other file server calls in shared-lib
 from autobots_devtools_shared_lib.common.utils.fserver_client_utils import FILE_SERVER_BASE_URL
 
 from autobots_agents_mer.common.models.state import MerState
+
 # Use the same workspace context resolution as existing MER tools
 from autobots_agents_mer.common.utils.context_utils import get_workspace_context
 
@@ -1134,6 +1188,7 @@ Add `update_progress()` calls to the Nurture orchestrators for two-level (batch 
 ```python
 # tests/unit/nurture/test_model_orch_progress.py
 """Test that model_orch instruments progress via update_progress."""
+
 from unittest.mock import MagicMock, call, patch
 
 import pytest
@@ -1178,6 +1233,7 @@ Add callback support to `run_nurture_batch()`:
 # In agent_utils.py, add import at top:
 from autobots_agents_mer.common.services.progress_service import update_progress
 
+
 # Update run_nurture_batch to accept and pass callbacks:
 def run_nurture_batch(
     parse_fn: Callable,
@@ -1212,8 +1268,8 @@ from collections.abc import Callable
 
 2. Add params to `nurture_batch` signature (after `session_id`):
 ```python
-    on_item_start: Callable[[int, str], None] | None = None,
-    on_item_complete: Callable[[int, str, bool], None] | None = None,
+on_item_start: Callable[[int, str], None] | None = (None,)
+on_item_complete: Callable[[int, str, bool], None] | None = (None,)
 ```
 
 3. Pass callbacks to `batch_invoker` call (around line 106):
@@ -1237,10 +1293,12 @@ In `model_orch.py`, add progress tracking to `trigger_model_orch`:
 # Add import:
 from autobots_agents_mer.common.services.progress_service import update_progress
 
+
 # Modify trigger_model_orch — after getting model_list and before _step_oas_generator:
 def trigger_model_orch(state: MerState, *, supervised: bool = False) -> None:
     if supervised:
         from autobots_agents_mer.domains.nurture.tools.nurture_tools import register_nurture_tools
+
         register_nurture_tools()
 
     try:
@@ -1252,26 +1310,53 @@ def trigger_model_orch(state: MerState, *, supervised: bool = False) -> None:
         stage = MODEL_MD_GENERATOR
 
         # Pre-populate progress: batch + all items as pending
-        update_progress(user_name=user_name, repo_name=repo_name, jira_number=jira_number,
-                        domain="nurture", stage=stage, item="__batch__", status="in_progress")
+        update_progress(
+            user_name=user_name,
+            repo_name=repo_name,
+            jira_number=jira_number,
+            domain="nurture",
+            stage=stage,
+            item="__batch__",
+            status="in_progress",
+        )
         for m in models:
             name = m["name"] if isinstance(m, dict) else str(m)
-            update_progress(user_name=user_name, repo_name=repo_name, jira_number=jira_number,
-                            domain="nurture", stage=stage, item=name, status="pending")
+            update_progress(
+                user_name=user_name,
+                repo_name=repo_name,
+                jira_number=jira_number,
+                domain="nurture",
+                stage=stage,
+                item=name,
+                status="pending",
+            )
 
         # Run OAS batch with per-item callbacks
         _step_oas_generator_with_progress(state, model_list, models)
 
         # Finalise batch
-        update_progress(user_name=user_name, repo_name=repo_name, jira_number=jira_number,
-                        domain="nurture", stage=stage, item="__batch__", status="completed")
+        update_progress(
+            user_name=user_name,
+            repo_name=repo_name,
+            jira_number=jira_number,
+            domain="nurture",
+            stage=stage,
+            item="__batch__",
+            status="completed",
+        )
         logger.info("Model orchestration complete.")
     except Exception:
         # Mark batch as failed
         try:
-            update_progress(user_name=state.get(USER_NAME, ""), repo_name=state.get(REPO_NAME, ""),
-                            jira_number=state.get(JIRA_NUMBER, ""),
-                            domain="nurture", stage=MODEL_MD_GENERATOR, item="__batch__", status="failed")
+            update_progress(
+                user_name=state.get(USER_NAME, ""),
+                repo_name=state.get(REPO_NAME, ""),
+                jira_number=state.get(JIRA_NUMBER, ""),
+                domain="nurture",
+                stage=MODEL_MD_GENERATOR,
+                item="__batch__",
+                status="failed",
+            )
         except Exception:
             logger.warning("Failed to mark batch as failed", exc_info=True)
         if supervised:
@@ -1294,8 +1379,13 @@ def _trigger_model_list_generator_batch(
     repo_name: str = state.get(REPO_NAME, "")
     jira_number: str = state.get(JIRA_NUMBER, "")
     return run_nurture_batch(
-        parse_model_list, MODEL_MD_GENERATOR, model_list,
-        user_id, repo_name, jira_number, state,
+        parse_model_list,
+        MODEL_MD_GENERATOR,
+        model_list,
+        user_id,
+        repo_name,
+        jira_number,
+        state,
         on_item_start=on_item_start,
         on_item_complete=on_item_complete,
     )
@@ -1317,14 +1407,26 @@ def _step_oas_generator_with_progress(state: MerState, model_list: dict, models:
 
     with otel_span("nurture-step-model-oas"):
         batch = _trigger_model_list_generator_batch(
-            model_list, state,
+            model_list,
+            state,
             on_item_start=lambda i, r: update_progress(
-                user_name=user_name, repo_name=repo_name, jira_number=jira_number,
-                domain="nurture", stage=stage, item=_name(i), status="in_progress"),
+                user_name=user_name,
+                repo_name=repo_name,
+                jira_number=jira_number,
+                domain="nurture",
+                stage=stage,
+                item=_name(i),
+                status="in_progress",
+            ),
             on_item_complete=lambda i, r, ok: update_progress(
-                user_name=user_name, repo_name=repo_name, jira_number=jira_number,
-                domain="nurture", stage=stage, item=_name(i),
-                status="completed" if ok else "failed"),
+                user_name=user_name,
+                repo_name=repo_name,
+                jira_number=jira_number,
+                domain="nurture",
+                stage=stage,
+                item=_name(i),
+                status="completed" if ok else "failed",
+            ),
         )
         _validate_batch_success(batch, MODEL_MD_GENERATOR)
         log_batches(batch, "OAS batch")
@@ -1373,6 +1475,7 @@ Register a `/Workspace-Status` command in both Nurture and Designer servers. The
 ```python
 # tests/unit/common/test_workspace_status.py
 """Unit tests for workspace status formatting."""
+
 from autobots_agents_mer.common.services.workspace_status import format_progress
 
 
@@ -1383,10 +1486,34 @@ class TestFormatProgress:
 
     def test_batch_and_items(self):
         rows = [
-            {"stage": "model-oas-generator", "item": "__batch__", "status": "in_progress", "domain": "nurture", "updated_at": None},
-            {"stage": "model-oas-generator", "item": "Party", "status": "completed", "domain": "nurture", "updated_at": None},
-            {"stage": "model-oas-generator", "item": "Account", "status": "in_progress", "domain": "nurture", "updated_at": None},
-            {"stage": "model-oas-generator", "item": "Address", "status": "pending", "domain": "nurture", "updated_at": None},
+            {
+                "stage": "model-oas-generator",
+                "item": "__batch__",
+                "status": "in_progress",
+                "domain": "nurture",
+                "updated_at": None,
+            },
+            {
+                "stage": "model-oas-generator",
+                "item": "Party",
+                "status": "completed",
+                "domain": "nurture",
+                "updated_at": None,
+            },
+            {
+                "stage": "model-oas-generator",
+                "item": "Account",
+                "status": "in_progress",
+                "domain": "nurture",
+                "updated_at": None,
+            },
+            {
+                "stage": "model-oas-generator",
+                "item": "Address",
+                "status": "pending",
+                "domain": "nurture",
+                "updated_at": None,
+            },
         ]
         result = format_progress(rows)
         assert "Party" in result
@@ -1395,8 +1522,20 @@ class TestFormatProgress:
 
     def test_failed_items_shown(self):
         rows = [
-            {"stage": "behaviour-java", "item": "__batch__", "status": "failed", "domain": "nurture", "updated_at": None},
-            {"stage": "behaviour-java", "item": "PartySearch", "status": "failed", "domain": "nurture", "updated_at": None},
+            {
+                "stage": "behaviour-java",
+                "item": "__batch__",
+                "status": "failed",
+                "domain": "nurture",
+                "updated_at": None,
+            },
+            {
+                "stage": "behaviour-java",
+                "item": "PartySearch",
+                "status": "failed",
+                "domain": "nurture",
+                "updated_at": None,
+            },
         ]
         result = format_progress(rows)
         assert "failed" in result.lower() or "Failed" in result
@@ -1405,11 +1544,13 @@ class TestFormatProgress:
 class TestFormatGitStatus:
     def test_empty_output(self):
         from autobots_agents_mer.common.services.workspace_status import format_git_status
+
         result = format_git_status("", "")
         assert "No file changes" in result
 
     def test_modified_and_untracked(self):
         from autobots_agents_mer.common.services.workspace_status import format_git_status
+
         porcelain = " M src/file.py\n?? new.txt\n"
         result = format_git_status(porcelain, "")
         assert "file.py" in result
@@ -1417,6 +1558,7 @@ class TestFormatGitStatus:
 
     def test_staged_files(self):
         from autobots_agents_mer.common.services.workspace_status import format_git_status
+
         porcelain = "A  staged.py\n"
         result = format_git_status(porcelain, "")
         assert "staged.py" in result
@@ -1480,7 +1622,9 @@ def format_progress(rows: list[dict[str, Any]]) -> str:
             icon = _STATUS_ICON.get(batch_row["status"], "?")
             status_label = batch_row["status"].replace("_", " ").title()
             if real_items:
-                lines.append(f"{_format_stage_name(stage)}: {icon} {status_label} ({completed_count}/{total_count} complete)")
+                lines.append(
+                    f"{_format_stage_name(stage)}: {icon} {status_label} ({completed_count}/{total_count} complete)"
+                )
             else:
                 lines.append(f"{_format_stage_name(stage)}: {icon} {status_label}")
         elif real_items:
@@ -1548,7 +1692,13 @@ Add the `Workspace-Status` command to the commands list in `nurture/server.py`:
 
 ```python
 # Add to commands list:
-{"id": "Workspace-Status", "icon": "activity", "description": "View workspace status and pipeline progress"},
+(
+    {
+        "id": "Workspace-Status",
+        "icon": "activity",
+        "description": "View workspace status and pipeline progress",
+    },
+)
 ```
 
 Add handler in `_get_preloaded_prompt`:
@@ -1562,12 +1712,16 @@ In `on_message`, before agent invocation, add:
 
 ```python
 if message.content == "__WORKSPACE_STATUS__" or message.command == "Workspace-Status":
-    from autobots_agents_mer.common.services.workspace_status import format_progress, format_git_status
+    from autobots_agents_mer.common.services.workspace_status import (
+        format_progress,
+        format_git_status,
+    )
     from autobots_agents_mer.common.services.progress_service import get_progress
     from autobots_agents_mer.common.tools.git_tools import mer_git_status
 
     user_id = cl.user_session.get("user_id") or ""
     from autobots_devtools_shared_lib.common.utils.context_utils import get_context
+
     ctx = get_context(user_id)
     repo_name = ctx.get("repo_name", "")
     jira_number = ctx.get("jira_number", "")
@@ -1580,12 +1734,16 @@ if message.content == "__WORKSPACE_STATUS__" or message.command == "Workspace-St
     progress_text = format_progress(progress)
 
     try:
-        git_raw = mer_git_status(state={"user_name": user_id, "repo_name": repo_name, "jira_number": jira_number})
+        git_raw = mer_git_status(
+            state={"user_name": user_id, "repo_name": repo_name, "jira_number": jira_number}
+        )
         git_text = git_raw
     except Exception:
         git_text = "Git status unavailable."
 
-    await cl.Message(content=f"**PIPELINE PROGRESS**\n```\n{progress_text}\n```\n\n**{git_text}**").send()
+    await cl.Message(
+        content=f"**PIPELINE PROGRESS**\n```\n{progress_text}\n```\n\n**{git_text}**"
+    ).send()
     return
 ```
 
@@ -1595,16 +1753,22 @@ Add command and handler following the existing pattern. The `Workspace-Status` c
 
 ```python
 # Add to COMMANDS list:
-{
-    "id": "Workspace-Status",
-    "icon": "activity",
-    "description": "View workspace status and pipeline progress",
-},
+(
+    {
+        "id": "Workspace-Status",
+        "icon": "activity",
+        "description": "View workspace status and pipeline progress",
+    },
+)
+
 
 # Add deterministic handler:
 async def handle_workspace_status() -> None:
     """Show workspace progress and git status."""
-    from autobots_agents_mer.common.services.workspace_status import format_progress, format_git_status
+    from autobots_agents_mer.common.services.workspace_status import (
+        format_progress,
+        format_git_status,
+    )
     from autobots_agents_mer.common.services.progress_service import get_progress
     from autobots_agents_mer.common.tools.git_tools import mer_git_status
 
@@ -1621,11 +1785,16 @@ async def handle_workspace_status() -> None:
     progress_text = format_progress(progress)
 
     try:
-        git_raw = mer_git_status(state={"user_name": user_name, "repo_name": repo_name, "jira_number": jira_number})
+        git_raw = mer_git_status(
+            state={"user_name": user_name, "repo_name": repo_name, "jira_number": jira_number}
+        )
     except Exception:
         git_raw = "Git status unavailable."
 
-    await cl.Message(content=f"**PIPELINE PROGRESS**\n```\n{progress_text}\n```\n\n**{git_raw}**").send()
+    await cl.Message(
+        content=f"**PIPELINE PROGRESS**\n```\n{progress_text}\n```\n\n**{git_raw}**"
+    ).send()
+
 
 # Register:
 _DETERMINISTIC_HANDLERS["Workspace-Status"] = handle_workspace_status
@@ -1657,6 +1826,7 @@ Register the `update_progress` function from MER as the progress callback in sha
 # Wire progress callback so ProgressPersistenceMiddleware can persist to Postgres
 from autobots_devtools_shared_lib.dynagent.agents.progress_middleware import set_progress_callback
 from autobots_agents_mer.common.services.progress_service import update_progress
+
 set_progress_callback(update_progress)
 
 # In @cl.on_chat_start, update create_base_agent call:
@@ -1671,6 +1841,7 @@ base_agent = create_base_agent(enable_todos=True, progress_domain="designer")
 # Wire progress callback for any conversational agents
 from autobots_devtools_shared_lib.dynagent.agents.progress_middleware import set_progress_callback
 from autobots_agents_mer.common.services.progress_service import update_progress
+
 set_progress_callback(update_progress)
 
 # In @cl.on_chat_start, optionally add progress_domain:

@@ -317,8 +317,8 @@ _VALID_HANDOFF_PAYLOADS = {"summary", "full", "none"}
 3c. In `AgentConfig.from_dict`, add to the `cls(...)` call (after `debug=...`):
 
 ```python
-            handoff_payload=data.get("handoff_payload", "summary"),
-            summary_prompt=data.get("summary_prompt"),
+handoff_payload = (data.get("handoff_payload", "summary"),)
+summary_prompt = (data.get("summary_prompt"),)
 ```
 
 3d. Add a module global next to `_GLOBAL_MCP_SERVERS` (line ~169):
@@ -344,14 +344,11 @@ def _reset_agent_config() -> None:
 3f. In `load_agents_config()`: add `_GLOBAL_HISTORY_MODE` to the function's `global` statement (add a second line `global _GLOBAL_HISTORY_MODE` under the existing one), then directly after the `_GLOBAL_MCP_SERVERS = data.get("mcp_servers") or {}` line insert:
 
 ```python
-    history_mode = data.get("history_mode", "shared")
-    if history_mode not in _VALID_HISTORY_MODES:
-        msg = (
-            f"history_mode must be one of {sorted(_VALID_HISTORY_MODES)}, "
-            f"got {history_mode!r}"
-        )
-        raise ValueError(msg)
-    _GLOBAL_HISTORY_MODE = history_mode
+history_mode = data.get("history_mode", "shared")
+if history_mode not in _VALID_HISTORY_MODES:
+    msg = f"history_mode must be one of {sorted(_VALID_HISTORY_MODES)}, got {history_mode!r}"
+    raise ValueError(msg)
+_GLOBAL_HISTORY_MODE = history_mode
 ```
 
 3g. After the agents dict is built (right after the `for agent_id, agent_data in data.get("agents", {}).items():` loop completes), insert the payload validation:
@@ -618,10 +615,7 @@ def render_transcript(messages: Sequence[AnyMessage]) -> str:
 def find_inflight_user_message(messages: Sequence[AnyMessage]) -> HumanMessage | None:
     """Latest user message eligible for carrying — synthetic briefings never qualify."""
     for msg in reversed(messages):
-        if (
-            isinstance(msg, HumanMessage)
-            and msg.additional_kwargs.get(HANDOFF_MARKER) != BRIEFING
-        ):
+        if isinstance(msg, HumanMessage) and msg.additional_kwargs.get(HANDOFF_MARKER) != BRIEFING:
             return msg
     return None
 
@@ -759,9 +753,7 @@ def test_summary_flag_produces_summary_payload_and_stores_it():
     )
     assert update["agent_summaries"]["alpha"]["through"] == 1
     briefings = [
-        m
-        for m in update["messages"][1:]
-        if m.additional_kwargs.get(HANDOFF_MARKER) == BRIEFING
+        m for m in update["messages"][1:] if m.additional_kwargs.get(HANDOFF_MARKER) == BRIEFING
     ]
     assert len(briefings) == 1
     assert "[Handoff from alpha]" in briefings[0].content
@@ -782,9 +774,7 @@ def test_full_flag_passes_transcript_without_summarizing():
     )
     assert "alpha" not in update["agent_summaries"]
     briefings = [
-        m
-        for m in update["messages"][1:]
-        if m.additional_kwargs.get(HANDOFF_MARKER) == BRIEFING
+        m for m in update["messages"][1:] if m.additional_kwargs.get(HANDOFF_MARKER) == BRIEFING
     ]
     assert len(briefings) == 1
     assert "human: do the task" in briefings[0].content
@@ -804,9 +794,7 @@ def test_none_flag_sends_no_payload_but_still_archives():
     )
     assert len(update["agent_archives"]["alpha"]) == 1
     briefings = [
-        m
-        for m in update["messages"][1:]
-        if m.additional_kwargs.get(HANDOFF_MARKER) == BRIEFING
+        m for m in update["messages"][1:] if m.additional_kwargs.get(HANDOFF_MARKER) == BRIEFING
     ]
     assert briefings == []
 
@@ -822,9 +810,7 @@ def test_inflight_user_message_always_carried():
             summarize=_fake_summarize,
         )
         carried = [
-            m
-            for m in update["messages"][1:]
-            if m.additional_kwargs.get(HANDOFF_MARKER) == CARRIED
+            m for m in update["messages"][1:] if m.additional_kwargs.get(HANDOFF_MARKER) == CARRIED
         ]
         assert len(carried) == 1, flag
         assert carried[0].content == "do the task"
@@ -1289,9 +1275,7 @@ def test_reassemble_orders_visits_globally_and_appends_live():
     state = {
         "agent_archives": {
             "beta": [{"order": 2, "agent": "beta", "messages": [AIMessage(content="beta work")]}],
-            "alpha": [
-                {"order": 1, "agent": "alpha", "messages": [HumanMessage(content="start")]}
-            ],
+            "alpha": [{"order": 1, "agent": "alpha", "messages": [HumanMessage(content="start")]}],
         },
         "messages": [AIMessage(content="live now")],
     }
