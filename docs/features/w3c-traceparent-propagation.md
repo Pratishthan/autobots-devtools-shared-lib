@@ -50,7 +50,9 @@ For all 6 HTTP functions (`list_files`, `get_disk_usage`, `read_file`, `write_fi
 
 Example pattern:
 ```python
-def write_file(file_name: str, content: str, workspace_context: str = "{}", session_id: str | None = None) -> str:
+def write_file(
+    file_name: str, content: str, workspace_context: str = "{}", session_id: str | None = None
+) -> str:
     # ... existing payload construction ...
     if session_id:
         payload.setdefault("session_id", session_id)
