@@ -908,7 +908,9 @@ class McpSessionManager:
             except Exception:
                 logger.exception("Error closing MCP connection %s", key)
         if keys_to_remove:
-            logger.info("Closed %d MCP connection(s) for session %s", len(keys_to_remove), session_id)
+            logger.info(
+                "Closed %d MCP connection(s) for session %s", len(keys_to_remove), session_id
+            )
 
     async def close_all(self) -> None:
         """Shutdown hook — close all connections."""
@@ -996,12 +998,8 @@ class TestCreateMcpPlaceholder:
         tool = create_mcp_placeholder("atlassian", "create_issue")
         assert tool.coroutine is not None
 
-    @patch(
-        "autobots_devtools_shared_lib.dynagent.mcp.tool_adapter.McpSessionManager"
-    )
-    async def test_invocation_reads_auth_from_mcp_auth(
-        self, mock_mgr_cls, _register_test_server
-    ):
+    @patch("autobots_devtools_shared_lib.dynagent.mcp.tool_adapter.McpSessionManager")
+    async def test_invocation_reads_auth_from_mcp_auth(self, mock_mgr_cls, _register_test_server):
         """Tool should read token from state['mcp_auth']['test_mcp']."""
         mock_session = AsyncMock()
         mock_result = MagicMock()
@@ -1025,9 +1023,7 @@ class TestCreateMcpPlaceholder:
         mock_mgr.get_or_create.assert_called_once_with("test_mcp", "s1", "my-token")
         mock_session.call_tool.assert_called_once_with("do_thing", {"key": "value"})
 
-    @patch(
-        "autobots_devtools_shared_lib.dynagent.mcp.tool_adapter.McpSessionManager"
-    )
+    @patch("autobots_devtools_shared_lib.dynagent.mcp.tool_adapter.McpSessionManager")
     async def test_missing_auth_returns_friendly_error(self, mock_mgr_cls, _register_test_server):
         """When mcp_auth is missing, return an error message for the LLM."""
         tool = create_mcp_placeholder("test_mcp", "do_thing")
@@ -1367,9 +1363,9 @@ from autobots_devtools_shared_lib.dynagent.mcp import (
 Add to `__all__`:
 
 ```python
-    "McpServerConfig",
-    "McpTransport",
-    "register_mcp_servers",
+("McpServerConfig",)
+("McpTransport",)
+("register_mcp_servers",)
 ```
 
 - [ ] **Step 3: Verify imports work**

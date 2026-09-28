@@ -92,19 +92,19 @@ class McpTransport(Enum):
 ```python
 @dataclass
 class McpServerConfig:
-    name: str                          # Server identifier, e.g. "atlassian"
+    name: str  # Server identifier, e.g. "atlassian"
     transport: McpTransport
 
     # Stdio transport
-    command: str | None = None         # e.g. "npx"
-    args: list[str] | None = None     # e.g. ["@anthropic/atlassian-mcp-server"]
-    env: dict[str, str] | None = None # Additional env vars for subprocess
+    command: str | None = None  # e.g. "npx"
+    args: list[str] | None = None  # e.g. ["@anthropic/atlassian-mcp-server"]
+    env: dict[str, str] | None = None  # Additional env vars for subprocess
 
     # Streamable HTTP transport
-    url: str | None = None            # e.g. "https://mcp.internal.company.com/atlassian"
+    url: str | None = None  # e.g. "https://mcp.internal.company.com/atlassian"
 
     # Auth
-    auth_state_key: str | None = None # Key in Dynagent state holding the token
+    auth_state_key: str | None = None  # Key in Dynagent state holding the token
 ```
 
 `auth_state_key` is the bridge between Dynagent session state and MCP auth. The Chainlit UI stores the user's token at this key after first-time collection. The tool adapter reads it at invocation time.
@@ -283,6 +283,7 @@ def create_mcp_placeholder(server_name: str, tool_name: str) -> StructuredTool:
         description=f"MCP tool: {full_name} (resolves on first use)",
     )
 
+
 # Note: After the first successful connection, the placeholder caches the real
 # tool's description and input schema from client.list_tools(). Subsequent
 # invocations benefit from the richer metadata for LLM tool selection.
@@ -381,7 +382,11 @@ agents:
 
 ```python
 # In use-case server.py
-from autobots_devtools_shared_lib.dynagent.mcp import McpServerConfig, McpTransport, register_mcp_servers
+from autobots_devtools_shared_lib.dynagent.mcp import (
+    McpServerConfig,
+    McpTransport,
+    register_mcp_servers,
+)
 
 custom_mcp = McpServerConfig(
     name="internal_api",

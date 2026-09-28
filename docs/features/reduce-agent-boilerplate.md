@@ -117,9 +117,8 @@ Replace the Literal type with string validation:
 ```python
 # Remove BroAgentList = Literal[...]
 
-def get_bro_agent_list(
-    config_dir: Path = Path("configs/vision-agent")
-) -> list[str]:
+
+def get_bro_agent_list(config_dir: Path = Path("configs/vision-agent")) -> list[str]:
     """Return list of available bro agent names from config."""
     from autobots_agents_bro.config.section_config import load_agents_config
 
@@ -150,6 +149,7 @@ def _get_agent_literal():
     agents = load_agents_config(Path("configs/vision-agent"))
     agent_names = tuple(agents.keys())
     return Literal[agent_names]  # Dynamic literal
+
 
 BroAgentList = _get_agent_literal()
 ```
@@ -230,6 +230,7 @@ def test_includes_agents_from_config(self, tmp_path: Path) -> None:
 
     # Load config directly to verify consistency
     from autobots_agents_bro.config.section_config import load_agents_config
+
     expected = load_agents_config(Path("configs/vision-agent"))
 
     assert set(agents) == set(expected.keys())
