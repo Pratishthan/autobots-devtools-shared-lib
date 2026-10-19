@@ -150,6 +150,7 @@ Example test:
 ```python
 import pytest
 
+
 @pytest.mark.unit
 def test_example(sample_data: dict[str, str]) -> None:
     """Test example functionality."""
@@ -171,6 +172,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
+
 def process_items(items: Sequence[str]) -> list[str]:
     """Process a sequence of items."""
     return [item.upper() for item in items]
@@ -189,6 +191,7 @@ Example:
 
 ```python
 import pytest
+
 
 @pytest.mark.asyncio
 @pytest.mark.unit
