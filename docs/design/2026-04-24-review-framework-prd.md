@@ -63,10 +63,10 @@ A decorator / wrapper for any file-write tool:
 ```python
 from dynagent.review.audit import audit_writes
 
+
 @audit_writes(payload_path_from=lambda rt: rt.state["review_payload_path"])
 @tool
-def my_write_file(runtime: ToolRuntime[None, Dynagent], path: str, content: str) -> str:
-    ...
+def my_write_file(runtime: ToolRuntime[None, Dynagent], path: str, content: str) -> str: ...
 ```
 
 Behavior:
@@ -129,7 +129,9 @@ def notify(channel: NotifyChannel, message: str) -> None: ...
 
 ```python
 from dynagent.review import (
-    ReviewPayload, load_payload, save_payload,
+    ReviewPayload,
+    load_payload,
+    save_payload,
     audit_writes,
     ReviewOrchestrator,
 )

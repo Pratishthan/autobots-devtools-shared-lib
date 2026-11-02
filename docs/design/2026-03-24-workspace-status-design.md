@@ -97,8 +97,8 @@ def create_base_agent(
     sync_mode=False,
     initial_agent_name=None,
     state_schema=Dynagent,
-    enable_todos=False,           # NEW — adds TodoListMiddleware
-    progress_domain=None,         # NEW — adds ProgressPersistenceMiddleware
+    enable_todos=False,  # NEW — adds TodoListMiddleware
+    progress_domain=None,  # NEW — adds ProgressPersistenceMiddleware
 ):
     middleware = [_middleware]
 
@@ -161,6 +161,7 @@ A thin `after_model` hook that mirrors agent-level todos to the `workspace_progr
 ```python
 from langgraph.config import get_config
 
+
 class ProgressPersistenceMiddleware(AgentMiddleware):
     def __init__(self, domain: str):
         super().__init__()
@@ -205,7 +206,7 @@ def batch_invoker(
     callbacks: list[Any] | None = None,
     enable_tracing: bool = True,
     trace_metadata: TraceMetadata | None = None,
-    on_item_start: Callable[[int, str], None] | None = None,      # NEW
+    on_item_start: Callable[[int, str], None] | None = None,  # NEW
     on_item_complete: Callable[[int, str, bool], None] | None = None,  # NEW
 ) -> BatchResult:
     """Run prompts in parallel.
@@ -238,32 +239,38 @@ def run_model_batch(models, user_name, repo_name, jira_number):
     stage = "model-oas-generator"
 
     # 1. Create batch-level entry
-    update_progress(user_name, repo_name, jira_number, "nurture",
-                    stage, "__batch__", "in_progress")
+    update_progress(user_name, repo_name, jira_number, "nurture", stage, "__batch__", "in_progress")
 
     # 2. Pre-populate all items as pending
     for model in models:
-        update_progress(user_name, repo_name, jira_number, "nurture",
-                        stage, model["name"], "pending")
+        update_progress(
+            user_name, repo_name, jira_number, "nurture", stage, model["name"], "pending"
+        )
 
     # 3. Build prompts list (existing logic)
     prompts = [serialize_model_prompt(m) for m in models]
 
     # 4. Run batch with callbacks — each item updates its own status
     result = batch_invoker(
-        "model-oas-generator", prompts,
+        "model-oas-generator",
+        prompts,
         on_item_start=lambda i, r: update_progress(
-            user_name, repo_name, jira_number, "nurture",
-            stage, models[i]["name"], "in_progress"),
+            user_name, repo_name, jira_number, "nurture", stage, models[i]["name"], "in_progress"
+        ),
         on_item_complete=lambda i, r, ok: update_progress(
-            user_name, repo_name, jira_number, "nurture",
-            stage, models[i]["name"], "completed" if ok else "failed"),
+            user_name,
+            repo_name,
+            jira_number,
+            "nurture",
+            stage,
+            models[i]["name"],
+            "completed" if ok else "failed",
+        ),
     )
 
     # 5. Update batch-level status
     batch_status = "completed" if result.failures == 0 else "failed"
-    update_progress(user_name, repo_name, jira_number, "nurture",
-                    stage, "__batch__", batch_status)
+    update_progress(user_name, repo_name, jira_number, "nurture", stage, "__batch__", batch_status)
 ```
 
 **Example: Model Batch with 10 models → 11 rows in workspace_progress:**
@@ -343,7 +350,7 @@ Runs `git diff -- <file_path>` for a single file. Returns unified diff.
 ```python
 class GitDiffBody(BaseModel):
     workspace_context: dict[str, Any] = {}
-    file_path: str              # relative path within workspace
+    file_path: str  # relative path within workspace
     session_id: str | None = None
 ```
 
