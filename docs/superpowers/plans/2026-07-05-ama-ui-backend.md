@@ -398,9 +398,7 @@ def test_cross_user_delete_403():
 
     intruder_app = FastAPI()
     register_exception_handlers(intruder_app)
-    intruder_app.include_router(
-        build_threads_router(store, user_id_dependency=lambda: "intruder")
-    )
+    intruder_app.include_router(build_threads_router(store, user_id_dependency=lambda: "intruder"))
     assert TestClient(intruder_app).delete(f"/threads/{rec['id']}").status_code == 403
 ```
 
@@ -641,9 +639,7 @@ async def test_dedupes_source_paths_across_roster(monkeypatch):
         return [], None
 
     monkeypatch.setattr(mod, "_alist_skills_with_errors", fake_loader)
-    meta = SimpleNamespace(
-        skills_map={"assistant": ["/skills/"], "wiring-check": ["/skills/"]}
-    )
+    meta = SimpleNamespace(skills_map={"assistant": ["/skills/"], "wiring-check": ["/skills/"]})
     await mod.discover_skills(meta, backend=object())
     assert seen == ["/skills/"]  # deduped, loaded once
 ```
@@ -786,7 +782,12 @@ def client(monkeypatch, prefs):
     async def fake_discover(_meta, _backend):
         return (
             [
-                {"name": "web-research", "description": "research", "category": "core", "enabled": True},
+                {
+                    "name": "web-research",
+                    "description": "research",
+                    "category": "core",
+                    "enabled": True,
+                },
                 {"name": "demo-fact", "description": "facts", "category": None, "enabled": True},
             ],
             ["a warning"],
@@ -1148,9 +1149,7 @@ class FakePrefs:
         self.kv[(user_id, namespace, key)] = value
 
 
-@pytest.mark.parametrize(
-    "name,expected", [("github", "GI"), ("jira-cloud", "JC"), ("x", "X")]
-)
+@pytest.mark.parametrize("name,expected", [("github", "GI"), ("jira-cloud", "JC"), ("x", "X")])
 def test_server_abbr(name, expected):
     assert server_abbr(name) == expected
 
@@ -1340,7 +1339,13 @@ class FakeThreadStore:
         return []
 
     async def create(self, user_id, title="New chat"):
-        rec = {"id": "t1", "user_id": user_id, "title": title, "created_at": None, "updated_at": None}
+        rec = {
+            "id": "t1",
+            "user_id": user_id,
+            "title": title,
+            "created_at": None,
+            "updated_at": None,
+        }
         self.rows["t1"] = rec
         return rec
 
@@ -1436,13 +1441,9 @@ def build_resource_router(
     router.include_router(
         build_threads_router(thread_store, user_id_dependency, checkpoint_deleter)
     )
-    router.include_router(
-        build_skills_router(meta, backend, prefs_store, user_id_dependency)
-    )
+    router.include_router(build_skills_router(meta, backend, prefs_store, user_id_dependency))
     router.include_router(build_tools_router(meta))
-    router.include_router(
-        build_mcp_servers_router(meta, prefs_store, user_id_dependency)
-    )
+    router.include_router(build_mcp_servers_router(meta, prefs_store, user_id_dependency))
     return router
 ```
 
@@ -1529,9 +1530,7 @@ async def test_projection_error_drops_delta_not_stream():
 
     events = [{"type": "RUN_STARTED", "thread_id": "z", "_t_ms": 0}]
 
-    with patch.object(
-        rail_stream.ActivityProjection, "observe", side_effect=RuntimeError("boom")
-    ):
+    with patch.object(rail_stream.ActivityProjection, "observe", side_effect=RuntimeError("boom")):
         out = [ev async for ev in rail_stream.project_stream(_aiter(events), set())]
 
     # the token/event stream survives even though projection blew up
@@ -1820,7 +1819,13 @@ class FakeThreadStore:
         return []
 
     async def create(self, user_id, title="New chat"):
-        return {"id": "t1", "user_id": user_id, "title": title, "created_at": None, "updated_at": None}
+        return {
+            "id": "t1",
+            "user_id": user_id,
+            "title": title,
+            "created_at": None,
+            "updated_at": None,
+        }
 
     async def get(self, thread_id):
         return None

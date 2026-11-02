@@ -92,9 +92,14 @@ git commit -m "plan: record calling_agent spike findings"
 # tests/unit/review/test_payload.py
 from pathlib import Path
 from autobots_devtools_shared_lib.dynagent.review.payload import (
-    ReviewPayload, FileChange, GroupReview, HistoryEntry,
-    load_payload, save_payload,
+    ReviewPayload,
+    FileChange,
+    GroupReview,
+    HistoryEntry,
+    load_payload,
+    save_payload,
 )
+
 
 def test_round_trip_empty_payload(tmp_path: Path):
     p = tmp_path / "payload.json"
@@ -110,6 +115,7 @@ def test_round_trip_empty_payload(tmp_path: Path):
     loaded = load_payload(p)
     assert loaded == payload
 
+
 def test_round_trip_full_payload(tmp_path: Path):
     p = tmp_path / "payload.json"
     payload = ReviewPayload(
@@ -118,12 +124,21 @@ def test_round_trip_full_payload(tmp_path: Path):
         suppressed_globs=["gen/**"],
         groups=[
             GroupReview(
-                agent="a", agent_display="A", summary="x",
-                files=[FileChange(path="f.py", status="modified", diff="--- ...", suppressed=False)],
-                review_state="pending", upstream_stale=False,
+                agent="a",
+                agent_display="A",
+                summary="x",
+                files=[
+                    FileChange(path="f.py", status="modified", diff="--- ...", suppressed=False)
+                ],
+                review_state="pending",
+                upstream_stale=False,
             )
         ],
-        history=[HistoryEntry(ts="2026-04-24T00:00:00Z", agent="a", action="changes_requested", feedback="fix")],
+        history=[
+            HistoryEntry(
+                ts="2026-04-24T00:00:00Z", agent="a", action="changes_requested", feedback="fix"
+            )
+        ],
         app={"jira": "X-1"},
     )
     save_payload(p, payload)
@@ -149,11 +164,13 @@ Status = Literal["awaiting_review", "approved", "changes_requested", "committed"
 ReviewState = Literal["pending", "approved", "changes_requested"]
 FileStatus = Literal["added", "modified", "deleted"]
 
+
 class FileChange(BaseModel):
     path: str
     status: FileStatus
     diff: str = ""
     suppressed: bool = False
+
 
 class GroupReview(BaseModel):
     agent: str
@@ -163,11 +180,13 @@ class GroupReview(BaseModel):
     review_state: ReviewState = "pending"
     upstream_stale: bool = False
 
+
 class HistoryEntry(BaseModel):
     ts: str
     agent: str
     action: str
     feedback: str = ""
+
 
 class ReviewPayload(BaseModel):
     schema_version: int = 1
@@ -178,8 +197,10 @@ class ReviewPayload(BaseModel):
     history: list[HistoryEntry] = Field(default_factory=list)
     app: dict[str, Any] = Field(default_factory=dict)
 
+
 def load_payload(path: str | Path) -> ReviewPayload:
     return ReviewPayload.model_validate_json(Path(path).read_text())
+
 
 def save_payload(path: str | Path, payload: ReviewPayload) -> None:
     Path(path).write_text(payload.model_dump_json(indent=2))
@@ -202,21 +223,35 @@ git commit -m "feat(review): add payload schema with round-trip"
 def test_apply_suppression_marks_matching_files():
     payload = ReviewPayload(
         suppressed_globs=["generated-src/**", "docs/agent-generator-meta/**"],
-        groups=[GroupReview(agent="a", agent_display="A", files=[
-            FileChange(path="generated-src/X.java", status="added"),
-            FileChange(path="src/Real.java", status="modified"),
-            FileChange(path="docs/agent-generator-meta/trace.json", status="added"),
-        ])],
+        groups=[
+            GroupReview(
+                agent="a",
+                agent_display="A",
+                files=[
+                    FileChange(path="generated-src/X.java", status="added"),
+                    FileChange(path="src/Real.java", status="modified"),
+                    FileChange(path="docs/agent-generator-meta/trace.json", status="added"),
+                ],
+            )
+        ],
     )
     apply_suppression(payload)
     assert payload.groups[0].files[0].suppressed is True
     assert payload.groups[0].files[1].suppressed is False
     assert payload.groups[0].files[2].suppressed is True
 
+
 def test_apply_suppression_idempotent():
-    payload = ReviewPayload(suppressed_globs=["x/**"], groups=[
-        GroupReview(agent="a", agent_display="A",
-                    files=[FileChange(path="x/y.py", status="added", suppressed=True)])])
+    payload = ReviewPayload(
+        suppressed_globs=["x/**"],
+        groups=[
+            GroupReview(
+                agent="a",
+                agent_display="A",
+                files=[FileChange(path="x/y.py", status="added", suppressed=True)],
+            )
+        ],
+    )
     apply_suppression(payload)
     apply_suppression(payload)
     assert payload.groups[0].files[0].suppressed is True
@@ -229,6 +264,7 @@ def test_apply_suppression_idempotent():
 ```python
 from fnmatch import fnmatch
 
+
 def apply_suppression(payload: ReviewPayload) -> None:
     for group in payload.groups:
         for f in group.files:
@@ -239,6 +275,7 @@ Note: Python's `fnmatch` handles `*` but not true `**` glob semantics. Use `path
 
 ```python
 import pathspec
+
 
 def apply_suppression(payload: ReviewPayload) -> None:
     spec = pathspec.PathSpec.from_lines("gitwildmatch", payload.suppressed_globs)
@@ -274,6 +311,7 @@ def test_upstream_stale_marks_downstream_when_upstream_not_approved():
     assert payload.groups[0].upstream_stale is False
     assert payload.groups[1].upstream_stale is True
     assert payload.groups[2].upstream_stale is True
+
 
 def test_upstream_stale_clear_when_all_approved():
     payload = ReviewPayload(
@@ -319,13 +357,25 @@ git commit -am "feat(review): compute upstream_stale flags"
 ```python
 # src/autobots_devtools_shared_lib/dynagent/review/__init__.py
 from .payload import (
-    FileChange, GroupReview, HistoryEntry, ReviewPayload,
-    load_payload, save_payload, apply_suppression, compute_upstream_stale,
+    FileChange,
+    GroupReview,
+    HistoryEntry,
+    ReviewPayload,
+    load_payload,
+    save_payload,
+    apply_suppression,
+    compute_upstream_stale,
 )
 
 __all__ = [
-    "FileChange", "GroupReview", "HistoryEntry", "ReviewPayload",
-    "load_payload", "save_payload", "apply_suppression", "compute_upstream_stale",
+    "FileChange",
+    "GroupReview",
+    "HistoryEntry",
+    "ReviewPayload",
+    "load_payload",
+    "save_payload",
+    "apply_suppression",
+    "compute_upstream_stale",
 ]
 ```
 
@@ -347,9 +397,11 @@ import pytest
 from unittest.mock import patch
 from autobots_devtools_shared_lib.notify import notify, NotifyChannel
 
+
 def test_notify_none_is_noop(caplog):
     notify(channel="none", message="hi")
     assert "hi" not in caplog.text
+
 
 def test_notify_slack_posts_to_webhook(monkeypatch):
     monkeypatch.setenv("SLACK_WEBHOOK_URL", "https://hooks.slack.com/services/x/y/z")
@@ -361,16 +413,19 @@ def test_notify_slack_posts_to_webhook(monkeypatch):
         assert args[0] == "https://hooks.slack.com/services/x/y/z"
         assert kwargs["json"]["text"] == "review ready"
 
+
 def test_notify_slack_missing_env_logs_warning(monkeypatch, caplog):
     monkeypatch.delenv("SLACK_WEBHOOK_URL", raising=False)
     notify(channel="slack", message="x")
     assert "SLACK_WEBHOOK_URL" in caplog.text
+
 
 def test_notify_slack_http_failure_is_swallowed(monkeypatch, caplog):
     monkeypatch.setenv("SLACK_WEBHOOK_URL", "https://hooks.slack.com/x")
     with patch("autobots_devtools_shared_lib.notify.requests.post", side_effect=Exception("boom")):
         notify(channel="slack", message="x")  # must not raise
     assert "boom" in caplog.text or "notify" in caplog.text.lower()
+
 
 def test_notify_invalid_channel_raises():
     with pytest.raises(ValueError):
@@ -395,6 +450,7 @@ logger = logging.getLogger(__name__)
 
 NotifyChannel = Literal["slack", "email", "none"]
 
+
 def notify(channel: NotifyChannel, message: str) -> None:
     if channel == "none":
         return
@@ -405,6 +461,7 @@ def notify(channel: NotifyChannel, message: str) -> None:
         _notify_email(message)
         return
     raise ValueError(f"Unknown notify channel: {channel!r}")
+
 
 def _notify_slack(message: str) -> None:
     url = os.environ.get("SLACK_WEBHOOK_URL")
@@ -417,6 +474,7 @@ def _notify_slack(message: str) -> None:
             logger.warning("notify(slack): HTTP %s", resp.status_code)
     except Exception as e:
         logger.warning("notify(slack): failed: %s", e)
+
 
 def _notify_email(message: str) -> None:
     host = os.environ.get("SMTP_HOST")
@@ -469,19 +527,25 @@ from pathlib import Path
 from unittest.mock import MagicMock
 from autobots_devtools_shared_lib.dynagent.review.audit import audit_writes
 from autobots_devtools_shared_lib.dynagent.review.payload import (
-    ReviewPayload, load_payload, save_payload,
+    ReviewPayload,
+    load_payload,
+    save_payload,
 )
+
 
 def _mk_payload(tmp_path: Path) -> Path:
     p = tmp_path / "payload.json"
     save_payload(p, ReviewPayload(pipeline_order=["writer-agent"]))
     return p
 
+
 def test_audit_records_first_write(tmp_path):
     payload_path = _mk_payload(tmp_path)
 
-    @audit_writes(payload_path_from=lambda rt: str(payload_path),
-                  agent_name_from=lambda rt: rt.state["current_agent"])
+    @audit_writes(
+        payload_path_from=lambda rt: str(payload_path),
+        agent_name_from=lambda rt: rt.state["current_agent"],
+    )
     def fake_write(runtime, path: str, content: str) -> str:
         Path(tmp_path / path).write_text(content)
         return "ok"
@@ -509,11 +573,17 @@ from functools import wraps
 from typing import Any, Callable
 
 from .payload import (
-    FileChange, GroupReview, ReviewPayload, load_payload, save_payload,
-    apply_suppression, compute_upstream_stale,
+    FileChange,
+    GroupReview,
+    ReviewPayload,
+    load_payload,
+    save_payload,
+    apply_suppression,
+    compute_upstream_stale,
 )
 
 logger = logging.getLogger(__name__)
+
 
 def audit_writes(
     *,
@@ -522,6 +592,7 @@ def audit_writes(
     path_arg: str = "path",
 ) -> Callable:
     """Wrap a write tool so each successful call records a FileChange in the payload."""
+
     def decorator(fn):
         @wraps(fn)
         def wrapper(runtime, *args, **kwargs):
@@ -536,8 +607,11 @@ def audit_writes(
             except Exception as e:  # audit must never break the underlying tool
                 logger.warning("audit_writes: failed to record write: %s", e)
             return result
+
         return wrapper
+
     return decorator
+
 
 def _upsert(payload_path: str, agent: str, file_path: str) -> None:
     payload = load_payload(payload_path)
@@ -570,22 +644,31 @@ git commit -am "feat(review): audit_writes decorator — happy path"
 def test_audit_last_writer_wins_on_path(tmp_path):
     payload_path = _mk_payload(tmp_path)
 
-    @audit_writes(payload_path_from=lambda rt: str(payload_path),
-                  agent_name_from=lambda rt: rt.state["current_agent"])
-    def fake_write(runtime, path: str, content: str) -> str: return "ok"
+    @audit_writes(
+        payload_path_from=lambda rt: str(payload_path),
+        agent_name_from=lambda rt: rt.state["current_agent"],
+    )
+    def fake_write(runtime, path: str, content: str) -> str:
+        return "ok"
 
     fake_write(MagicMock(state={"current_agent": "agent-a"}), "shared.py", "x")
     fake_write(MagicMock(state={"current_agent": "agent-b"}), "shared.py", "y")
 
     payload = load_payload(payload_path)
     owning_agents = [g.agent for g in payload.groups if any(f.path == "shared.py" for f in g.files)]
-    assert owning_agents == ["agent-a", "agent-b"]  # both groups record; in practice caller can dedupe
+    assert owning_agents == [
+        "agent-a",
+        "agent-b",
+    ]  # both groups record; in practice caller can dedupe
+
 
 def test_audit_tool_still_returns_when_payload_missing(tmp_path, caplog):
     missing = tmp_path / "nope.json"
-    @audit_writes(payload_path_from=lambda rt: str(missing),
-                  agent_name_from=lambda rt: "a")
-    def fake_write(runtime, path: str) -> str: return "ok"
+
+    @audit_writes(payload_path_from=lambda rt: str(missing), agent_name_from=lambda rt: "a")
+    def fake_write(runtime, path: str) -> str:
+        return "ok"
+
     assert fake_write(MagicMock(state={}), "x.py") == "ok"
     assert "audit_writes" in caplog.text
 ```
@@ -618,16 +701,25 @@ The orchestrator is the trickiest piece. Design as a pure state machine over pay
 ```python
 # tests/unit/review/test_orchestrator.py
 from autobots_devtools_shared_lib.dynagent.review.orchestrator import (
-    step, ActionReinvokeAgent, ActionApproveAll, ActionNotifyReady,
+    step,
+    ActionReinvokeAgent,
+    ActionApproveAll,
+    ActionNotifyReady,
 )
 from autobots_devtools_shared_lib.dynagent.review.payload import (
-    ReviewPayload, GroupReview, HistoryEntry,
+    ReviewPayload,
+    GroupReview,
+    HistoryEntry,
 )
 
+
 def test_step_first_awaiting_review_emits_notify_ready_once():
-    payload = ReviewPayload(status="awaiting_review", groups=[
-        GroupReview(agent="a", agent_display="A", review_state="pending"),
-    ])
+    payload = ReviewPayload(
+        status="awaiting_review",
+        groups=[
+            GroupReview(agent="a", agent_display="A", review_state="pending"),
+        ],
+    )
     prev = None
     actions = step(prev, payload)
     assert any(isinstance(a, ActionNotifyReady) for a in actions)
@@ -635,6 +727,7 @@ def test_step_first_awaiting_review_emits_notify_ready_once():
     # Second call with no change → no notify
     actions2 = step(payload, payload)
     assert not any(isinstance(a, ActionNotifyReady) for a in actions2)
+
 
 def test_step_group_changes_requested_triggers_reinvoke():
     prev = ReviewPayload(
@@ -646,13 +739,16 @@ def test_step_group_changes_requested_triggers_reinvoke():
     )
     cur = prev.model_copy(deep=True)
     cur.groups[0].review_state = "changes_requested"
-    cur.history.append(HistoryEntry(ts="t", agent="a", action="changes_requested", feedback="use Long"))
+    cur.history.append(
+        HistoryEntry(ts="t", agent="a", action="changes_requested", feedback="use Long")
+    )
 
     actions = step(prev, cur)
     reinvokes = [a for a in actions if isinstance(a, ActionReinvokeAgent)]
     assert len(reinvokes) == 1
     assert reinvokes[0].agent == "a"
     assert "use Long" in reinvokes[0].feedback_history[-1].feedback
+
 
 def test_step_approved_triggers_approve_all():
     prev = ReviewPayload(status="awaiting_review")
@@ -672,24 +768,32 @@ from dataclasses import dataclass
 from typing import Awaitable, Callable, Optional
 
 from .payload import (
-    ReviewPayload, HistoryEntry, load_payload, save_payload,
+    ReviewPayload,
+    HistoryEntry,
+    load_payload,
+    save_payload,
     compute_upstream_stale,
 )
+
 
 @dataclass
 class ActionNotifyReady:
     pass
+
 
 @dataclass
 class ActionReinvokeAgent:
     agent: str
     feedback_history: list[HistoryEntry]
 
+
 @dataclass
 class ActionApproveAll:
     payload: ReviewPayload
 
+
 Action = ActionNotifyReady | ActionReinvokeAgent | ActionApproveAll
+
 
 def step(prev: Optional[ReviewPayload], cur: ReviewPayload) -> list[Action]:
     actions: list[Action] = []
@@ -701,7 +805,10 @@ def step(prev: Optional[ReviewPayload], cur: ReviewPayload) -> list[Action]:
     # Per-group transitions to changes_requested.
     prev_states = {g.agent: g.review_state for g in (prev.groups if prev else [])}
     for g in cur.groups:
-        if prev_states.get(g.agent) != "changes_requested" and g.review_state == "changes_requested":
+        if (
+            prev_states.get(g.agent) != "changes_requested"
+            and g.review_state == "changes_requested"
+        ):
             history_for_agent = [h for h in cur.history if h.agent == g.agent]
             actions.append(ActionReinvokeAgent(agent=g.agent, feedback_history=history_for_agent))
 
@@ -723,14 +830,22 @@ def step(prev: Optional[ReviewPayload], cur: ReviewPayload) -> list[Action]:
 import asyncio
 import pytest
 from autobots_devtools_shared_lib.dynagent.review.orchestrator import ReviewOrchestrator
-from autobots_devtools_shared_lib.dynagent.review.payload import save_payload, load_payload, ReviewPayload, GroupReview
+from autobots_devtools_shared_lib.dynagent.review.payload import (
+    save_payload,
+    load_payload,
+    ReviewPayload,
+    GroupReview,
+)
+
 
 async def test_orchestrator_dispatches_approve_all(tmp_path):
     p = tmp_path / "payload.json"
     save_payload(p, ReviewPayload(status="awaiting_review"))
 
     approved = asyncio.Event()
-    async def on_approve_all(payload): approved.set()
+
+    async def on_approve_all(payload):
+        approved.set()
 
     orch = ReviewOrchestrator(
         payload_path=str(p),
@@ -741,9 +856,12 @@ async def test_orchestrator_dispatches_approve_all(tmp_path):
     )
     task = asyncio.create_task(orch.run())
     await asyncio.sleep(0.1)
-    payload = load_payload(p); payload.status = "approved"; save_payload(p, payload)
+    payload = load_payload(p)
+    payload.status = "approved"
+    save_payload(p, payload)
     await asyncio.wait_for(approved.wait(), timeout=2.0)
-    orch.stop(); await task
+    orch.stop()
+    await task
 ```
 
 - [ ] **Step 2: Implement `ReviewOrchestrator`**
@@ -771,6 +889,7 @@ class ReviewOrchestrator:
 
     async def run(self) -> None:
         import asyncio
+
         while not self._stop:
             try:
                 cur = load_payload(self.payload_path)
@@ -837,6 +956,7 @@ git commit -am "feat(review): orchestrator polling + dispatch"
 from autobots_devtools_shared_lib.dynagent.ui.review_element import build_review_element
 from autobots_devtools_shared_lib.dynagent.review.payload import ReviewPayload
 
+
 def test_build_review_element_returns_custom_element_with_payload_props():
     payload = ReviewPayload(status="awaiting_review")
     el = build_review_element(payload, on_mutation=lambda p: None)
@@ -851,6 +971,7 @@ def test_build_review_element_returns_custom_element_with_payload_props():
 from typing import Callable
 import chainlit as cl
 from ...review.payload import ReviewPayload
+
 
 def build_review_element(
     payload: ReviewPayload,
