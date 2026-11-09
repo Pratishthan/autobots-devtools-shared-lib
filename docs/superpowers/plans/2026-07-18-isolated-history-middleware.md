@@ -204,10 +204,7 @@ Respond ONLY with the summary.
 def find_inflight_user_message(messages: Sequence[AnyMessage]) -> HumanMessage | None:
     """Latest user message eligible for carrying — synthetic briefings never qualify."""
     for msg in reversed(messages):
-        if (
-            isinstance(msg, HumanMessage)
-            and msg.additional_kwargs.get(HANDOFF_MARKER) != BRIEFING
-        ):
+        if isinstance(msg, HumanMessage) and msg.additional_kwargs.get(HANDOFF_MARKER) != BRIEFING:
             return msg
     return None
 
@@ -324,17 +321,13 @@ def test_swap_adds_handoff_briefing_and_carries_inflight():
         _swap_state(), departing="alpha", arriving="beta", summary_message=AIMessage(content="S1")
     )
     briefings = [
-        m
-        for m in update["messages"][1:]
-        if m.additional_kwargs.get(HANDOFF_MARKER) == BRIEFING
+        m for m in update["messages"][1:] if m.additional_kwargs.get(HANDOFF_MARKER) == BRIEFING
     ]
     assert len(briefings) == 1
     assert "[Handoff from alpha]" in briefings[0].content
     assert "S1" in briefings[0].content
     carried = [
-        m
-        for m in update["messages"][1:]
-        if m.additional_kwargs.get(HANDOFF_MARKER) == CARRIED
+        m for m in update["messages"][1:] if m.additional_kwargs.get(HANDOFF_MARKER) == CARRIED
     ]
     assert len(carried) == 1
     assert carried[0].content == "do the task"
@@ -347,9 +340,7 @@ def test_swap_revisit_adds_resume_briefing_first():
         state, departing="alpha", arriving="beta", summary_message=AIMessage(content="S1")
     )
     briefings = [
-        m
-        for m in update["messages"][1:]
-        if m.additional_kwargs.get(HANDOFF_MARKER) == BRIEFING
+        m for m in update["messages"][1:] if m.additional_kwargs.get(HANDOFF_MARKER) == BRIEFING
     ]
     assert len(briefings) == 2
     assert "[Resuming as beta]" in briefings[0].content
@@ -371,9 +362,7 @@ def test_swap_briefings_are_never_recarried():
         state, departing="alpha", arriving="beta", summary_message=AIMessage(content="S1")
     )
     carried = [
-        m
-        for m in update["messages"][1:]
-        if m.additional_kwargs.get(HANDOFF_MARKER) == CARRIED
+        m for m in update["messages"][1:] if m.additional_kwargs.get(HANDOFF_MARKER) == CARRIED
     ]
     assert len(carried) == 1
     assert carried[0].content == "real question"
@@ -387,9 +376,7 @@ def test_swap_without_inflight_has_no_carried_message():
         summary_message=AIMessage(content="S1"),
     )
     carried = [
-        m
-        for m in update["messages"][1:]
-        if m.additional_kwargs.get(HANDOFF_MARKER) == CARRIED
+        m for m in update["messages"][1:] if m.additional_kwargs.get(HANDOFF_MARKER) == CARRIED
     ]
     assert carried == []
 
@@ -462,9 +449,7 @@ def build_swap_update(
     if resume is not None:
         fresh.append(
             HumanMessage(
-                content=(
-                    f"[Resuming as {arriving}] Summary of your previous work:\n{resume.text}"
-                ),
+                content=(f"[Resuming as {arriving}] Summary of your previous work:\n{resume.text}"),
                 additional_kwargs={HANDOFF_MARKER: BRIEFING},
             )
         )
@@ -480,9 +465,7 @@ def build_swap_update(
             HumanMessage(content=inflight.content, additional_kwargs={HANDOFF_MARKER: CARRIED})
         )
 
-    logger.info(
-        f"Isolated handoff: {departing} -> {arriving} (revisit={resume is not None})"
-    )
+    logger.info(f"Isolated handoff: {departing} -> {arriving} (revisit={resume is not None})")
     return {"messages": fresh, "agent_summaries": summaries, "context_agent": arriving}
 ```
 
