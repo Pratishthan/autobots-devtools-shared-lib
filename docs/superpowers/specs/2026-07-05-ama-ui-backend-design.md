@@ -154,7 +154,12 @@ thread store. LLM-generated titles are explicitly out of scope.
 
 ```python
 class ThreadRecord(TypedDict):
-    id: str; user_id: str; title: str; created_at: datetime; updated_at: datetime
+    id: str
+    user_id: str
+    title: str
+    created_at: datetime
+    updated_at: datetime
+
 
 class ThreadStore(Protocol):
     async def list(self, user_id: str, q: str | None = None) -> list[ThreadRecord]: ...

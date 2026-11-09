@@ -237,7 +237,7 @@ def _flatten_directive_entries(
     return result
 
 
-def resolve_parent_with_directives(parent_paths: list[Path], directive_path: None | Path) -> dict:
+def resolve_parent_with_directives(parent_paths: list[Path], directive_path: Path | None) -> dict:
     """Load parent schema(s), merge common+domain, then apply directives.
 
     Args:
