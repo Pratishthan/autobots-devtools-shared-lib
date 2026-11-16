@@ -78,11 +78,12 @@ Returns plain dataclasses — never driver types.
 @dataclass(frozen=True)
 class Node:
     stable_id: str
-    label: str                              # e.g. "Service", "DataModel"
+    label: str  # e.g. "Service", "DataModel"
     properties: dict[str, Any]
     content_hash: str | None = None
     summary: str | None = None
     embedding_meta: dict[str, str] | None = None  # {"model_version": ..., "prompt_version": ...}
+
 
 @dataclass(frozen=True)
 class Edge:
@@ -91,20 +92,24 @@ class Edge:
     edge_type: str
     properties: dict[str, Any] = field(default_factory=dict)
 
+
 @dataclass(frozen=True)
 class Subgraph:
     nodes: list[Node]
     edges: list[Edge]
+
 
 @dataclass(frozen=True)
 class Path:
     nodes: list[Node]
     edges: list[Edge]
 
+
 @dataclass(frozen=True)
 class ScoredNode:
     node: Node
     score: float
+
 
 @dataclass(frozen=True)
 class NodeSummary:
@@ -112,12 +117,13 @@ class NodeSummary:
     label: str
     name: str
     summary: str
-    key_properties: dict[str, Any]          # subset suitable for compact display
+    key_properties: dict[str, Any]  # subset suitable for compact display
+
 
 @dataclass(frozen=True)
 class RequirementDecomposition:
     candidates: list[ScoredNode]
-    candidate_subgraphs: dict[str, Subgraph]   # keyed by candidate stable_id
+    candidate_subgraphs: dict[str, Subgraph]  # keyed by candidate stable_id
 ```
 
 **Filter type** — typed, not free-form `dict`:
@@ -137,24 +143,35 @@ Adapters translate `NodeFilter` to engine-specific predicates. Free-form `dict` 
 ```python
 class KGReadStore(Protocol):
     def get_node(self, stable_id: str) -> Node | None: ...
-    def neighbors(self, stable_id: str, edge_types: list[str] | None,
-                  direction: Literal["out","in","both"]) -> list[Edge]: ...
-    def traverse(self, stable_id: str, depth: int,
-                 edge_types: list[str] | None,
-                 direction: Literal["out","in","both"]) -> Subgraph: ...
+    def neighbors(
+        self, stable_id: str, edge_types: list[str] | None, direction: Literal["out", "in", "both"]
+    ) -> list[Edge]: ...
+    def traverse(
+        self,
+        stable_id: str,
+        depth: int,
+        edge_types: list[str] | None,
+        direction: Literal["out", "in", "both"],
+    ) -> Subgraph: ...
     def find_paths(self, source: str, target: str, max_depth: int) -> list[Path]: ...
-    def semantic_search(self, query_vec: list[float],
-                        node_types: list[str] | None,
-                        filters: NodeFilter | None,
-                        k: int) -> list[ScoredNode]: ...
-    def get_dependents(self, stable_id: str) -> list[Edge]: ...   # for tombstone safety
+    def semantic_search(
+        self,
+        query_vec: list[float],
+        node_types: list[str] | None,
+        filters: NodeFilter | None,
+        k: int,
+    ) -> list[ScoredNode]: ...
+    def get_dependents(self, stable_id: str) -> list[Edge]: ...  # for tombstone safety
 ```
 
 **Write port** (loader-only):
 
 ```python
 class KGWriteStore(Protocol):
-    def begin_batch(self) -> "KGBatch": ...      # context manager: commit on __exit__, rollback on exception
+    def begin_batch(
+        self,
+    ) -> "KGBatch": ...  # context manager: commit on __exit__, rollback on exception
+
 
 class KGBatch(Protocol):
     def upsert_node(self, node: Node) -> None: ...
@@ -163,9 +180,12 @@ class KGBatch(Protocol):
         """Delete node. If incoming edges exist and force is False, raise
         DependentsExistError carrying the incoming Edge list. Returns the list
         of edges actually removed."""
-    def diff_outgoing_edges(self, stable_id: str,
-                            new_edges: list[Edge]) -> tuple[list[Edge], list[Edge]]:
+
+    def diff_outgoing_edges(
+        self, stable_id: str, new_edges: list[Edge]
+    ) -> tuple[list[Edge], list[Edge]]:
         """Returns (to_add, to_remove). Caller applies via upsert_edge / delete on edges."""
+
     def commit(self) -> None: ...
     def rollback(self) -> None: ...
 ```
@@ -185,7 +205,7 @@ Lightweight client used by both loader (write-side) and `KGService` (query-side)
 ```python
 class Embedder(Protocol):
     @property
-    def model_version(self) -> str: ...     # stamped onto every embedding for compatibility checks
+    def model_version(self) -> str: ...  # stamped onto every embedding for compatibility checks
     @property
     def dim(self) -> int: ...
 
@@ -207,12 +227,18 @@ Read-only business-level recipes. Composed with `KGReadStore` and `Embedder` —
 class KGService:
     def __init__(self, store: KGReadStore, embedder: Embedder): ...
 
-    def get_subgraph(self, stable_id: str, depth: int = 2,
-                     edge_types: list[str] | None = None) -> Subgraph: ...
+    def get_subgraph(
+        self, stable_id: str, depth: int = 2, edge_types: list[str] | None = None
+    ) -> Subgraph: ...
     def get_dependencies(self, service_id: str) -> Subgraph: ...
     def get_node_summary(self, stable_id: str) -> NodeSummary: ...
-    def semantic_search(self, query: str, node_types: list[str] | None = None,
-                        filters: NodeFilter | None = None, k: int = 10) -> list[ScoredNode]: ...
+    def semantic_search(
+        self,
+        query: str,
+        node_types: list[str] | None = None,
+        filters: NodeFilter | None = None,
+        k: int = 10,
+    ) -> list[ScoredNode]: ...
     def decompose_requirement(self, text: str) -> RequirementDecomposition: ...
     def impact_topdown(self, product_id: str) -> Subgraph: ...
     def impact_bottomup(self, node_id: str) -> Subgraph: ...
@@ -246,8 +272,7 @@ Thin `@tool` shims around `KGService` recipes. Registered into Dynagent via the 
 
 ```python
 @tool
-def kg_get_subgraph(runtime: ToolRuntime[None, Dynagent],
-                    stable_id: str, depth: int = 2) -> str:
+def kg_get_subgraph(runtime: ToolRuntime[None, Dynagent], stable_id: str, depth: int = 2) -> str:
     """Return the subgraph rooted at stable_id, JSON-serialized."""
     svc = get_kg_service()
     return _serialize(svc.get_subgraph(stable_id, depth))
@@ -355,16 +380,31 @@ Stable IDs:
 
 ```python
 from autobots_devtools_shared_lib.kg import (
-    KGStore, KGReadStore, KGWriteStore, KGBatch, KGService,
-    Node, Edge, Subgraph, Path, ScoredNode, NodeSummary,
-    NodeFilter, RequirementDecomposition, DependentsExistError,
+    KGStore,
+    KGReadStore,
+    KGWriteStore,
+    KGBatch,
+    KGService,
+    Node,
+    Edge,
+    Subgraph,
+    Path,
+    ScoredNode,
+    NodeSummary,
+    NodeFilter,
+    RequirementDecomposition,
+    DependentsExistError,
 )
 from autobots_devtools_shared_lib.kg.adapters.neo4j_store import Neo4jKGStore
 from autobots_devtools_shared_lib.kg.embedding import Embedder
 from autobots_devtools_shared_lib.kg.tools import (
-    kg_get_subgraph, kg_get_dependencies, kg_get_node_summary,
-    kg_semantic_search, kg_decompose_requirement,
-    kg_impact_topdown, kg_impact_bottomup,
+    kg_get_subgraph,
+    kg_get_dependencies,
+    kg_get_node_summary,
+    kg_semantic_search,
+    kg_decompose_requirement,
+    kg_impact_topdown,
+    kg_impact_bottomup,
 )
 ```
 
