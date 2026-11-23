@@ -197,9 +197,7 @@ def test_resolve_workspace_context_passthrough_without_provider():
 
 
 def test_resolve_workspace_context_uses_registered_provider():
-    set_workspace_context_provider(
-        lambda ctx: {"workspace_base_path": f"{ctx['user_name']}/x"}
-    )
+    set_workspace_context_provider(lambda ctx: {"workspace_base_path": f"{ctx['user_name']}/x"})
     assert resolve_workspace_context({"user_name": "u"}) == {"workspace_base_path": "u/x"}
 ```
 
@@ -425,36 +423,42 @@ from autobots_devtools_shared_lib.common.utils.fserver_client_utils import (
 (d) Replace the `__init__` and the three helpers (lines 55–75) with:
 
 ```python
-    def __init__(self, context_key: str | None = None) -> None:
-        # Identity override; None -> resolve from the ambient context_key ContextVar.
-        self._context_key = context_key
+def __init__(self, context_key: str | None = None) -> None:
+    # Identity override; None -> resolve from the ambient context_key ContextVar.
+    self._context_key = context_key
 
-    # -- lazy resolution ---------------------------------------------------
 
-    def _resolve(self) -> tuple[str | None, dict[str, Any]]:
-        """Resolve (session_id, workspace_context) live on each file op."""
-        key = self._context_key or get_context_key()
-        session_id = get_session_id()
-        ctx = get_context(key) if key else {}
-        if not key:
-            logger.warning("FileServerBackend: no context_key available; workspace unscoped")
-        workspace_context = resolve_workspace_context(ctx)
-        return session_id, workspace_context
+# -- lazy resolution ---------------------------------------------------
 
-    # -- helpers -----------------------------------------------------------
 
-    def _list_all(self) -> list[str]:
-        session_id, workspace_context = self._resolve()
-        files = raw_list_files("", workspace_context, session_id)
-        return [str(f) for f in files]
+def _resolve(self) -> tuple[str | None, dict[str, Any]]:
+    """Resolve (session_id, workspace_context) live on each file op."""
+    key = self._context_key or get_context_key()
+    session_id = get_session_id()
+    ctx = get_context(key) if key else {}
+    if not key:
+        logger.warning("FileServerBackend: no context_key available; workspace unscoped")
+    workspace_context = resolve_workspace_context(ctx)
+    return session_id, workspace_context
 
-    def _read_bytes(self, file_path: str) -> bytes:
-        session_id, workspace_context = self._resolve()
-        return raw_read_file(_to_server_path(file_path), workspace_context, session_id)
 
-    def _write_bytes(self, file_path: str, content: bytes) -> None:
-        session_id, workspace_context = self._resolve()
-        raw_write_file(_to_server_path(file_path), content, workspace_context, session_id)
+# -- helpers -----------------------------------------------------------
+
+
+def _list_all(self) -> list[str]:
+    session_id, workspace_context = self._resolve()
+    files = raw_list_files("", workspace_context, session_id)
+    return [str(f) for f in files]
+
+
+def _read_bytes(self, file_path: str) -> bytes:
+    session_id, workspace_context = self._resolve()
+    return raw_read_file(_to_server_path(file_path), workspace_context, session_id)
+
+
+def _write_bytes(self, file_path: str, content: bytes) -> None:
+    session_id, workspace_context = self._resolve()
+    raw_write_file(_to_server_path(file_path), content, workspace_context, session_id)
 ```
 
 No other method bodies change — `ls/read/write/edit/glob/grep/upload_files/download_files` already route through `_list_all` / `_read_bytes` / `_write_bytes`, which now resolve per call.

@@ -207,35 +207,27 @@ Expected: FAIL — `ValidationError` / `AttributeError` for the unknown `embeddi
 In `src/autobots_devtools_shared_lib/dynagent/config/dynagent_settings.py`, insert this block immediately after the `anthropic_api_key` field and before the `# Workspace settings` comment:
 
 ```python
-    openai_api_key: str = Field(
-        default="", description="OpenAI API key for embeddings (env: OPENAI_API_KEY)"
-    )
+openai_api_key: str = Field(
+    default="", description="OpenAI API key for embeddings (env: OPENAI_API_KEY)"
+)
 
-    # Embedding settings (env: EMBEDDING_PROVIDER, EMBEDDING_MODEL, EMBEDDING_DIM,
-    # EMBEDDING_BATCH_SIZE). Typed as str, not the EmbeddingProvider enum, so this
-    # module stays free of any import from common.services.vector; get_embedder()
-    # coerces the string, mirroring how lm() coerces a provider string.
-    embedding_provider: str = Field(
-        default="openai", description="Embedding provider identifier"
-    )
-    embedding_model: str = Field(
-        default="text-embedding-3-small", description="Embedding model name"
-    )
-    embedding_dim: int = Field(
-        default=1536,
-        description="Embedding vector dimension; must match the deployed vector(N) column",
-    )
-    embedding_batch_size: int = Field(
-        default=128, description="Texts per embedding API request"
-    )
+# Embedding settings (env: EMBEDDING_PROVIDER, EMBEDDING_MODEL, EMBEDDING_DIM,
+# EMBEDDING_BATCH_SIZE). Typed as str, not the EmbeddingProvider enum, so this
+# module stays free of any import from common.services.vector; get_embedder()
+# coerces the string, mirroring how lm() coerces a provider string.
+embedding_provider: str = Field(default="openai", description="Embedding provider identifier")
+embedding_model: str = Field(default="text-embedding-3-small", description="Embedding model name")
+embedding_dim: int = Field(
+    default=1536,
+    description="Embedding vector dimension; must match the deployed vector(N) column",
+)
+embedding_batch_size: int = Field(default=128, description="Texts per embedding API request")
 
-    # Chunking settings (env: CHUNK_SIZE_TOKENS, CHUNK_OVERLAP_TOKENS)
-    chunk_size_tokens: int = Field(
-        default=1000, description="Maximum tokens per indexed chunk"
-    )
-    chunk_overlap_tokens: int = Field(
-        default=150, description="Token overlap between consecutive chunks"
-    )
+# Chunking settings (env: CHUNK_SIZE_TOKENS, CHUNK_OVERLAP_TOKENS)
+chunk_size_tokens: int = Field(default=1000, description="Maximum tokens per indexed chunk")
+chunk_overlap_tokens: int = Field(
+    default=150, description="Token overlap between consecutive chunks"
+)
 ```
 
 - [ ] **Step 8: Run the tests to verify they pass**
@@ -302,9 +294,7 @@ from autobots_devtools_shared_lib.common.services.vector import (
 
 
 def test_doc_id_is_derived_from_parent_and_chunk_index():
-    doc = VectorDoc(
-        parent_id="Account", chunk_index=3, content="body", content_hash="abc"
-    )
+    doc = VectorDoc(parent_id="Account", chunk_index=3, content="body", content_hash="abc")
 
     assert doc.doc_id == "Account#3"
 
@@ -1191,9 +1181,7 @@ class OpenAIEmbedder:
         settings = get_dynagent_settings()
         self.model = model if model is not None else settings.embedding_model
         self.dim = dim if dim is not None else settings.embedding_dim
-        self._batch_size = (
-            batch_size if batch_size is not None else settings.embedding_batch_size
-        )
+        self._batch_size = batch_size if batch_size is not None else settings.embedding_batch_size
         self._max_retries = max_retries
         self._base_delay = base_delay
         self._sleep = sleep
@@ -1346,9 +1334,7 @@ def delete(
     parent_ids: Sequence[str] | None = None,
     min_chunk_index: int | None = None,
 ) -> int: ...
-def prune_missing(
-    self, collection: str, family: Family, keep_parent_ids: Sequence[str]
-) -> int: ...
+def prune_missing(self, collection: str, family: Family, keep_parent_ids: Sequence[str]) -> int: ...
 ```
 
 **The three semantic rules both implementations must obey — the whole test strategy rests on these:**
@@ -1607,10 +1593,7 @@ def test_delete_by_parent_ids_removes_every_chunk(store):
 def test_delete_with_min_chunk_index_removes_only_the_tail(store):
     store.upsert(
         COLLECTION,
-        [
-            make_doc("a", chunk_index=i, content=f"c{i}", embedding=[1.0, 0.0])
-            for i in range(4)
-        ],
+        [make_doc("a", chunk_index=i, content=f"c{i}", embedding=[1.0, 0.0]) for i in range(4)],
     )
 
     assert store.delete(COLLECTION, parent_ids=["a"], min_chunk_index=2) == 2
@@ -1758,9 +1741,7 @@ class VectorStore(Protocol):
         """
         ...
 
-    def describe(
-        self, collection: str
-    ) -> CollectionInfo | None:  # pragma: no cover - Protocol
+    def describe(self, collection: str) -> CollectionInfo | None:  # pragma: no cover - Protocol
         """Return the registry row plus chunk count, or None if unregistered."""
         ...
 
@@ -2006,9 +1987,7 @@ class InMemoryVectorStore:
             del entry.rows[doc_id]
         return len(doomed)
 
-    def prune_missing(
-        self, collection: str, family: Family, keep_parent_ids: Sequence[str]
-    ) -> int:
+    def prune_missing(self, collection: str, family: Family, keep_parent_ids: Sequence[str]) -> int:
         entry = self._require(collection)
         keep = set(keep_parent_ids)
         doomed = [
@@ -2021,9 +2000,7 @@ class InMemoryVectorStore:
         return len(doomed)
 
 
-def _axes_match(
-    row: _Row, *, scope: str | None, version: str | None, kind: str | None
-) -> bool:
+def _axes_match(row: _Row, *, scope: str | None, version: str | None, kind: str | None) -> bool:
     """Wildcard axis matching: a None filter constrains nothing."""
     if scope is not None and row.scope != scope:
         return False
@@ -2749,15 +2726,12 @@ class SemanticSearchService:
             pending = [doc for doc in vector_docs if doc.doc_id in pending_ids]
             vectors = self._embedder.embed_documents([doc.content for doc in pending])
             embedded = [
-                replace(doc, embedding=vector)
-                for doc, vector in zip(pending, vectors, strict=True)
+                replace(doc, embedding=vector) for doc, vector in zip(pending, vectors, strict=True)
             ]
             written = len(self._store.upsert(collection, embedded).written)
 
         pruned_chunks = self._prune_chunk_tails(collection, chunk_counts)
-        pruned_documents = (
-            self._prune_families(collection, parents_by_family) if prune else 0
-        )
+        pruned_documents = self._prune_families(collection, parents_by_family) if prune else 0
 
         return IndexResult(
             chunks_written=written,
@@ -2782,9 +2756,7 @@ class SemanticSearchService:
             for count, parents in by_count.items()
         )
 
-    def _prune_families(
-        self, collection: str, parents_by_family: Mapping[Family, set[str]]
-    ) -> int:
+    def _prune_families(self, collection: str, parents_by_family: Mapping[Family, set[str]]) -> int:
         """Drop documents in the batch's families that were absent from the batch."""
         return sum(
             self._store.prune_missing(collection, family, sorted(parent_ids))
@@ -2954,9 +2926,7 @@ def test_set_replaces_a_previous_instance(embedder):
 
 
 def test_reset_clears_the_singleton(embedder):
-    set_semantic_search_service(
-        SemanticSearchService(InMemoryVectorStore(), embedder=embedder)
-    )
+    set_semantic_search_service(SemanticSearchService(InMemoryVectorStore(), embedder=embedder))
 
     reset_semantic_search_service()
 
@@ -3432,9 +3402,15 @@ def test_search_filters_resolve_through_the_family_table(store):
     store.upsert(
         COLLECTION,
         [
-            make_doc("a", content="x", embedding=_vec(1.0), scope="app", version="develop", kind="LPU"),
-            make_doc("b", content="y", embedding=_vec(1.0), scope="app", version="develop", kind="DTO"),
-            make_doc("c", content="z", embedding=_vec(1.0), scope="other", version="develop", kind="LPU"),
+            make_doc(
+                "a", content="x", embedding=_vec(1.0), scope="app", version="develop", kind="LPU"
+            ),
+            make_doc(
+                "b", content="y", embedding=_vec(1.0), scope="app", version="develop", kind="DTO"
+            ),
+            make_doc(
+                "c", content="z", embedding=_vec(1.0), scope="other", version="develop", kind="LPU"
+            ),
         ],
     )
 
@@ -3501,10 +3477,7 @@ def test_metadata_filter_rejects_non_scalar_values(store):
 def test_delete_by_ids_parents_and_chunk_tail(store):
     store.upsert(
         COLLECTION,
-        [
-            make_doc("a", chunk_index=i, content=f"c{i}", embedding=_vec(1.0))
-            for i in range(4)
-        ]
+        [make_doc("a", chunk_index=i, content=f"c{i}", embedding=_vec(1.0)) for i in range(4)]
         + [make_doc("b", content="b0", embedding=_vec(1.0))],
     )
 
@@ -3543,9 +3516,20 @@ def test_prune_missing_matches_the_family_exactly_including_nulls(store):
     store.upsert(
         COLLECTION,
         [
-            make_doc("keep", content="k", embedding=_vec(1.0), scope="app", version="develop", kind="LPU"),
-            make_doc("gone", content="g", embedding=_vec(1.0), scope="app", version="develop", kind="LPU"),
-            make_doc("other", content="o", embedding=_vec(1.0), scope="app", version="develop", kind="DTO"),
+            make_doc(
+                "keep", content="k", embedding=_vec(1.0), scope="app", version="develop", kind="LPU"
+            ),
+            make_doc(
+                "gone", content="g", embedding=_vec(1.0), scope="app", version="develop", kind="LPU"
+            ),
+            make_doc(
+                "other",
+                content="o",
+                embedding=_vec(1.0),
+                scope="app",
+                version="develop",
+                kind="DTO",
+            ),
             make_doc("nulls", content="n", embedding=_vec(1.0)),
         ],
     )
@@ -3598,10 +3582,7 @@ def test_drop_collection_cascades_families_and_documents(store, session_factory)
 def test_search_uses_the_hnsw_index(store, session_factory):
     store.upsert(
         COLLECTION,
-        [
-            make_doc(f"d{i}", content=f"c{i}", embedding=_vec(float(i), 1.0))
-            for i in range(50)
-        ],
+        [make_doc(f"d{i}", content=f"c{i}", embedding=_vec(float(i), 1.0)) for i in range(50)],
     )
     with session_factory() as session:
         session.execute(text("SET LOCAL enable_seqscan = off"))
@@ -3933,7 +3914,11 @@ class PgVectorStore:
             ).bindparams(
                 bindparam("q", type_=Vector()),
                 *(
-                    [bindparam("family_ids", type_=ARRAY(String().with_variant(String, "postgresql")))]
+                    [
+                        bindparam(
+                            "family_ids", type_=ARRAY(String().with_variant(String, "postgresql"))
+                        )
+                    ]
                     if "family_ids" in params
                     else []
                 ),
@@ -4013,9 +3998,7 @@ class PgVectorStore:
             session.commit()
             return result.rowcount
 
-    def prune_missing(
-        self, collection: str, family: Family, keep_parent_ids: Sequence[str]
-    ) -> int:
+    def prune_missing(self, collection: str, family: Family, keep_parent_ids: Sequence[str]) -> int:
         with self._session_factory() as session:
             self._require(session, collection)
             result = session.execute(
@@ -4446,9 +4429,7 @@ COLLECTION = "kg-nodes"
 def service(embedder):
     from tests.unit.vector.conftest import FixedChunker
 
-    return SemanticSearchService(
-        InMemoryVectorStore(), embedder=embedder, chunker=FixedChunker()
-    )
+    return SemanticSearchService(InMemoryVectorStore(), embedder=embedder, chunker=FixedChunker())
 
 
 @pytest.fixture
